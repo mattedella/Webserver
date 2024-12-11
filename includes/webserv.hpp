@@ -17,6 +17,10 @@ class ABlock {
 	public:
 		ABlock();
 		void initMap(std::string& str);
+
+		bool someInfo(std::string &str);
+
+		void printMap();
 		virtual ~ABlock();
 };
 

@@ -23,7 +23,6 @@ int main(int ac, char **av) {
 		if (new_line.find('#') != std::string::npos)
 			continue ;
 		if (new_line.find("http") != std::string::npos) {
-			std::cout << "=====HTTP=====\n";
 			while (std::getline(myfile, new_line)) {
 				if (new_line.find("server") != std::string::npos)
 					break ;
@@ -31,7 +30,6 @@ int main(int ac, char **av) {
 			}
 		}
 		if (new_line.find("server") != std::string::npos) {
-			std::cout << "=====SERVER=====\n";
 			while (std::getline(myfile, new_line)) {
 				if (new_line.find("location") != std::string::npos)
 					break ;
@@ -39,7 +37,6 @@ int main(int ac, char **av) {
 			}
 		}
 		if (new_line.find("location") != std::string::npos) {
-			std::cout << "=====LOCATION=====\n";
 			while (std::getline(myfile, new_line)) {
 				if (new_line.find("server") != std::string::npos)
 					break ;
@@ -50,6 +47,12 @@ int main(int ac, char **av) {
 			server.addLocation(location);
 		}
 	}
+	std::cout<<"\n\nPRINT\n\nhttp\n";
+	http.printMap();
+	std::cout<<"\nserver\n";
+	server.printMap();
+	std::cout<<"\nlocation\n";
+	location.printMap();
 	myfile.close();
 	return 0;
 }
