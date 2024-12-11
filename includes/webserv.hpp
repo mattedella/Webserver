@@ -1,7 +1,7 @@
+
 #ifndef WEBSERVER_HPP
 #define WEBSERVER_HPP
 
-#include <cstdint>
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -9,16 +9,22 @@
 #include <map>
 #include <vector>
 
-// class mySocket
-// {
-// 	struct sockaddr_in _addr;
+class ABlock {
 
-// };
+	protected:
+		std::map<std::string, std::string> _data;
+	
+	public:
+		ABlock();
+		void initMap(std::string& str);
+		virtual ~ABlock();
+};
 
 class cgi
 {
 	private:
 		std::vector<int> fd;
+
 	public:
 		int excecute();
 		cgi();
@@ -26,34 +32,35 @@ class cgi
 };
 
 
-class http
-{
+class http : public ABlock {
+
 	private:
-		std::map<int, std::string> _error;
-		std::map<std::string, std::string> _data;
-		int _maxBodySize;
+		// std::map<int, std::string>	_error;
+		// int							_maxBodySize;
 
 	public:
 		http();
 		~http();
 };
 
-class location
-{
+class location : public ABlock {
+
 	private:
-		std::map<std::string, std::string> _root;
+		bool		_sublocation;
+		std::string	_root;
+
 	public:
 		location();
 		~location();
 };
 
-class server
-{
+class server : public ABlock {
+
 	private:
-		std::vector<int> _sockets;
-		std::map<std::string, std::string> _data;
-		std::vector<location> _locations;
-		bool _listing;
+		std::vector<int>		_sockets;
+		std::vector<location>	_locations;
+		bool					_listing;
+
 	public:
 
 		int start();
@@ -64,12 +71,13 @@ class server
 		~server();
 };
 
-class conf
-{
+class conf {
+
 	private:
-		http _http;
-		std::vector<server> _servers;
-		cgi _cgi;
+		http				_http;
+		std::vector<server>	_servers;
+		cgi					_cgi;
+
 	public:
 		int reload(int port);
 		conf();
