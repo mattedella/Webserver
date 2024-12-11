@@ -43,10 +43,11 @@ class http : public ABlock {
 		~http();
 };
 
+
 class location : public ABlock {
 
 	private:
-		bool		_sublocation;
+		// bool		_sublocation;
 		std::string	_root;
 
 	public:
@@ -66,6 +67,8 @@ class server : public ABlock {
 		int start();
 		int accept();
 		int stop();
+
+		void addLocation(location loc);
 
 		server();
 		~server();
