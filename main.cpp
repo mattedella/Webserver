@@ -15,6 +15,7 @@ int main(int ac, char **av) {
 	http		http;
 	server		server;
 	location	location;
+	conf		c;
 	myfile.open(av[1]);
 	if (!myfile.is_open())
 		return (std::cerr << "Error: file corrupted or inexistent\n", 1);
@@ -35,6 +36,8 @@ int main(int ac, char **av) {
 					break ;
 				server.initMap(new_line);
 			}
+			c.addServer(server);
+
 		}
 		if (new_line.find("location") != std::string::npos) {
 			while (std::getline(myfile, new_line)) {
@@ -50,7 +53,8 @@ int main(int ac, char **av) {
 	std::cout<<"\n\nPRINT\n\nhttp\n";
 	http.printMap();
 	std::cout<<"\nserver\n";
-	server.printMap();
+	// server.printMap();
+	c.printServer();
 	std::cout<<"\nlocation\n";
 	location.printMap();
 	myfile.close();

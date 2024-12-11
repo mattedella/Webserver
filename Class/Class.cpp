@@ -62,3 +62,20 @@ server::~server() {}
 location::location() : ABlock() {}
 
 location::~location() {}
+
+conf::conf() {}
+conf::~conf() {}
+
+void conf::addServer(const server &srv)
+{
+	_servers.push_back(srv);
+}
+
+void conf::printServer()
+{
+	for (size_t i = 0; i < _servers.size() - 1; i++) {
+		std::cout<<"\nServer pos "<<i<<"\n";
+		_servers[i].printMap();
+		std::cout<<"\n";
+    }
+}

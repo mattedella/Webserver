@@ -81,12 +81,14 @@ class server : public ABlock {
 class conf {
 
 	private:
-		http				_http;
+		// http				_http;
 		std::vector<server>	_servers;
-		cgi					_cgi;
+		// cgi					_cgi;
 
 	public:
-		int reload(int port);
+		void addServer(const server& srv);
+		void printServer();
+		// int reload(int port);
 		conf();
 		~conf();
 };
