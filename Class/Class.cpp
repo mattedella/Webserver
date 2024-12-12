@@ -7,6 +7,25 @@
 #include <utility>
 #include <vector>
 
+
+size_t server::checkLocation()
+{
+	return _locations.size();
+}
+
+void conf::check()
+{
+	if (_http.size() == 0)
+		throw exc ("Error: http not found!\n");
+	if (_servers.size() == 0)
+		throw exc ("Error: server not found!\n");
+	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
+	{
+		if (it->second.checkLocation() == 0)
+			throw exc("Error: location not found!\n");
+	}
+}
+
 ABlock::ABlock() {};
 
 void ABlock::printMap()
@@ -91,7 +110,6 @@ void conf::addServer(int nbrServer, const server &srv)
 {
 	if (srv.getSize() == 0)
 		return ;
-
 	if (_servers.find(nbrServer) != _servers.end())
 		_servers.erase(nbrServer);
 	_servers.insert(std::make_pair(nbrServer, srv));

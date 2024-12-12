@@ -1,0 +1,57 @@
+Ho trovato un server 1
+Ho trovato un server 2
+
+PRINT
+===nhttp===
+client_body_timeout -> 60s
+client_max_body_size -> 10M
+error_page_404 -> /404.html
+error_page_408 -> /408.html
+error_page_50x -> /50x.html
+include -> /etc/nginx/fastcgi_params
+
+===server===
+Key == 1
+listen -> 8080
+---LOCATIONS---
+4
+Key ->  / {
+root -> /tmp/www
+try_files -> $uri $uri/ =404
+Key ->  /kapouet {
+index -> index.html
+root -> /www
+Key ->  /kapouet/upload {
+client_max_body_size -> 50M
+limit_except -> GET POST
+root -> /www
+upload_pass -> /tmp/uploads
+upload_store -> /tmp/uploads/
+Key ->  ~ \.php$ {
+fastcgi_index -> index.php
+fastcgi_param -> SCRIPT_FILENAME /tmp/www$fastcgi_script_name
+fastcgi_pass -> 127.0.0.1:9000
+include -> fastcgi_params
+
+Key == 2
+listen -> 9090
+---LOCATIONS---
+3
+Key ->  / {
+root -> /var/www/example
+try_files -> $uri $uri/ =404
+Key ->  /images {
+index -> index.html
+root -> /www
+Key ->  ~ \.cgi$ {
+fastcgi_index -> index.cgi
+fastcgi_param -> SCRIPT_FILENAME /var/www/example$fastcgi_script_name
+fastcgi_pass -> 127.0.0.1:9000
+include -> fastcgi_params
+
+client_body_timeout -> 60s
+client_max_body_size -> 10M
+error_page_404 -> /404.html
+error_page_408 -> /408.html
+error_page_50x -> /50x.html
+include -> /etc/nginx/fastcgi_params

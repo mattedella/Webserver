@@ -2,6 +2,7 @@
 #ifndef WEBSERVER_HPP
 #define WEBSERVER_HPP
 
+#include <cstddef>
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -68,6 +69,8 @@ class location : public ABlock {
 class server : public ABlock {
 
 	private:
+		std::vector<std::string>		_listens;
+		std::vector<std::string>		_server_names;
 		std::vector<int>		_sockets;
 		std::map<std::string, location>	_locations;
 		bool					_listing;
@@ -77,6 +80,8 @@ class server : public ABlock {
 		int start();
 		int accept();
 		int stop();
+
+		size_t checkLocation();
 
 		void addLocation(const std::string& Key, location loc);
 		void printLocation();
@@ -97,6 +102,7 @@ class conf {
 		void addServer(int nbrServer, const server& srv);
 		void addHttp(const http& http);
 		void printServer();
+		void check();
 		// int reload(int port);
 		conf();
 		~conf();
