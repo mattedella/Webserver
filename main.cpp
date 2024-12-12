@@ -13,7 +13,6 @@ int main(int ac, char **av) {
 	myfile.open(av[1]);
 	if (!myfile.is_open())
 		return (std::cerr << "Error: file corrupted or inexistent\n", 1);
-	
 	ParsFile(myfile);
 	myfile.close();
 	return 0;

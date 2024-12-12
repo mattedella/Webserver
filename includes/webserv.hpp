@@ -8,6 +8,20 @@
 #include <sys/socket.h>
 #include <map>
 #include <vector>
+#include <exception>
+
+class exc: public std::exception
+{
+	private:
+		std::string _err;
+	public:
+		exc(const std::string &err): _err(err) {};
+		~exc() throw() {};
+		const char* what() const throw()
+		{
+				return _err.c_str();
+		};
+};
 
 class ABlock {
 
@@ -20,7 +34,6 @@ class ABlock {
 		size_t getSize() const;
 
 		bool someInfo(std::string &str);
-
 		void printMap();
 		virtual ~ABlock();
 };

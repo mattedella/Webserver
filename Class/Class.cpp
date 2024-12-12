@@ -61,7 +61,6 @@ server::server() : ABlock() {}
 
 void server::addLocation(const std::string& Key, location loc) {
 	_locations.insert(std::make_pair(Key, loc));
-	std::cout << "addlocation key == " << Key << '\n';
 }
 
 const std::map<std::string,std::string>::const_iterator server::findKey(const std::string& Key) const {
