@@ -88,15 +88,14 @@ location::~location() {}
 conf::conf() {}
 conf::~conf() {}
 
-void conf::addServer(const server &srv)
+void conf::addServer(int nbrServer, const server &srv)
 {
 	if (srv.getSize() == 0)
 		return ;
-	std::map<std::string,std::string>::const_iterator it = srv.findKey("listen");
-	std::string key = it->second;
-	if (_servers.find(key) != _servers.end())
-		_servers.erase(key);
-	_servers.insert(std::make_pair(key, srv));
+
+	if (_servers.find(nbrServer) != _servers.end())
+		_servers.erase(nbrServer);
+	_servers.insert(std::make_pair(nbrServer, srv));
 }
 
 void conf::addHttp(const http& http) {
@@ -110,7 +109,7 @@ void conf::addHttp(const http& http) {
 
 void conf::printServer()
 {
-	for (std::map<std::string,server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
+	for (std::map<int,server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
 		std::cout << "Key == " << it->first << '\n';
 		it->second.printMap();
 		std::cout << "---LOCATIONS---\n";

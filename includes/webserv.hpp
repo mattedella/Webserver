@@ -77,11 +77,11 @@ class conf {
 
 	private:
 		std::vector<http>				_http;
-		std::map<std::string,server>	_servers;
+		std::map<int,server>	_servers;
 		// cgi					_cgi;
 
 	public:
-		void addServer(const server& srv);
+		void addServer(int nbrServer, const server& srv);
 		void addHttp(const http& http);
 		void printServer();
 		// int reload(int port);

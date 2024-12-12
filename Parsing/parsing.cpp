@@ -11,6 +11,7 @@ void ParsFile(std::ifstream& myFile) {
 	location	locationBlock;
 	conf		c;
 	int cOpen = 0;
+	int	nbrServer = 0;
 
 	while (std::getline(myFile, new_line)) {
 		if (new_line.find('#') != std::string::npos)
@@ -29,6 +30,7 @@ void ParsFile(std::ifstream& myFile) {
 					break ;
 				serverBlock.initMap(new_line);
 			}
+			nbrServer++;
 		}
 		if (new_line.find("location") != std::string::npos) {
 			cOpen = 1;
@@ -48,7 +50,7 @@ void ParsFile(std::ifstream& myFile) {
 				serverBlock.printLocation();		
 			}
 		}
-		c.addServer(serverBlock);
+		c.addServer(nbrServer, serverBlock);
 		c.addHttp(httpBlock);
 	}
 	std::cout<<"\nPRINT\n===nhttp===\n";
