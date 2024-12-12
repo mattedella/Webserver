@@ -1,4 +1,4 @@
-SRC = main.cpp Class/Class.cpp
+SRC = main.cpp Class/Class.cpp Parsing/parsing.cpp
 OBJ = $(SRC:.cpp=.o)
 CC = c++
 CFLAGS = -Wall -Wextra -Werror -g -std=c++98

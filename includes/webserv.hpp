@@ -63,7 +63,7 @@ class server : public ABlock {
 
 	private:
 		std::vector<int>		_sockets;
-		std::vector<location>	_locations;
+		std::map<std::string, location>	_locations;
 		bool					_listing;
 
 	public:
@@ -72,7 +72,10 @@ class server : public ABlock {
 		int accept();
 		int stop();
 
-		void addLocation(location loc);
+		void addLocation(std::string& Key, location loc);
+		size_t getSize() const;
+		void printLocation();
+		const std::map<std::string,std::string>::const_iterator findKey(const std::string& Key) const;
 
 		server();
 		~server();
@@ -82,7 +85,7 @@ class conf {
 
 	private:
 		// http				_http;
-		std::vector<server>	_servers;
+		std::map<std::string,server>	_servers;
 		// cgi					_cgi;
 
 	public:
@@ -93,7 +96,7 @@ class conf {
 		~conf();
 };
 
-
+void ParsFile(std::ifstream& myFile);
 
 
 
