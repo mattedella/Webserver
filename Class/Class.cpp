@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 #include <utility>
-// #include <type_traits>
+#include <vector>
 
 ABlock::ABlock() {};
 
@@ -47,6 +47,10 @@ void ABlock::initMap(std::string& str) {
 	_data.insert(std::make_pair(Key, Tp));
 }
 
+size_t ABlock::getSize() const {
+	return _data.size();
+}
+
 ABlock::~ABlock() {}
 
 http::http() : ABlock() {}
@@ -55,8 +59,9 @@ http::~http() {}
 
 server::server() : ABlock() {}
 
-void server::addLocation(std::string& Key, location loc) {
+void server::addLocation(const std::string& Key, location loc) {
 	_locations.insert(std::make_pair(Key, loc));
+	std::cout << "addlocation key == " << Key << '\n';
 }
 
 const std::map<std::string,std::string>::const_iterator server::findKey(const std::string& Key) const {
@@ -66,15 +71,13 @@ const std::map<std::string,std::string>::const_iterator server::findKey(const st
 }
 
 void server::printLocation() {
+	std::cout << _locations.size() << '\n';
 	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++) {
-		std::cout << it->first << '\n';
+		std::cout << "Key -> " << it->first << '\n';
 		it->second.printMap();
 	}
 }
 
-size_t server::getSize() const {
-	return _data.size();
-}
 
 server::~server() {}
 
@@ -90,16 +93,31 @@ void conf::addServer(const server &srv)
 	if (srv.getSize() == 0)
 		return ;
 	std::map<std::string,std::string>::const_iterator it = srv.findKey("listen");
-	_servers.insert(std::make_pair(it->second, srv));
+	std::string key = it->second;
+	if (_servers.find(key) != _servers.end())
+		_servers.erase(key);
+	_servers.insert(std::make_pair(key, srv));
 }
+
+void conf::addHttp(const http& http) {
+	if (http.getSize() == 0)
+		return ;
+	if (_http.size() != 0)
+		_http.pop_back();
+	_http.push_back(http);
+}
+
 
 void conf::printServer()
 {
 	for (std::map<std::string,server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
-		std::cout << it->first << '\n';
+		std::cout << "Key == " << it->first << '\n';
 		it->second.printMap();
 		std::cout << "---LOCATIONS---\n";
 		it->second.printLocation();
 		std::cout<<"\n";
     }
+	for (std::vector<http>::iterator it = _http.begin(); it != _http.end(); it++) {
+		it->printMap();
+	}
 }

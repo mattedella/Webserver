@@ -17,6 +17,7 @@ class ABlock {
 	public:
 		ABlock();
 		void initMap(std::string& str);
+		size_t getSize() const;
 
 		bool someInfo(std::string &str);
 
@@ -38,10 +39,6 @@ class cgi
 
 class http : public ABlock {
 
-	private:
-		// std::map<int, std::string>	_error;
-		// int							_maxBodySize;
-
 	public:
 		http();
 		~http();
@@ -49,10 +46,6 @@ class http : public ABlock {
 
 
 class location : public ABlock {
-
-	private:
-		// bool		_sublocation;
-		std::string	_root;
 
 	public:
 		location();
@@ -72,8 +65,7 @@ class server : public ABlock {
 		int accept();
 		int stop();
 
-		void addLocation(std::string& Key, location loc);
-		size_t getSize() const;
+		void addLocation(const std::string& Key, location loc);
 		void printLocation();
 		const std::map<std::string,std::string>::const_iterator findKey(const std::string& Key) const;
 
@@ -84,12 +76,13 @@ class server : public ABlock {
 class conf {
 
 	private:
-		// http				_http;
+		std::vector<http>				_http;
 		std::map<std::string,server>	_servers;
 		// cgi					_cgi;
 
 	public:
 		void addServer(const server& srv);
+		void addHttp(const http& http);
 		void printServer();
 		// int reload(int port);
 		conf();
