@@ -103,7 +103,7 @@ const std::map<std::string,std::string>::const_iterator server::findKey(const st
 void server::initVector() {
 	if (_data.find("listen") == _data.end() || _data.find("server_name") == _data.end())
 		throw exc("Error: no key listen or server found\n");
-
+	
 	for (std::multimap<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); ++it) {
 		if (it->first == "listen")
 			_listens.push_back(it->second);
@@ -126,6 +126,7 @@ void server::printLocation() {
 	std::cout << "server name:\n";
 	for (size_t i = 0; i < _server_names.size(); i++)
 		std::cout << _server_names[i] << '\n';
+	std::cout<<"Listing "<<_listing<<"\n";
 
 }
 
