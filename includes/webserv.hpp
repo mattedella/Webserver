@@ -27,7 +27,7 @@ class exc: public std::exception
 class ABlock {
 
 	protected:
-		std::map<std::string, std::string> _data;
+		std::multimap<std::string, std::string> _data;
 	
 	public:
 		ABlock();
@@ -53,8 +53,14 @@ class cgi
 
 class http : public ABlock {
 
+	private:
+		std::map<int,std::string> _error;
+
 	public:
 		http();
+
+		void initVector();
+
 		~http();
 };
 
@@ -81,8 +87,9 @@ class server : public ABlock {
 		int accept();
 		int stop();
 
-		size_t checkLocation();
+		size_t checkLocation() const;
 
+		void initVector();
 		void addLocation(const std::string& Key, location loc);
 		void printLocation();
 		const std::map<std::string,std::string>::const_iterator findKey(const std::string& Key) const;

@@ -8,7 +8,7 @@
 #include <vector>
 
 
-size_t server::checkLocation()
+size_t server::checkLocation() const
 {
 	return _locations.size();
 }
@@ -74,6 +74,22 @@ ABlock::~ABlock() {}
 
 http::http() : ABlock() {}
 
+void http::initVector() {
+	for (std::multimap<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); ++it) {
+		if (it->first == "error_page") {
+			std::string Key = it->second.substr(0, it->second.find(' '));
+			int nbrKey = std::atoi(Key.c_str());
+			std::string Tp = it->second.substr(it->second.find(' ') + 1);
+			_error.insert(std::make_pair(nbrKey, Tp));
+		}
+	}
+	std::cout << "ERROR:\n";
+	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++) {
+		std::cout << it->first << " => " << it->second << '\n';
+	}
+	_data.erase("error_page");
+}
+
 http::~http() {}
 
 server::server() : ABlock() {}
@@ -88,12 +104,33 @@ const std::map<std::string,std::string>::const_iterator server::findKey(const st
 	return it;
 }
 
+void server::initVector() {
+	if (_data.find("listen") == _data.end() || _data.find("server_name") == _data.end())
+		throw exc("Error: no key listen or server found\n");
+
+	for (std::multimap<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); ++it) {
+		if (it->first == "listen")
+			_listens.push_back(it->second);
+		else if (it->first == "server_name")
+			_server_names.push_back(it->second);
+	}
+	_data.erase("listen");
+	_data.erase("server_name");
+}
+
 void server::printLocation() {
 	std::cout << _locations.size() << '\n';
 	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++) {
 		std::cout << "Key -> " << it->first << '\n';
 		it->second.printMap();
 	}
+	std::cout << "listen :\n";
+	for (size_t i = 0; i < _listens.size(); i++)
+		std::cout << _listens[i] << '\n';
+	std::cout << "server name:\n";
+	for (size_t i = 0; i < _server_names.size(); i++)
+		std::cout << _server_names[i] << '\n';
+
 }
 
 
