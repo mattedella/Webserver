@@ -7,17 +7,15 @@
 #include <string>
 #include <variant>
 
-void checkLine(const std::string &new_line, int &brk)
+bool checkLine(const std::string &new_line, int &brk)
 {
-	// if (new_line.find('#') != std::string::npos)
-	// 	return;
 	int i = 0;
 	if (new_line.size() != 0)
 	{
 		while(std::isspace(new_line[i]))
 			i++;
 		if (!new_line[i] || new_line[i] == '#')
-			return;
+			return true;
 		while(new_line[i] && new_line[i] != ';' && new_line[i] != '{' && new_line[i] != '}')
 		{
 			if (new_line[i] == '#')
@@ -38,28 +36,56 @@ void checkLine(const std::string &new_line, int &brk)
 			i++;		
 		while(std::isspace(new_line[i]))
 			i++;
+		if (new_line[i] == '#')
+			return false;
 		if (new_line[i] && new_line[i] != '#')
 			throw exc("Error: " + new_line + "\n");			
 	}
-
-
-
-	// if (new_line.size() != 0)
-	// {
-	// 	char last = new_line[new_line.size() - 1];
-	// 	if (last != ';' && last != '{' && last != '}' && !std::isspace(last))
-	// 		throw exc("Error: " + new_line + "\n");
-	// }
-	// if (new_line.find('{') != std::string::npos)
-	// 			brk++;
-	// if (new_line.find('}') != std::string::npos)
-	// {
-	// 	brk--;
-	// 	if (brk < 0)
-	// 		throw exc(("\nError: " + new_line + "! \n"));
-	// }
+	return false;
 }
 
+void initLocation(std::string& new_line, std::ifstream& myFile, location& locationBlock, int& brk) {
+	int cOpen = 1;
+	locationBlock = location();
+	while (cOpen == 1) {
+		while (std::getline(myFile, new_line)) {
+			if (checkLine(new_line, brk) == true)
+				continue ;
+			if (new_line.find("}") != std::string::npos) {
+				cOpen = 0;
+				break ;
+			}
+			locationBlock.initMap(new_line);
+		}
+	}
+}
+
+void initServer(std::string& new_line,  std::ifstream& myFile, server& serverBlock, int& brk, int& nbrServer) {
+	int cOpen = 1;
+	serverBlock = server();
+	while (std::getline(myFile, new_line)) {
+		if (checkLine(new_line, brk) == true)
+				continue ;
+		if (new_line.find("location") != std::string::npos
+			|| (new_line.find('}') != std::string::npos && cOpen == 1))
+			break ;
+		serverBlock.initMap(new_line);
+	}
+	serverBlock.initVector();
+	nbrServer++;
+}
+
+void initHttp(std::string& new_line, std::ifstream& myFile, int& brk, http& httpBlock) {
+	while (std::getline(myFile, new_line)) {
+	if (checkLine(new_line, brk) == true)
+				continue ;
+	if (new_line.find("server") != std::string::npos
+		|| new_line.find('}') != std::string::npos)
+		break ;
+	httpBlock.initMap(new_line);
+	}
+	httpBlock.initVector();
+}
 
 void ParsFile(std::ifstream& myFile) {
 
@@ -69,68 +95,27 @@ void ParsFile(std::ifstream& myFile) {
 	location	locationBlock;
 	conf		c;
 	int brk = 0;
-	int cOpen = 0;
 	int	nbrServer = 0;
-	// int nbrLoc = 0;
 	try 
 	{
 		while (std::getline(myFile, new_line)) {
-			
-			checkLine(new_line, brk);
-			if (new_line.find('#') != std::string::npos && new_line.find('#') < new_line.find(';'))
+			if (checkLine(new_line, brk) == true)
 				continue ;
 			if (new_line.find("http") != std::string::npos) {
-				while (std::getline(myFile, new_line)) {
-					checkLine(new_line, brk);
-					if (new_line.find('#') != std::string::npos)
-						continue ;
-					if (new_line.find("server") != std::string::npos
-						|| new_line.find('}') != std::string::npos)
-						break ;
-					httpBlock.initMap(new_line);
-				}
-				httpBlock.initVector();
+				initHttp(new_line, myFile, brk, httpBlock);
 			}
-			if (new_line.find("server") != std::string::npos) {
-				cOpen = 1;
-				serverBlock = server();
-				while (std::getline(myFile, new_line)) {
-					checkLine(new_line, brk);
-					if (new_line.find('#') != std::string::npos && new_line.find('#') < new_line.find(';'))
-						continue ;
-					if (new_line.find("location") != std::string::npos
-						|| (new_line.find('}') != std::string::npos && cOpen == 1))
-						break ;
-					serverBlock.initMap(new_line);
-				}
-				serverBlock.initVector();
-				nbrServer++;
-				serverBlock.printLocation();
-			}
+			if (new_line.find("server") != std::string::npos)
+				initServer(new_line, myFile, serverBlock, brk, nbrServer);
 			if (new_line.find("location") != std::string::npos) {
-				cOpen = 1;
 				std::string root = new_line.substr(new_line.find(' '));
-				locationBlock = location();
-				while (cOpen == 1) {
-					while (std::getline(myFile, new_line)) {
-						checkLine(new_line, brk);
-						if (new_line.find('#') != std::string::npos && new_line.find('#') < new_line.find(';'))
-							continue ;
-						if (new_line.find("}") != std::string::npos) {
-							cOpen = 0;
-							break ;
-						}
-						locationBlock.initMap(new_line);
-
-					}
-					serverBlock.addLocation(root, locationBlock);
+				initLocation(new_line, myFile, locationBlock, brk);
+				serverBlock.addLocation(root, locationBlock);
 				}
-			}
 			c.addServer(nbrServer, serverBlock);
 			c.addHttp(httpBlock);
 		}
-		c.printServer();
 		c.check();
+		c.printServer();
 		if (brk != 0)
 			throw exc("Error: unclosed brackets!\n");
 	}

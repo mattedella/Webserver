@@ -59,10 +59,22 @@ void ABlock::initMap(std::string& str) {
 	}
 	if (!someInfo(str))
 		return;
-	while( std::isspace(str[0]))
+	std::string Key;
+	std::string Tp;
+	while(std::isspace(str[0]))
 		str.erase(0, 1);
-	std::string Key = str.substr(0, str.find(' '));
-	std::string Tp = str.substr(str.find(' ') + 1, ((str.find(';')) - str.find(' ')) - 1);
+	if (str.find(' ') != std::string::npos)
+		Key = str.substr(0, str.find(' '));
+	else if (str.find('\t') != std::string::npos)
+		Key = str.substr(0, str.find('\t'));
+	if (Key.size() == 0)
+		throw exc("Error: wrong key value " + str + "\n");
+	if (str.find(' ') != std::string::npos)
+		Tp = str.substr(str.find(' ') + 1, ((str.find(';')) - str.find(' ')) - 1);
+	else if (str.find('\t') != std::string::npos)
+		Tp = str.substr(str.find('\t') + 1, ((str.find(';')) - str.find('\t')) - 1);
+	if (Tp.size() == 0)
+		throw exc("Error: wrong value " + str + "\n");
 	_data.insert(std::make_pair(Key, Tp));
 }
 
@@ -101,17 +113,24 @@ const std::map<std::string,std::string>::const_iterator server::findKey(const st
 }
 
 void server::initVector() {
-	if (_data.find("listen") == _data.end() || _data.find("server_name") == _data.end())
-		throw exc("Error: no key listen or server found\n");
+	if (_data.find("listen") == _data.end())
+		throw exc("Error: no key listen found\n");
+	if (_data.find("server_name") == _data.end())
+		_data.insert(std::make_pair("server_name", "localhost"));
 
 	for (std::multimap<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); ++it) {
 		if (it->first == "listen")
 			_listens.push_back(it->second);
 		else if (it->first == "server_name")
 			_server_names.push_back(it->second);
+		else if (it->first == "autoindex") {
+			if (it->second == "on")
+				_listing = true;
+		}
 	}
 	_data.erase("listen");
 	_data.erase("server_name");
+	_data.erase("autoindex");
 }
 
 void server::printLocation() {
@@ -126,6 +145,7 @@ void server::printLocation() {
 	std::cout << "server name:\n";
 	for (size_t i = 0; i < _server_names.size(); i++)
 		std::cout << _server_names[i] << '\n';
+	std::cout << "listing: " << _listing << '\n';
 
 }
 
