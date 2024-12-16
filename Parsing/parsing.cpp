@@ -9,23 +9,55 @@
 
 void checkLine(const std::string &new_line, int &brk)
 {
-	if (new_line.find('#') != std::string::npos)
-		return;
+	// if (new_line.find('#') != std::string::npos)
+	// 	return;
+	int i = 0;
 	if (new_line.size() != 0)
 	{
-		char last = new_line[new_line.size() - 1];
-
-		if (last != ';' && last != '{' && last != '}' && !std::isspace(last))
-			throw exc("Error: " + new_line + "\n");
-	}
-	if (new_line.find('{') != std::string::npos)
+		while(std::isspace(new_line[i]))
+			i++;
+		if (!new_line[i] || new_line[i] == '#')
+			return;
+		while(new_line[i] && new_line[i] != ';' && new_line[i] != '{' && new_line[i] != '}')
+		{
+			if (new_line[i] == '#')
+				throw exc("Error: " + new_line + "\n");
+			i++;
+		}
+			if (new_line[i] =='{')
 				brk++;
-	if (new_line.find('}') != std::string::npos)
-	{
-		if (brk <= 0)
-			throw exc(("\nError: " + new_line + "! \n"));
-		brk--;
+			else if (new_line[i] =='}')
+			{
+				brk--;
+				if (brk < 0)
+					throw exc("Error: " + new_line + "\n");
+			}
+		if (!new_line[i])
+			throw exc("Error: " + new_line + "\n");
+		else
+			i++;		
+		while(std::isspace(new_line[i]))
+			i++;
+		if (new_line[i] && new_line[i] != '#')
+			throw exc("Error: " + new_line + "\n");			
 	}
+
+
+
+	// if (new_line.size() != 0)
+	// {
+	// 	char last = new_line[new_line.size() - 1];
+	// 	if (last != ';' && last != '{' && last != '}' && !std::isspace(last))
+	// 		throw exc("Error: " + new_line + "\n");
+	// }
+	// if (new_line.find('{') != std::string::npos)
+	// 			brk++;
+	// if (new_line.find('}') != std::string::npos)
+	// {
+	// 	brk--;
+	// 	if (brk < 0)
+	// 		throw exc(("\nError: " + new_line + "! \n"));
+	// }
 }
 
 
@@ -64,7 +96,7 @@ void ParsFile(std::ifstream& myFile) {
 				serverBlock = server();
 				while (std::getline(myFile, new_line)) {
 					checkLine(new_line, brk);
-					if (new_line.find('#') != std::string::npos)
+					if (new_line.find('#') != std::string::npos && new_line.find('#') < new_line.find(';'))
 						continue ;
 					if (new_line.find("location") != std::string::npos
 						|| (new_line.find('}') != std::string::npos && cOpen == 1))
@@ -82,7 +114,7 @@ void ParsFile(std::ifstream& myFile) {
 				while (cOpen == 1) {
 					while (std::getline(myFile, new_line)) {
 						checkLine(new_line, brk);
-						if (new_line.find('#') != std::string::npos)
+						if (new_line.find('#') != std::string::npos && new_line.find('#') < new_line.find(';'))
 							continue ;
 						if (new_line.find("}") != std::string::npos) {
 							cOpen = 0;

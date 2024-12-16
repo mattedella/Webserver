@@ -83,10 +83,6 @@ void http::initVector() {
 			_error.insert(std::make_pair(nbrKey, Tp));
 		}
 	}
-	std::cout << "ERROR:\n";
-	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++) {
-		std::cout << it->first << " => " << it->second << '\n';
-	}
 	_data.erase("error_page");
 }
 
