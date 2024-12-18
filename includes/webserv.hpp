@@ -2,42 +2,13 @@
 #ifndef WEBSERVER_HPP
 #define WEBSERVER_HPP
 
-#include <cstddef>
-#include <filesystem>
-#include <iostream>
-#include <string>
-#include <sys/socket.h>
-#include <map>
-#include <vector>
-#include <exception>
+#include "Http.hpp"
+#include "Server.hpp"
+#include "Conf.hpp"
+#include "Ablock.hpp"
+#include "Exc.hpp"
 
-class exc: public std::exception
-{
-	private:
-		std::string _err;
-	public:
-		exc(const std::string &err): _err(err) {};
-		~exc() throw() {};
-		const char* what() const throw()
-		{
-				return _err.c_str();
-		};
-};
-
-class ABlock {
-
-	protected:
-		std::multimap<std::string, std::string> _data;
-	
-	public:
-		ABlock();
-		void initMap(std::string& str);
-		size_t getSize() const;
-
-		bool someInfo(std::string &str);
-		void printMap();
-		virtual ~ABlock();
-};
+# define  NOT_FOUND std::string::npos
 
 class cgi
 {
@@ -50,72 +21,10 @@ class cgi
 		~cgi();
 };
 
-
-class http : public ABlock {
-
-	private:
-		std::map<int,std::string> _error;
-
-	public:
-		http();
-
-		void initVector();
-
-		~http();
-};
-
-
-class location : public ABlock {
-
-	public:
-		location();
-		~location();
-};
-
-class server : public ABlock {
-
-	private:
-		std::vector<std::string>		_listens;
-		std::vector<std::string>		_server_names;
-		std::vector<int>		_sockets;
-		std::map<std::string, location>	_locations;
-		bool					_listing;
-
-	public:
-
-		int start();
-		int accept();
-		int stop();
-
-		size_t checkLocation() const;
-
-		void initVector();
-		void addLocation(const std::string& Key, location loc);
-		void printLocation();
-		const std::map<std::string,std::string>::const_iterator findKey(const std::string& Key) const;
-
-		server();
-		~server();
-};
-
-class conf {
-
-	private:
-		std::vector<http>				_http;
-		std::map<int,server>	_servers;
-		// cgi					_cgi;
-
-	public:
-		void addServer(int nbrServer, const server& srv);
-		void addHttp(const http& http);
-		void printServer();
-		void check();
-		// int reload(int port);
-		conf();
-		~conf();
-};
-
-void ParsFile(std::ifstream& myFile);
+void ParsConfFile(std::vector<std::string> config_content);
+void ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
+void ParsServer(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
+void ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
 
 
 
