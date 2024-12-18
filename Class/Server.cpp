@@ -52,14 +52,13 @@ void server::printLocation() {
 		std::cout << "Key -> " << it->first << '\n';
 		it->second.printMap();
 	}
-	std::cout << "listen :\n";
+	std::cout << "listen:\n";
 	for (size_t i = 0; i < _listens.size(); i++)
 		std::cout << _listens[i] << '\n';
 	std::cout << "server name:\n";
 	for (size_t i = 0; i < _server_names.size(); i++)
 		std::cout << _server_names[i] << '\n';
 	std::cout << "listing: " << _listing << '\n';
-
 }
 
 server::~server() {}

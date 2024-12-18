@@ -2,6 +2,7 @@
 # define SERVER_HPP
 
 #include "Ablock.hpp"
+#include <string>
 
 class ABlock;
 
@@ -15,7 +16,8 @@ class location : public ABlock {
 class server : public ABlock {
 
 	private:
-
+		std::string						_timeout;
+		std::string						_max_body_size;
 		bool							_listing;
 		std::vector<int>				_sockets;
 		std::vector<std::string>		_listens;
