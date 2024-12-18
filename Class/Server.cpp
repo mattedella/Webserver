@@ -1,21 +1,23 @@
 
 #include "../includes/webserv.hpp"
-#include <vector>
+#include <utility>
 
 server::server() : ABlock(), _listing(false) {}
 
-size_t server::checkLocation() const
+size_t server::getLocationSize() const
 {
 	return _locations.size();
 }
 
 void server::addLocation(const std::string& Key, location loc) {
+	if (_locations.find(Key) != _locations.end())
+		throw exc("Error: location already exist: " + Key + '\n');
 	_locations.insert(std::make_pair(Key, loc));
 }
 
 void server::initVector() {
 	if (_data.find("listen") == _data.end())
-		throw exc("Error: no key listen found\n");
+		_data.insert(std::make_pair("listen", "8080"));
 	if (_data.find("server_name") == _data.end())
 		_data.insert(std::make_pair("server_name", "localhost"));
 

@@ -17,11 +17,10 @@ void conf::check()
 		throw exc ("Error: server not found!\n");
 	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
 	{
-		if (it->second.checkLocation() == 0)
+		if (it->second.getLocationSize() == 0)
 			throw exc("Error: location not found!\n");
 	}
 }
-
 
 void conf::addServer(int nbrServer, const server &srv)
 {
@@ -39,7 +38,6 @@ void conf::addHttp(const http& http) {
 		_http.pop_back();
 	_http.push_back(http);
 }
-
 
 void conf::printServer()
 {

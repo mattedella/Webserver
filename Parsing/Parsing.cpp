@@ -46,7 +46,7 @@ void ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::
 			break ;
 		}
 		if (line.find("http") != NOT_FOUND)
-			throw exc("Error: cannot have http inside another http\n");
+			throw exc("Error: invalid token inside http\n");
 		HttpBlock.initMap(line);
 	}
 	HttpBlock.initVector();
@@ -62,7 +62,7 @@ void ParsServer(std::vector<std::string>::iterator& it, std::vector<std::string>
 			break ;
 		}
 		if (line.find("server") != NOT_FOUND && line.find("server_name") == NOT_FOUND)
-			throw exc("Error: cannot have server inside another server\n");
+			throw exc("Error: invalid token inside server\n");
 		ServerBlock.initMap(line);
 	}
 	ServerBlock.initVector();
@@ -82,10 +82,13 @@ void ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::strin
 	it++;
 	for (; it != end; ++it) {
 		std::string line = *it;
-		if (line.find("server") != NOT_FOUND || line.find('}') != NOT_FOUND) {
+		if (line.find('}') != NOT_FOUND) {
 			it--;
 			break ;
 		}
+		if (line.find("server") != NOT_FOUND || line.find("location") != NOT_FOUND
+			|| line.find("http") != NOT_FOUND)
+			throw exc("Error: invalid token inside location\n");
 		LocationBlock.initMap(line);
 	}
 	ServerBlock.addLocation(path, LocationBlock);
@@ -131,8 +134,10 @@ void ParsConfFile(std::vector<std::string> config_content) {
 				else if (subline.find('\t') != NOT_FOUND)
 					comp = subline.substr(0, subline.find('\t'));
 				int i = comp.length() - 1;
-				while (std::isspace(comp[i]))
+				while (std::isspace(comp[i])) {
 					comp.erase(i, 1);
+					i--;
+				}
 				if (comp == "location") {
 					ParsLocation(it, config_content.end(), ServerBlock, LocationBlock);
 					ConfigurationBlock.addServer(nbrServer, ServerBlock);
@@ -142,10 +147,10 @@ void ParsConfFile(std::vector<std::string> config_content) {
 			}
 		}
 	ConfigurationBlock.check();
-	ConfigurationBlock.printServer();
 	}
 	catch (std::exception& e) {
 		std::cerr << e.what();
 		return ;
 	}
+	ConfigurationBlock.printServer();
 }
