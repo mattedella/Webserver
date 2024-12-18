@@ -1,5 +1,6 @@
-SRC = main.cpp Class/Class.cpp Parsing/parsing.cpp
-OBJ = $(SRC:.cpp=.o)
+SRC = main.cpp \
+      Class/ABlock.cpp Class/Conf.cpp Class/Http.cpp Class/Server.cpp \
+      Parsing/Parsing.cpp
 CC = c++
 CFLAGS = -Wall -Wextra -Werror -g -std=c++98
 RM = rm -f
@@ -7,20 +8,16 @@ NAME = webserv
 
 all: $(NAME)
 
-$(NAME): $(OBJ)
-		@$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
-		@echo "Compiled $(NAME)"
-
-%.o: %.cpp
-		@$(CC) $(CFLAGS) -c $< -o $@
+$(NAME): $(SRC)
+	@$(CC) $(CFLAGS) $(SRC) -o $(NAME)
+	@echo "Compiled $(NAME)"
 
 clean:
-		@$(RM) $(OBJ)
-		@echo "Removed object files"
+	@echo "Nothing to clean, no .o files generated."
 
 fclean: clean
-		@$(RM) $(NAME)
-		@echo "Removed $(NAME)"
+	@$(RM) $(NAME)
+	@echo "Removed $(NAME)"
 
 re: fclean all
 
