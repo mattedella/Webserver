@@ -66,3 +66,69 @@ server::~server() {}
 location::location() : ABlock() {}
 
 location::~location() {}
+
+void server::printAll()
+{
+	std::cout << "PRINT ALL\n";
+	std::cout << "Server\n";
+	std::cout << "time out "<<_timeout << '\n';
+	std::cout << "root "<<_root << '\n';
+	std::cout << "max body size "<<_max_body_size << '\n';
+	std::cout << "listing "<<_listing << '\n';
+	std::cout << "index "<<_index << '\n';
+	std::cout << "listen:\n";
+	for (size_t i = 0; i < _listens.size(); i++)
+		std::cout << _listens[i] << '\n';
+	std::cout << "server name:\n";
+	for (size_t i = 0; i < _server_names.size(); i++)
+		std::cout << _server_names[i] << '\n';
+	std::cout << "MAP\n";
+	printMap();
+	std::cout << "LOCATIONS\n";
+	printLocation();
+}
+
+void server::addVal()
+{
+	std::multimap<std::string, std::string>::iterator it;
+
+	while ((it = _data.find("listen")) != _data.end()) {
+        _listens.push_back(it->second);       
+        _data.erase(it);
+    }
+	while ((it = _data.find("server_name")) != _data.end()) {
+		_server_names.push_back(it->second);       
+		_data.erase(it);
+	}
+	it = _data.find("client_max_body_size");
+	if (it != _data.end()) {
+		_max_body_size = it->second;
+		_data.erase(it);
+	}
+	it = _data.find("client_body_timeout");
+	if (it != _data.end()) {
+		_timeout = it->second;
+		_data.erase(it);
+	}
+	else
+		_timeout = "30";
+	it = _data.find("root");
+	if (it != _data.end()) {
+		_root = it->second;
+		_data.erase(it);
+	}
+	else
+		_root = "/var/www/html";
+	it = _data.find("autoindex");
+	if (it != _data.end()) {
+		if (it->second == "on")
+			_listing = true;
+		_data.erase(it);
+	}
+	it = _data.find("index");
+	if (it != _data.end()) {
+		_index = it->second;
+		_data.erase(it);
+	}
+	printAll();
+}

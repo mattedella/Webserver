@@ -53,4 +53,12 @@ void conf::printServer()
 	}
 }
 
+void conf::addKey()
+{
+	for (std::map<int,server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
+
+		it->second.addVal();
+    }
+}
+
 conf::~conf() {}

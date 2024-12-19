@@ -17,6 +17,8 @@ class server : public ABlock {
 
 	private:
 		std::string						_timeout;
+		std::string						_index;
+		std::string						_root;
 		std::string						_max_body_size;
 		bool							_listing;
 		std::vector<int>				_sockets;
@@ -27,6 +29,7 @@ class server : public ABlock {
 	public:
 
 		int stop();
+		void printAll();
 		int start();
 		int accept();
 		void initVector();
@@ -38,6 +41,8 @@ class server : public ABlock {
 		location	getLocation(std::string& to_find);
 		std::string getListen(std::string& to_compare);
 		std::string getServerName(std::string& to_compare);
+
+		void addVal();
 
 		void checkValue();
 

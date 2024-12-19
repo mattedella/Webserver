@@ -11,10 +11,10 @@ class conf {
 	private:
 		std::vector<http>				_http;
 		std::map<int,server>	_servers;
-		// cgi					_cgi;
 
 	public:
 		void addServer(int nbrServer, const server& srv);
+		void addKey();
 		void addHttp(const http& http);
 		void printServer();
 		void check();
