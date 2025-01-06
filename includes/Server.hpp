@@ -8,18 +8,27 @@ class ABlock;
 
 class location : public ABlock {
 
+	private:
+		std::string					_root;
+		std::string					_index;
+		std::string					_methods;
+		int							_bodySize;
+
+
 	public:
 		location();
+		void addVal();
+		void printVal();
 		~location();
 };
 
 class server : public ABlock {
 
 	private:
-		std::string						_timeout;
+		int								_timeout;
 		std::string						_index;
 		std::string						_root;
-		std::string						_max_body_size;
+		int								_max_body_size;
 		bool							_listing;
 		std::vector<int>				_sockets;
 		std::vector<std::string>		_listens;

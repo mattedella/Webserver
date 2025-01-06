@@ -16,8 +16,10 @@ class cgi
 		std::vector<int> fd;
 
 	public:
-		int excecute();
 		cgi();
+
+		int excecute();
+		
 		~cgi();
 };
 

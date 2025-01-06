@@ -1,5 +1,6 @@
 
 #include "../includes/webserv.hpp"
+#include <filesystem>
 
 ABlock::ABlock() {
 	if (_special.empty()) {
@@ -28,7 +29,7 @@ ABlock::ABlock() {
 
 void ABlock::printMap()
 {
-	for (std::map<std::string, std::string>::const_iterator it = _data.begin(); it != _data.end(); ++it) {
+	for (std::map<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); ++it) {
         std::cout<<it->first<<" -> "<<it->second<<"\n";
     }
 }

@@ -17,6 +17,7 @@ class conf {
 		void addKey();
 		void addHttp(const http& http);
 		void printServer();
+		void printHttp();
 		void check();
 		// int reload(int port);
 		conf();

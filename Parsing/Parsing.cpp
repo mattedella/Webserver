@@ -91,6 +91,7 @@ void ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::strin
 			throw exc("Error: invalid token inside location\n");
 		LocationBlock.initMap(line);
 	}
+	LocationBlock.addVal();
 	ServerBlock.addLocation(path, LocationBlock);
 }
 
@@ -149,11 +150,12 @@ void ParsConfFile(std::vector<std::string> config_content) {
 			}
 		}
 	ConfigurationBlock.check();
+	ConfigurationBlock.addKey();
 	}
 	catch (std::exception& e) {
 		std::cerr << e.what();
 		return ;
 	}
-	ConfigurationBlock.addKey();
 	ConfigurationBlock.printServer();
+	ConfigurationBlock.printHttp();
 }

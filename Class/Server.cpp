@@ -2,10 +2,52 @@
 #include "../includes/webserv.hpp"
 #include <utility>
 
-server::server() : ABlock(), _listing(false) {}
+location::location() : ABlock() {
+	_methods = "POST";
+	_bodySize = 30;
+	_index  = "";
+	_root = "";
+}
 
-size_t server::getLocationSize() const
-{
+void location::addVal() {
+	for (std::map<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); it++) {
+		if (it->first == "root")
+			_root = it->second;
+		else if (it->first == "index")
+			_index = it->second;
+		else if (it->first == "client_max_body_size") {
+			int size = std::atoi(it->second.c_str());
+			if (it->second[it->second.length() - 1] != 'M' || size <= 0)
+				throw exc("Error: body size value not valid\n");
+			_bodySize = size;
+		}
+		else if (it->first == "dav_methods")
+			_methods = it->second;
+	}
+	_data.erase("root");
+	_data.erase("index");
+	_data.erase("client_maxz_body_size");
+	_data.erase("dav_methods");
+}
+
+void location::printVal() {
+	std::cout << "-----LOCATION------\n";
+	std::cout << "root: " << _root << '\n';
+	std::cout << "methods: " << _methods << '\n';
+	std::cout << "index: " << _index << '\n';
+	std::cout << "bodySize: " << _bodySize << '\n';
+}
+
+location::~location() {}
+
+server::server() : ABlock(), _listing(false) {
+	_timeout = 60;
+	_index = "index.html";
+	_root = "/";
+	_max_body_size = 30;
+}
+
+size_t server::getLocationSize() const {
 	return _locations.size();
 }
 
@@ -50,7 +92,7 @@ void server::printLocation() {
 	std::cout << _locations.size() << '\n';
 	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++) {
 		std::cout << "Key -> " << it->first << '\n';
-		it->second.printMap();
+		it->second.printVal();
 	}
 	std::cout << "listen:\n";
 	for (size_t i = 0; i < _listens.size(); i++)
@@ -63,9 +105,6 @@ void server::printLocation() {
 
 server::~server() {}
 
-location::location() : ABlock() {}
-
-location::~location() {}
 
 void server::printAll()
 {
@@ -102,16 +141,22 @@ void server::addVal()
 	}
 	it = _data.find("client_max_body_size");
 	if (it != _data.end()) {
-		_max_body_size = it->second;
+		int size = std::atoi(it->second.c_str());
+		if (it->second[it->second.length() - 1] != 'M' || size <= 0)
+				throw exc("Error: body size value not valid\n");
+		_max_body_size = size;
 		_data.erase(it);
 	}
 	it = _data.find("client_body_timeout");
 	if (it != _data.end()) {
-		_timeout = it->second;
+		int timeout = std::atoi(it->second.c_str());
+			if (it->second[it->second.length() - 1] != 's' || timeout <= 0)
+				throw exc("Error: body timeout value not valid\n");
+		_timeout = timeout;
 		_data.erase(it);
 	}
 	else
-		_timeout = "30";
+		_timeout = 60;
 	it = _data.find("root");
 	if (it != _data.end()) {
 		_root = it->second;

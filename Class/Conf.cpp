@@ -47,18 +47,28 @@ void conf::printServer()
 		std::cout << "---LOCATIONS---\n";
 		it->second.printLocation();
 		std::cout<<"\n";
-    }
+	}
 	for (std::vector<http>::iterator it = _http.begin(); it != _http.end(); it++) {
 		it->printMap();
 	}
 }
 
+void conf::printHttp()
+{
+	std::vector<http>::iterator it = _http.begin();
+	std::cout<<"----HTTP----\n";
+	for (; it != _http.end(); it++)
+		it->printAll();
+	
+}
+
 void conf::addKey()
 {
-	for (std::map<int,server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
-
+	for (std::map<int,server>::iterator it = _servers.begin(); it != _servers.end(); it++)
 		it->second.addVal();
-    }
+	for (std::vector<http>::iterator it = _http.begin(); it != _http.end(); it++)
+		it->addVal();
 }
+
 
 conf::~conf() {}
