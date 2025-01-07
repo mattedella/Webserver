@@ -1,9 +1,13 @@
 
 #include "../includes/webserv.hpp"
+#include <cctype>
+#include <cstddef>
+#include <string>
 #include <utility>
+#include <vector>
 
 location::location() : ABlock() {
-	_methods = "POST";
+	_methods = "";
 	_bodySize = 30;
 	_index  = "";
 	_root = "";
@@ -81,6 +85,8 @@ void server::initVector() {
 		else if (it->first == "autoindex") {
 			if (it->second == "on")
 				_listing = true;
+			else if (it->second != "off")
+				throw exc("Invalid listing\n");
 		}
 	}
 	_data.erase("listen");
@@ -172,8 +178,50 @@ void server::addVal()
 	}
 	it = _data.find("index");
 	if (it != _data.end()) {
+		if (it->second.find('.') == NOT_FOUND)
+			throw exc("invalid index\n");
 		_index = it->second;
 		_data.erase(it);
 	}
 	printAll();
+}
+
+void server::checkValue()
+{
+	for (std::vector<std::string>::iterator it = _listens.begin(); it != _listens.end(); it++)
+	{
+		std::string str;
+		int num;
+
+		if (it->find(':') != NOT_FOUND)
+		{
+			str = it->substr(0, it->find(':'));
+			std::string str2 = it->substr(it->find(':') + 1);
+			for (size_t i = 0; i < str2.length(); i++)
+			{
+				if (!std::isdigit(str2[i]))
+					throw exc("invalid port\n");
+			}
+			num = std::atoi(str2.c_str());
+			if (num > 65535 || num < 1)
+				throw exc("Invalid port\n");
+		}
+		else
+		{
+			str = *it;
+			for (size_t i = 0; i < str.length(); i++)
+			{
+				if (!std::isdigit(str[i]))
+					throw exc("invalid port\n");
+			}
+			num = std::atoi(str.c_str());
+			if (num > 65535 || num < 1)
+				throw exc("Invalid port\n");
+		}
+		// for (size_t i = 0; i < str.length(); i++)
+		// {
+		// 	int num = str[i]
+		// }
+	}
+	
 }

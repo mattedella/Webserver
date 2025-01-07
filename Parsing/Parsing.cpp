@@ -149,8 +149,8 @@ void ParsConfFile(std::vector<std::string> config_content) {
 					throw exc("Error: invalid token: " + line + '\n');
 			}
 		}
-	ConfigurationBlock.check();
 	ConfigurationBlock.addKey();
+	ConfigurationBlock.check();
 	}
 	catch (std::exception& e) {
 		std::cerr << e.what();

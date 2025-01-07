@@ -21,6 +21,7 @@ class http : public ABlock {
 	public:
 		http();
 
+		void checkVal();
 		void initVector();
 		void printAll();
 		void addVal();

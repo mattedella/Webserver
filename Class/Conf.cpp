@@ -15,10 +15,13 @@ void conf::check()
 		throw exc ("Error: http not found!\n");
 	if (_servers.size() == 0)
 		throw exc ("Error: server not found!\n");
+	for (std::vector<http>::iterator it =_http.begin(); it != _http.end(); ++it)
+		it->checkVal();
 	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
 	{
 		if (it->second.getLocationSize() == 0)
 			throw exc("Error: location not found!\n");
+		it->second.checkValue();
 	}
 }
 
