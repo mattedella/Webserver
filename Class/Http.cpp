@@ -23,9 +23,7 @@ void http::checkVal()
 {
 	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++)
 	{
-		if (it->first == 400 || it->first == 500)
-			;
-		else
+		if (it->first != 400 && it->first != 500)
 		 	throw exc("invalid error\n");
 		int num = std::atoi(it->second.substr(1, 2).c_str());
 		if (it->first / 10 != num)
@@ -60,7 +58,7 @@ void http::addVal() {
 			if (it->second[it->second.length() - 1] != 'M' || bodySize <= 0)
 				throw exc("Error: body size value not valid\n");
 			_bodysize.push_back(bodySize);
-			
+
 		}
 		if (it->first.find("client_body_timeout") != NOT_FOUND) {
 			int timeout = std::atoi(it->second.c_str());

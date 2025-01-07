@@ -198,13 +198,27 @@ void server::checkValue()
 			str = it->substr(0, it->find(':'));
 			std::string str2 = it->substr(it->find(':') + 1);
 			for (size_t i = 0; i < str2.length(); i++)
-			{
 				if (!std::isdigit(str2[i]))
-					throw exc("invalid port\n");
-			}
+					throw exc("Error: invalid port: " + *it + '\n');
 			num = std::atoi(str2.c_str());
 			if (num > 65535 || num < 1)
-				throw exc("Invalid port\n");
+				throw exc("Error: invalid port: " + *it + '\n');
+			if (str.find('.') != NOT_FOUND) {
+				for (int i = 0; str[i]; i++) {
+					std::string substr;
+					if (str.find('.') != NOT_FOUND)
+						substr = str.substr(0, str.find('.'));
+					else
+					 	substr = str;
+					for (int j = 0; substr[j]; j++)
+						if (!std::isdigit(substr[j]))
+							throw exc("Error: invalid port: " + *it + '\n');
+					int IPnum = std::atoi(substr.c_str());
+					if (IPnum > 255)
+						throw exc("Error: invalid port: " + *it + '\n');
+					str.erase(0, substr.length() + 1);
+				}
+			}
 		}
 		else
 		{
@@ -212,16 +226,12 @@ void server::checkValue()
 			for (size_t i = 0; i < str.length(); i++)
 			{
 				if (!std::isdigit(str[i]))
-					throw exc("invalid port\n");
+					throw exc("Error: invalid port: " + *it + '\n');
 			}
 			num = std::atoi(str.c_str());
 			if (num > 65535 || num < 1)
-				throw exc("Invalid port\n");
+				throw exc("Error: invalid port: " + *it + '\n');
 		}
-		// for (size_t i = 0; i < str.length(); i++)
-		// {
-		// 	int num = str[i]
-		// }
 	}
 	
 }
