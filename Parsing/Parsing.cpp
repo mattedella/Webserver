@@ -157,9 +157,10 @@ void ParsConfFile(std::vector<std::string> config_content) {
 		}
 	ConfigurationBlock.addKey();
 	ConfigurationBlock.check();
+	ConfigurationBlock.printHttp();
 	}
 	catch (std::exception& e) {
-		std::cerr << e.what();
+		std::cerr << "\033[31m" << e.what() << "\033[0m";
 		return ;
 	}
 	// ConfigurationBlock.printServer();

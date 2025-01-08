@@ -9,11 +9,12 @@ class exc: public std::exception
 	private:
 		std::string _err;
 	public:
-		exc(const std::string &err): _err(err) {};
+		exc(const std::string &err): _err(err) { };
 		~exc() throw() {};
 		const char* what() const throw()
 		{
-				return _err.c_str();
+			
+			return _err.c_str();
 		};
 };
 

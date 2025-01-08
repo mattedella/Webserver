@@ -29,6 +29,7 @@ class ABlock {
 		std::string								_root;
 		int 									_timeout;
 		int 									_bodysize;
+		std::vector<std::string>				_methods;
 	
 	public:
 		ABlock();

@@ -1,6 +1,5 @@
 
 #include "../includes/webserv.hpp"
-#include <filesystem>
 
 ABlock::ABlock() {
 	if (_special.empty()) {
@@ -17,14 +16,13 @@ ABlock::ABlock() {
 		_special.push_back("autoindex");
 		_special.push_back("location");
 		_special.push_back("client_max_request");
-		_special.push_back("fastcgi_index");
-		_special.push_back("fastcgi_param");
-		_special.push_back("fastcgi_pass");
+		_special.push_back("cgi_index");
+		_special.push_back("cgi_param");
+		_special.push_back("cgi_pass");
 		_special.push_back("try_files");
 		_special.push_back("upload_pass");
 		_special.push_back("upload_store");
 		_special.push_back("dav_methods");
-		_special.push_back("cgi_pass");
 	}
 };
 

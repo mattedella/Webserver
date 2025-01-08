@@ -10,7 +10,6 @@ class location : public ABlock {
 
 	private:
 		std::string					_index;
-		std::vector<std::string>	_methods;
 		int							_bodySize;
 		bool						_listing;
 

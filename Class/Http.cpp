@@ -1,12 +1,12 @@
 
 #include "../includes/webserv.hpp"
 #include <map>
+#include <memory>
 #include <vector>
 
 http::http() : ABlock() {
 	_bodysize = 30;
 	_timeout = 60;
-	_include.push_back("Root/");
 }
 
 void http::initVector() {
@@ -25,14 +25,15 @@ void http::initVector() {
 
 void http::checkVal()
 {
-	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++)
-	{
+	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++) {
 		if (it->first != 404 && it->first != 403 && it->first != 500)
-		 	throw exc("invalid error\n");
+		 	throw exc("invalid error: " + it->second + "\n");
 		if (it->second.find('.') == NOT_FOUND)
 			throw exc("Error: invalid error page: " + it->second + "\n");
-		
 	}
+	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++)
+		if (*it != "GET" &&	*it != "POST" && *it != "DELETE")
+			throw exc("Error: method \"" + *it + "\" not valid\n");
 }
 
 void http::printAll() {
@@ -46,6 +47,10 @@ void http::printAll() {
 	{
 		std::cout<< "num: " << it->first << " = " << it->second <<"\n";
 	}
+	std::cout << "methods: ";
+	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++)
+		std::cout << *it << " ";
+	std::cout << '\n';
 }
 
 void http::addVal() {
@@ -65,6 +70,17 @@ void http::addVal() {
 		}
 		if (it->first.find("include") != NOT_FOUND)
 			_include.push_back(it->second);
+		if (it->first.find("dav_methods") != NOT_FOUND) {
+			std::string methods = it->second;
+			while (!methods.empty()) {
+				int i = 0;
+				while (!std::isspace(methods[i]) || !methods[i])
+					i++;
+				std::string to_push = methods.substr(0, i);
+				_methods.push_back(to_push);
+				methods.erase(0, to_push.length() + 1);
+			}
+		}
 	}
 	_data.erase("client_max_body_size");
 	_data.erase("client_body_timeout");

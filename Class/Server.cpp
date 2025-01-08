@@ -2,6 +2,7 @@
 #include "../includes/webserv.hpp"
 #include <cctype>
 #include <cstddef>
+#include <iterator>
 #include <string>
 #include <utility>
 #include <vector>
@@ -38,6 +39,8 @@ void location::addVal() {
 				while (!std::isspace(methods[i]) || !methods[i])
 					i++;
 				std::string to_push = methods.substr(0, i);
+				if (to_push != "GET" && to_push != "POST" && to_push != "DELETE")
+					throw exc("Error: method \"" + to_push + "\" is not valid\n");
 				_methods.push_back(to_push);
 				methods.erase(0, to_push.length() + 1);
 			}
@@ -131,10 +134,22 @@ void server::initVector() {
 			std::string Tp = it->second.substr(it->second.find(' ') + 1);
 			_error.insert(std::make_pair(nbrKey, Tp));
 		}
+		else if (it->first == "dav_methods") {
+			std::string methods = it->second;
+			while (!methods.empty()) {
+				int i = 0;
+				while (!std::isspace(methods[i]) || !methods[i])
+					i++;
+				std::string to_push = methods.substr(0, i);
+				_methods.push_back(to_push);
+				methods.erase(0, to_push.length() + 1);
+			}
+		}
 	}
 	_data.erase("listen");
 	_data.erase("server_name");
 	_data.erase("autoindex");
+	_data.erase("dav_methods");
 }
 
 void server::printLocation() {
@@ -170,6 +185,11 @@ void server::printAll()
 	std::cout << "server name:\n";
 	for (size_t i = 0; i < _server_names.size(); i++)
 		std::cout << _server_names[i] << '\n';
+	std::cout << "methods: ";
+	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++) {
+		std::cout << *it << " ";
+	}
+	std::cout << '\n';
 	std::cout << "MAP\n";
 	printMap();
 	std::cout << "LOCATIONS\n";
@@ -272,5 +292,9 @@ void server::checkValue() {
 			if (num > 65535 || num < 1)
 				throw exc("Error: invalid port: " + *it + '\n');
 		}
+	}
+	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++) {
+		if (*it != "GET" &&	*it != "POST" && *it != "DELETE")
+			throw exc("Error: method \"" + *it + "\" not valid\n");
 	}
 }
