@@ -1,5 +1,9 @@
 
 #include "../includes/webserv.hpp"
+#include <iterator>
+#include <map>
+#include <string>
+#include <vector>
 
 ABlock::ABlock() {
 	if (_special.empty()) {
@@ -86,6 +90,35 @@ void ABlock::initMap(std::string& str) {
 
 size_t ABlock::getSize() const {
 	return _data.size();
+}
+
+std::string ABlock::getRoot() {
+	return _root;
+}
+
+std::string ABlock::getErrorPage(int error) {
+	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++)
+		if (it->first == error)
+			return it->second;
+	return NULL;
+	
+	
+}
+
+std::string ABlock::getMethods(std::string to_find) {
+	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++) {
+		if (*it == to_find)
+			return *it;
+	}
+	return NULL;
+}
+
+int ABlock::getBodysize() {
+	return _bodysize;
+}
+
+int ABlock::getTimeout() {
+	return _timeout;
 }
 
 ABlock::~ABlock() {}

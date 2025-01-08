@@ -38,6 +38,12 @@ class ABlock {
 		size_t getSize() const;
 		bool checkKey(std::string& Key);
 
+		std::string	getErrorPage(int error);
+		std::string	getRoot();
+		int			getTimeout();
+		int			getBodysize();
+		std::string	getMethods(std::string to_find);
+
 		bool someInfo(std::string &str);
 		void printMap();
 

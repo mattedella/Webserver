@@ -91,4 +91,11 @@ void http::addVal() {
 		throw exc("Error: include not found\n");
 }
 
+std::string http::getInclude(std::string to_find) {
+	for (std::vector<std::string>::iterator it = _include.begin(); it != _include.end(); it++)
+		if (*it == to_find)
+			return *it;
+	return NULL;
+}
+
 http::~http() {}

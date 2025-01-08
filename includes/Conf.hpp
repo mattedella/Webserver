@@ -20,6 +20,9 @@ class conf {
 		void printHttp();
 		void check();
 		// int reload(int port);
+
+		
+
 		conf();
 		~conf();
 };

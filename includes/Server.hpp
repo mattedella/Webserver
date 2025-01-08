@@ -10,22 +10,23 @@ class location : public ABlock {
 
 	private:
 		std::string					_index;
-		int							_bodySize;
 		bool						_listing;
 
 	public:
 		location();
-		void addVal();
-		void printVal();
+
+		void		addVal();
+		void		printVal();
+		bool		getListing();
+		std::string	getIndex();
+		
 		~location();
 };
 
 class server : public ABlock {
 
 	private:
-		int								_timeout;
 		std::string						_index;
-		int								_max_body_size;
 		bool							_listing;
 		std::vector<int>				_sockets;
 		std::vector<std::string>		_listens;
@@ -47,6 +48,7 @@ class server : public ABlock {
 		void	checkValue();
 
 		bool		getListing();
+		std::string	getIndex();
 		location	getLocation(std::string& to_find);
 		std::string getListen(std::string& to_find);
 		std::string getServerName(std::string& to_find);

@@ -33,8 +33,6 @@ void conf::addServer(int nbrServer, const server &srv)
 }
 
 void conf::addHttp(const http& http) {
-	// if (http.getSize() == 0)
-	// 	return ;
 	if (_http.size() != 0)
 		_http.pop_back();
 	_http.push_back(http);

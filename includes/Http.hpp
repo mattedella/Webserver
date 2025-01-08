@@ -23,6 +23,7 @@ class http : public ABlock {
 		void printAll();
 		void addVal();
 		void printErrorPage();
+		std::string getInclude(std::string to_find);
 
 		~http();
 };

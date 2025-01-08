@@ -2,16 +2,26 @@
 #include "../includes/webserv.hpp"
 #include <cctype>
 #include <cstddef>
+#include <exception>
 #include <iterator>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
 location::location() : ABlock() {
-	_bodySize = 30;
+	_bodysize = 30;
 	_index  = "";
 	_root = "";
 	_listing = false;
+}
+
+bool location::getListing() {
+	return _listing;
+}
+
+std::string location::getIndex() {
+	return _index;
 }
 
 void location::addVal() {
@@ -30,7 +40,7 @@ void location::addVal() {
 			int size = std::atoi(it->second.c_str());
 			if (it->second[it->second.length() - 1] != 'M' || size <= 0)
 				throw exc("Error: body size value not valid\n");
-			_bodySize = size;
+			_bodysize = size;
 		}
 		else if (it->first == "dav_methods") {
 			std::string methods = it->second;
@@ -71,7 +81,7 @@ void location::printVal() {
 		std::cout << *it << " ";
 	std::cout << '\n';
 	std::cout << "index: " << _index << '\n';
-	std::cout << "bodySize: " << _bodySize << '\n';
+	std::cout << "bodySize: " << _bodysize << '\n';
 }
 
 location::~location() {}
@@ -80,7 +90,7 @@ server::server() : ABlock(), _listing(false) {
 	_timeout = 60;
 	_index = "index.html";
 	_root = "/";
-	_max_body_size = 30;
+	_bodysize = 30;
 }
 
 size_t server::getLocationSize() const {
@@ -167,16 +177,13 @@ void server::printLocation() {
 	std::cout << "listing: " << _listing << '\n';
 }
 
-server::~server() {}
-
-
 void server::printAll()
 {
 	std::cout << "PRINT ALL\n";
 	std::cout << "Server\n";
 	std::cout << "time out "<<_timeout << '\n';
 	std::cout << "root "<<_root << '\n';
-	std::cout << "max body size "<<_max_body_size << '\n';
+	std::cout << "max body size "<<_bodysize << '\n';
 	std::cout << "listing "<<_listing << '\n';
 	std::cout << "index "<<_index << '\n';
 	std::cout << "listen:\n";
@@ -213,7 +220,7 @@ void server::addVal()
 		int size = std::atoi(it->second.c_str());
 		if (it->second[it->second.length() - 1] != 'M' || size <= 0)
 				throw exc("Error: body size value not valid\n");
-		_max_body_size = size;
+		_bodysize = size;
 		_data.erase(it);
 	}
 	it = _data.find("client_body_timeout");
@@ -298,3 +305,35 @@ void server::checkValue() {
 			throw exc("Error: method \"" + *it + "\" not valid\n");
 	}
 }
+
+bool server::getListing() {
+	return _listing;
+}
+
+std::string server::getIndex() {
+	return _index;
+}
+
+location server::getLocation(std::string& to_find) {
+	location null;
+	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++)
+		if (it->first == to_find)
+			return it->second;
+	return null;
+}
+
+std::string server::getListen(std::string& to_find) {
+	for (std::vector<std::string>::iterator it = _listens.begin(); it != _listens.end(); it++)
+		if (*it == to_find)
+			return *it;
+	return NULL;
+}
+
+std::string server::getServerName(std::string& to_find) {
+	for (std::vector<std::string>::iterator it = _server_names.begin(); it != _server_names.end(); it++)
+		if (*it == to_find)
+			return *it;
+	return NULL;
+}
+
+server::~server() {}
