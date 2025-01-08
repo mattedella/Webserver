@@ -337,3 +337,13 @@ std::string server::getServerName(std::string& to_find) {
 }
 
 server::~server() {}
+
+server::bool init(int port) {
+        int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+        if (server_fd < 0) return false;
+
+        int opt = 1;
+        if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+            close(server_fd);
+            return false;
+        }

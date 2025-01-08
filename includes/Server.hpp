@@ -35,7 +35,7 @@ class server : public ABlock {
 
 	public:
 		server();
-
+		bool init(int port) ;
 		int		stop();
 		void	printAll();
 		int		start();
