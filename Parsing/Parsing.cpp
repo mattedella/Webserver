@@ -45,6 +45,8 @@ void ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::
 			it--;
 			break ;
 		}
+		if (line.find('#', 0) != NOT_FOUND)
+			continue;
 		if (line.find("http") != NOT_FOUND)
 			throw exc("Error: invalid token inside http\n");
 		HttpBlock.initMap(line);
@@ -61,8 +63,10 @@ void ParsServer(std::vector<std::string>::iterator& it, std::vector<std::string>
 			it--;
 			break ;
 		}
+		if (line.find('#', 0) != NOT_FOUND)
+			continue;
 		if (line.find("server") != NOT_FOUND && line.find("server_name") == NOT_FOUND)
-			throw exc("Error: invalid token inside server\n");
+			throw exc("Error: invalid token inside server " + *it + '\n');
 		ServerBlock.initMap(line);
 	}
 	ServerBlock.initVector();
@@ -86,6 +90,8 @@ void ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::strin
 			it--;
 			break ;
 		}
+		if (line.find('#', 0) != NOT_FOUND)
+			continue;
 		if (line.find("server") != NOT_FOUND || line.find("location") != NOT_FOUND
 			|| line.find("http") != NOT_FOUND)
 			throw exc("Error: invalid token inside location\n");
@@ -156,6 +162,6 @@ void ParsConfFile(std::vector<std::string> config_content) {
 		std::cerr << e.what();
 		return ;
 	}
-	ConfigurationBlock.printServer();
-	ConfigurationBlock.printHttp();
+	// ConfigurationBlock.printServer();
+	// ConfigurationBlock.printHttp();
 }

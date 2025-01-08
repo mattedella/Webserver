@@ -3,7 +3,11 @@
 #include <map>
 #include <vector>
 
-http::http() : ABlock() {}
+http::http() : ABlock() {
+	_bodysize = 30;
+	_timeout = 60;
+	_include.push_back("Root/");
+}
 
 void http::initVector() {
 	for (std::multimap<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); ++it) {
@@ -23,25 +27,18 @@ void http::checkVal()
 {
 	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++)
 	{
-		if (it->first != 400 && it->first != 500)
+		if (it->first != 404 && it->first != 403 && it->first != 500)
 		 	throw exc("invalid error\n");
-		int num = std::atoi(it->second.substr(1, 2).c_str());
-		if (it->first / 10 != num)
-			throw exc("invalid error page\n");
-		//forse bisogna controllare il .html
+		if (it->second.find('.') == NOT_FOUND)
+			throw exc("Error: invalid error page: " + it->second + "\n");
 		
 	}
 }
 
 void http::printAll() {
 	
-	for (std::vector<int>::iterator it = _bodysize.begin(); it != _bodysize.end(); it++){
-		std::cout << "body size: " << *it << '\n'; 
-	}
-	for (std::vector<int>::iterator it = _timeout.begin(); it != _timeout.end(); it++)
-	{
-		std::cout << "time out "<< *it << '\n';
-	}
+	std::cout << "body size: " << _bodysize << '\n'; 
+		std::cout << "time out "<< _timeout << '\n';
 	for(std::vector<std::string>::iterator it = _include.begin(); it != _include.end(); it++)
 		std::cout << "include: " << *it << '\n';
 	std::cout<<"Errors :\n";
@@ -57,14 +54,14 @@ void http::addVal() {
 			int bodySize = std::atoi(it->second.c_str());
 			if (it->second[it->second.length() - 1] != 'M' || bodySize <= 0)
 				throw exc("Error: body size value not valid\n");
-			_bodysize.push_back(bodySize);
+			_bodysize = bodySize;
 
 		}
 		if (it->first.find("client_body_timeout") != NOT_FOUND) {
 			int timeout = std::atoi(it->second.c_str());
 			if (it->second[it->second.length() - 1] != 's' || timeout <= 0)
 				throw exc("Error: body timeout value not valid\n");
-			_timeout.push_back(timeout);
+			_timeout = timeout;
 		}
 		if (it->first.find("include") != NOT_FOUND)
 			_include.push_back(it->second);
@@ -72,7 +69,7 @@ void http::addVal() {
 	_data.erase("client_max_body_size");
 	_data.erase("client_body_timeout");
 	_data.erase("include");
-	if (_bodysize.size() <= 0)
+	if (_bodysize <= 0)
 		throw exc("Error: body size not found\n");
 	if (_include.size() <= 0)
 		throw exc("Error: include not found\n");

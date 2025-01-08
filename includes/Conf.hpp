@@ -9,7 +9,7 @@
 class conf {
 
 	private:
-		std::vector<http>				_http;
+		std::vector<http>		_http;
 		std::map<int,server>	_servers;
 
 	public:

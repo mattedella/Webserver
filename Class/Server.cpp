@@ -7,28 +7,54 @@
 #include <vector>
 
 location::location() : ABlock() {
-	_methods = "";
 	_bodySize = 30;
 	_index  = "";
 	_root = "";
+	_listing = false;
 }
 
 void location::addVal() {
 	for (std::map<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); it++) {
-		if (it->first == "root")
+		if (it->first == "root") {
+			if (it->second.find('/') == NOT_FOUND)
+				throw exc("Error: root " + it->second + " not valid\n");
 			_root = it->second;
-		else if (it->first == "index")
+		}
+		else if (it->first == "index") {
+			if (it->second.find('.') == NOT_FOUND)
+				throw exc("Error: index " + it->second + " not valid\n");
 			_index = it->second;
+		}
 		else if (it->first == "client_max_body_size") {
 			int size = std::atoi(it->second.c_str());
 			if (it->second[it->second.length() - 1] != 'M' || size <= 0)
 				throw exc("Error: body size value not valid\n");
 			_bodySize = size;
 		}
-		else if (it->first == "dav_methods")
-			_methods = it->second;
+		else if (it->first == "dav_methods") {
+			std::string methods = it->second;
+			while (!methods.empty()) {
+				int i = 0;
+				while (!std::isspace(methods[i]) || !methods[i])
+					i++;
+				std::string to_push = methods.substr(0, i);
+				_methods.push_back(to_push);
+				methods.erase(0, to_push.length() + 1);
+			}
+		}
+		else if (it->first == "error_page") {
+			std::string Key = it->second.substr(0, it->second.find(' '));
+			int nbrKey = std::atoi(Key.c_str());
+			std::string Tp = it->second.substr(it->second.find(' ') + 1);
+			_error.insert(std::make_pair(nbrKey, Tp));
+		}
+		else if (it->first == "auotindex") {
+			if (it->second == "on")
+				_listing = true;
+		}
 	}
 	_data.erase("root");
+	_data.erase("error_page");
 	_data.erase("index");
 	_data.erase("client_maxz_body_size");
 	_data.erase("dav_methods");
@@ -37,7 +63,10 @@ void location::addVal() {
 void location::printVal() {
 	std::cout << "-----LOCATION------\n";
 	std::cout << "root: " << _root << '\n';
-	std::cout << "methods: " << _methods << '\n';
+	std::cout << "methods: ";
+	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++)
+		std::cout << *it << " ";
+	std::cout << '\n';
 	std::cout << "index: " << _index << '\n';
 	std::cout << "bodySize: " << _bodySize << '\n';
 }
@@ -80,13 +109,27 @@ void server::initVector() {
 				if (it->second == *vec)
 					throw exc ("Error: server name already exist: " + it->second + '\n');
 			}
-			_server_names.push_back(it->second);
+			std::string methods = it->second;
+			while (!methods.empty()) {
+				int i = 0;
+				while (!std::isspace(methods[i]) || !methods[i])
+					i++;
+				std::string to_push = methods.substr(0, i);
+				_server_names.push_back(to_push);
+				methods.erase(0, to_push.length() + 1);
+			}
 		}
 		else if (it->first == "autoindex") {
 			if (it->second == "on")
 				_listing = true;
 			else if (it->second != "off")
 				throw exc("Invalid listing\n");
+		}
+		else if (it->second == "error_page") {
+			std::string Key = it->second.substr(0, it->second.find(' '));
+			int nbrKey = std::atoi(Key.c_str());
+			std::string Tp = it->second.substr(it->second.find(' ') + 1);
+			_error.insert(std::make_pair(nbrKey, Tp));
 		}
 	}
 	_data.erase("listen");
@@ -186,13 +229,10 @@ void server::addVal()
 	printAll();
 }
 
-void server::checkValue()
-{
-	for (std::vector<std::string>::iterator it = _listens.begin(); it != _listens.end(); it++)
-	{
-		std::string str;
-		int num;
-
+void server::checkValue() {
+	std::string str;
+	int num;
+	for (std::vector<std::string>::iterator it = _listens.begin(); it != _listens.end(); it++) {
 		if (it->find(':') != NOT_FOUND)
 		{
 			str = it->substr(0, it->find(':'));
@@ -233,5 +273,4 @@ void server::checkValue()
 				throw exc("Error: invalid port: " + *it + '\n');
 		}
 	}
-	
 }

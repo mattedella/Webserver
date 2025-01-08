@@ -25,15 +25,21 @@ class ABlock {
 	protected:
 		std::multimap<std::string, std::string> _data;
 		std::vector<std::string>				_special;
+		std::map<int,std::string>				_error;
+		std::string								_root;
+		int 									_timeout;
+		int 									_bodysize;
 	
 	public:
 		ABlock();
+
 		void initMap(std::string& str);
 		size_t getSize() const;
 		bool checkKey(std::string& Key);
 
 		bool someInfo(std::string &str);
 		void printMap();
+
 		virtual ~ABlock();
 };
 

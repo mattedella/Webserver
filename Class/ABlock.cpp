@@ -24,6 +24,7 @@ ABlock::ABlock() {
 		_special.push_back("upload_pass");
 		_special.push_back("upload_store");
 		_special.push_back("dav_methods");
+		_special.push_back("cgi_pass");
 	}
 };
 
