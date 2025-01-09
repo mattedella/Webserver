@@ -21,8 +21,9 @@ class conf {
 		void check();
 		// int reload(int port);
 
-		
 
+		std::map<int, server> getMapServer();
+		server getServer(std::string port);
 		conf();
 		~conf();
 };

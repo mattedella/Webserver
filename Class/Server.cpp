@@ -270,6 +270,7 @@ void server::checkValue() {
 			num = std::atoi(str2.c_str());
 			if (num > 65535 || num < 1)
 				throw exc("Error: invalid port: " + *it + '\n');
+			_ports.push_back(num);
 			if (str.find('.') != NOT_FOUND) {
 				for (int i = 0; str[i]; i++) {
 					std::string substr;
@@ -298,6 +299,7 @@ void server::checkValue() {
 			num = std::atoi(str.c_str());
 			if (num > 65535 || num < 1)
 				throw exc("Error: invalid port: " + *it + '\n');
+			_ports.push_back(num);
 		}
 	}
 	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++) {
@@ -334,6 +336,14 @@ std::string server::getServerName(std::string& to_find) {
 		if (*it == to_find)
 			return *it;
 	return NULL;
+}
+
+void server::startListens()
+{
+	for (std::vector<int>::iterator it = _ports.begin(); it != _ports.end(); it++)
+	{
+		init(*it);
+	}
 }
 
 server::~server() {}

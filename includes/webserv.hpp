@@ -23,7 +23,7 @@ class cgi
 		~cgi();
 };
 
-void ParsConfFile(std::vector<std::string> config_content);
+conf *ParsConfFile(std::vector<std::string> config_content);
 void ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
 void ParsServer(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
 void ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);

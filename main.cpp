@@ -1,4 +1,6 @@
+#include "includes/Server.hpp"
 #include "includes/webserv.hpp"
+#include <map>
 
 int main (int argc, char **argv) {
 
@@ -14,10 +16,23 @@ int main (int argc, char **argv) {
 	}
 	std::string newline;
 	std::vector<std::string> conf_line;
+	conf *c = new conf();
 	while (std::getline(config_file, newline)) {
 		while (std::isspace(newline[0]))
 			newline.erase(0, 1);
 		conf_line.push_back(newline);
 	}
-	ParsConfFile(conf_line);
+	try {
+		c = ParsConfFile(conf_line);
+		std::map<int, server> startListen = c->getMapServer();
+		for (std::map<int, server>::iterator it = startListen.begin(); it != startListen.end(); it++)
+		{
+			std::cout<< it->first << ": starting\n";
+			it->second.startListens();			
+			it->second.run();
+		}
+	} catch (std::exception& e) {
+		std::cerr << "\033[31m" << e.what() << "\033[0m";
+	}
+	delete c;
 }

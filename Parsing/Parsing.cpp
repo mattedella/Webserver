@@ -41,8 +41,10 @@ void ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::
 	it++;
 	for (; it != end; ++it) {
 		std::string line = *it;
+		std::cout << line << "|\n";
 		if (line.find("server") != NOT_FOUND || line.find('}') != NOT_FOUND) {
 			it--;
+			std::cout<<*it<<"\n";
 			break ;
 		}
 		if (line.find('#', 0) != NOT_FOUND)
@@ -103,67 +105,67 @@ void ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::strin
 
 
 
-void ParsConfFile(std::vector<std::string> config_content) {
+conf *ParsConfFile(std::vector<std::string> config_content) {
 	int 		brk = 0, nbrServer = 0;
 	server		ServerBlock;
 	http		HttpBlock;
 	location	LocationBlock;
-	conf		ConfigurationBlock;
-	try {
-		for (std::vector<std::string>::iterator it = config_content.begin(); it != config_content.end(); it++) {
-			std::string line = *it, subline;
-			if (checkLine(line, brk) == true)
-				continue ;
-			if (line.find('{') != NOT_FOUND)
-				subline = line.substr(0, line.find('{'));
-			else if (line.find(';') != NOT_FOUND)
-				subline = line.substr(0, line.find(';'));
-			else if (line.find('}') != NOT_FOUND)
-				subline = line.substr(0, line.find(' ') + 1);
-			if (subline.empty() || subline[0] == '#')
-				continue ;
-			int i = subline.length() - 1;
-			while ( i >= 0 && std::isspace(subline[i])) {
-				subline.erase(i, 1);
+	conf		*ConfigurationBlock = new conf();
+	for (std::vector<std::string>::iterator it = config_content.begin(); it != config_content.end(); it++) {
+		std::string line = *it, subline;
+		std::cout<< line <<"\n";
+		if (checkLine(line, brk) == true)
+			continue ;
+		if (line.find('{') != NOT_FOUND)
+			subline = line.substr(0, line.find('{'));
+		else if (line.find(';') != NOT_FOUND)
+			subline = line.substr(0, line.find(';'));
+		else if (line.find('}') != NOT_FOUND)
+			subline = line.substr(0, line.find(' ') + 1);
+		if (subline.empty() || subline[0] == '#')
+			continue ;
+		int i = subline.length() - 1;
+		while ( i >= 0 && std::isspace(subline[i])) {
+			subline.erase(i, 1);
+			i--;
+		}
+		if (subline == "http") {
+			ParsHttp(it, config_content.end(), HttpBlock);
+			ConfigurationBlock->addHttp(HttpBlock);
+		}
+		else if (subline == "server") {
+			ParsServer(it, config_content.end(), ServerBlock);
+			nbrServer++;
+			ConfigurationBlock->addServer(nbrServer, ServerBlock);
+		}
+		else if (subline.find("location") != NOT_FOUND) {
+			std::string comp;
+			if (subline.find(' ') != NOT_FOUND)
+				comp = subline.substr(0, subline.find(' '));
+			else if (subline.find('\t') != NOT_FOUND)
+				comp = subline.substr(0, subline.find('\t'));
+			int i = comp.length() - 1;
+			while (std::isspace(comp[i])) {
+				comp.erase(i, 1);
 				i--;
 			}
-			if (subline == "http") {
-				ParsHttp(it, config_content.end(), HttpBlock);
-				ConfigurationBlock.addHttp(HttpBlock);
+			if (comp == "location") {
+				ParsLocation(it, config_content.end(), ServerBlock, LocationBlock);
+				ConfigurationBlock->addServer(nbrServer, ServerBlock);
 			}
-			else if (subline == "server") {
-				ParsServer(it, config_content.end(), ServerBlock);
-				nbrServer++;
-				ConfigurationBlock.addServer(nbrServer, ServerBlock);
-			}
-			else if (subline.find("location") != NOT_FOUND) {
-				std::string comp;
-				if (subline.find(' ') != NOT_FOUND)
-					comp = subline.substr(0, subline.find(' '));
-				else if (subline.find('\t') != NOT_FOUND)
-					comp = subline.substr(0, subline.find('\t'));
-				int i = comp.length() - 1;
-				while (std::isspace(comp[i])) {
-					comp.erase(i, 1);
-					i--;
-				}
-				if (comp == "location") {
-					ParsLocation(it, config_content.end(), ServerBlock, LocationBlock);
-					ConfigurationBlock.addServer(nbrServer, ServerBlock);
-				}
-				else
-					throw exc("Error: invalid token: " + line + '\n');
-			}
+			else
+				throw exc("Error: invalid token: " + line + '\n');
 		}
-	ConfigurationBlock.addKey();
-	ConfigurationBlock.check();
-	ConfigurationBlock.printHttp();
+	ConfigurationBlock->addKey();
+	ConfigurationBlock->check();
+	ConfigurationBlock->printHttp();
+	// ConfigurationBlock.getServer("127.0.0.1:9191").init();
+	// ConfigurationBlock.getServer("127.0.0.1:9191").run();
+	
 	}
-	catch (std::exception& e) {
-		std::cerr << "\033[31m" << e.what() << "\033[0m";
-		return ;
-	}
+	
 	// ConfigurationBlock.printServer();
 	// ConfigurationBlock.printHttp();
+	return ConfigurationBlock;
 	
 }

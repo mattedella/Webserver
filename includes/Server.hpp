@@ -49,6 +49,7 @@ class server : public ABlock {
 		std::string						_index;
 		bool							_listing;
 		std::vector<std::string>		_listens;
+		std::vector<int>				_ports;
 		std::vector<std::string>		_server_names;
 		std::map<std::string, location>	_locations;
 
@@ -65,7 +66,7 @@ class server : public ABlock {
 		void	checkValue();
 		
 		
-		bool	init() ;
+		bool	init(int port);
 		void	run();
 		void	handle_new_connection(int server_fd);
 		void	handle_client_data(int index);
@@ -75,6 +76,7 @@ class server : public ABlock {
 
 		bool		getListing();
 		std::string	getIndex();
+		void		startListens();
 		location	getLocation(std::string& to_find);
 		std::string getListen(std::string& to_find);
 		std::string getServerName(std::string& to_find);

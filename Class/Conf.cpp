@@ -70,4 +70,19 @@ void conf::addKey()
 }
 
 
+server conf::getServer(std::string port)
+{
+	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+	{
+		if (it->second.getListen(port) == port)
+			return it->second;
+	}
+	throw exc("ci pensiamo dopo\n");
+}
+
+std::map<int, server> conf::getMapServer()
+{
+	return _servers;
+}
+
 conf::~conf() {}
