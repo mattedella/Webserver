@@ -253,17 +253,18 @@ void server::checkValue() {
 	std::string str;
 	int num;
 	for (std::vector<std::string>::iterator it = _listens.begin(); it != _listens.end(); it++) {
+		int i = 0;
 		if (it->find(':') != NOT_FOUND) {
 			str = it->substr(0, it->find(':'));
 			std::string str2 = it->substr(it->find(':') + 1);
-			for (size_t i = 0; i < str2.length(); i++)
-				if (!std::isdigit(str2[i]))
+			for (size_t j = 0; j < str2.length(); j++)
+				if (!std::isdigit(str2[j]))
 					throw exc("Error: invalid port: \"" + *it + "\"\n");
 			num = std::atoi(str2.c_str());
 			if (num < 1 || num > 65535)
 				throw exc("Error: invalid port: \"" + *it + "\"\n");
 			if (str.find('.') != NOT_FOUND) {
-				for (int i = 0; str[i]; i++) {
+				for (; !str.empty(); i++) {
 					std::string substr;
 					if (str.find('.') != NOT_FOUND)
 						substr = str.substr(0, str.find('.'));
@@ -277,6 +278,9 @@ void server::checkValue() {
 						throw exc("Error: invalid port: \"" + *it + "\"\n");
 					str.erase(0, substr.length() + 1);
 				}
+				std::cout << i << '\n';
+				if (i != 4)
+					throw exc("Error: invalid port: \"" + *it + "\"\n");
 			}
 		}
 		else {
