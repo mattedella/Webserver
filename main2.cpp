@@ -1,4 +1,4 @@
-#include "HTTPServer.hpp"
+#include "includes/HttpServer.hpp"
 
 void HTTPServer::setup_routes() {
     Route home;
@@ -50,18 +50,7 @@ std::string HTTPServer::create_response(int status_code, const std::string& cont
     return response.str();
 }
 
-void HTTPServer::handle_new_connection(int server_fd) {
-    struct sockaddr_in client_addr;
-    socklen_t client_len = sizeof(client_addr);
-    int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
-    if (client_fd < 0) return;
-    set_nonblocking(client_fd);
-    struct pollfd pfd;
-    pfd.fd = client_fd;
-    pfd.events = POLLIN;
-    poll_fds.push_back(pfd);
-    client_buffers[client_fd] = "";
-}
+
 
 std::string HTTPServer::extract_path(const std::string& request) {
     std::istringstream iss(request);
@@ -194,6 +183,19 @@ bool HTTPServer::init(int port) {
     return true;
 }
 
+void HTTPServer::handle_new_connection(int server_fd) {
+    struct sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
+    int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
+    if (client_fd < 0) return;
+    set_nonblocking(client_fd);
+    struct pollfd pfd;
+    pfd.fd = client_fd;
+    pfd.events = POLLIN;
+    poll_fds.push_back(pfd);
+    client_buffers[client_fd] = "";
+}
+
 void HTTPServer::run() {
     std::cout << "Server running on port " << server_sockets[0].port << std::endl;
     std::cout << "Available routes:" << std::endl;
@@ -219,4 +221,11 @@ void HTTPServer::run() {
             }
         }
     }
+}
+
+int main()
+{
+    HTTPServer hs;
+    hs.init(8080);
+    hs.run();
 }
