@@ -87,8 +87,6 @@ void http::addVal() {
 	_data.erase("include");
 	if (_bodysize <= 0)
 		throw exc("Error: body size not found\n");
-	if (_include.size() <= 0)
-		throw exc("Error: include not found\n");
 }
 
 std::string http::getInclude(std::string to_find) {

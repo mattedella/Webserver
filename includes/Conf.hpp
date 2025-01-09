@@ -19,6 +19,7 @@ class conf {
 		void printServer();
 		void printHttp();
 		void check();
+		server	getServer(int nbrServer);
 		// int reload(int port);
 
 		

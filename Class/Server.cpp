@@ -10,9 +10,6 @@
 #include <vector>
 
 location::location() : ABlock() {
-	_bodysize = 30;
-	_index  = "";
-	_root = "";
 	_listing = false;
 }
 
@@ -87,10 +84,6 @@ void location::printVal() {
 location::~location() {}
 
 server::server() : ABlock(), _listing(false) {
-	_timeout = 60;
-	_index = "index.html";
-	_root = "/";
-	_bodysize = 30;
 }
 
 size_t server::getLocationSize() const {
@@ -253,23 +246,22 @@ void server::addVal()
 		_index = it->second;
 		_data.erase(it);
 	}
-	printAll();
+	// printAll();
 }
 
 void server::checkValue() {
 	std::string str;
 	int num;
 	for (std::vector<std::string>::iterator it = _listens.begin(); it != _listens.end(); it++) {
-		if (it->find(':') != NOT_FOUND)
-		{
+		if (it->find(':') != NOT_FOUND) {
 			str = it->substr(0, it->find(':'));
 			std::string str2 = it->substr(it->find(':') + 1);
 			for (size_t i = 0; i < str2.length(); i++)
 				if (!std::isdigit(str2[i]))
-					throw exc("Error: invalid port: " + *it + '\n');
+					throw exc("Error: invalid port: \"" + *it + "\"\n");
 			num = std::atoi(str2.c_str());
-			if (num > 65535 || num < 1)
-				throw exc("Error: invalid port: " + *it + '\n');
+			if (num < 1 || num > 65535)
+				throw exc("Error: invalid port: \"" + *it + "\"\n");
 			if (str.find('.') != NOT_FOUND) {
 				for (int i = 0; str[i]; i++) {
 					std::string substr;
@@ -279,25 +271,24 @@ void server::checkValue() {
 					 	substr = str;
 					for (int j = 0; substr[j]; j++)
 						if (!std::isdigit(substr[j]))
-							throw exc("Error: invalid port: " + *it + '\n');
+							throw exc("Error: invalid port: \"" + *it + "\"\n");
 					int IPnum = std::atoi(substr.c_str());
 					if (IPnum > 255)
-						throw exc("Error: invalid port: " + *it + '\n');
+						throw exc("Error: invalid port: \"" + *it + "\"\n");
 					str.erase(0, substr.length() + 1);
 				}
 			}
 		}
-		else
-		{
+		else {
 			str = *it;
 			for (size_t i = 0; i < str.length(); i++)
 			{
 				if (!std::isdigit(str[i]))
-					throw exc("Error: invalid port: " + *it + '\n');
+					throw exc("Error: invalid port: \"" + *it + "\"\n");
 			}
 			num = std::atoi(str.c_str());
 			if (num > 65535 || num < 1)
-				throw exc("Error: invalid port: " + *it + '\n');
+				throw exc("Error: invalid port: \"" + *it + "\"\n");
 		}
 	}
 	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++) {

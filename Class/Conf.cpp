@@ -69,5 +69,12 @@ void conf::addKey()
 		it->addVal();
 }
 
+server conf::getServer(int nbrServer) {
+	server vd;
+	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+		if (it->first == nbrServer)
+			return it->second;
+	return vd;
+}
 
 conf::~conf() {}

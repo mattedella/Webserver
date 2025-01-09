@@ -5,24 +5,21 @@
 bool checkLine(const std::string &new_line, int &brk)
 {
 	int i = 0;
-	if (new_line.size() != 0)
-	{
+	if (new_line.size() != 0) {
 		if (!new_line[0] || new_line[0] == '#')
 			return true;
-		while(new_line[i] && new_line[i] != ';' && new_line[i] != '{' && new_line[i] != '}')
-		{
+		while(new_line[i] && new_line[i] != ';' && new_line[i] != '{' && new_line[i] != '}') {
 			if (new_line[i] == '#')
 				throw exc("Error: " + new_line + "\n");
 			i++;
 		}
-			if (new_line[i] =='{')
-				brk++;
-			else if (new_line[i] =='}')
-			{
-				brk--;
-				if (brk < 0)
-					throw exc("Error: " + new_line + "\n");
-			}
+		if (new_line[i] =='{')
+			brk++;
+		else if (new_line[i] =='}') {
+			brk--;
+			if (brk < 0)
+				throw exc("Error: " + new_line + "\n");
+		}
 		if (!new_line[i])
 			throw exc("Error: " + new_line + "\n");
 		else
@@ -32,7 +29,7 @@ bool checkLine(const std::string &new_line, int &brk)
 		if (new_line[i] == '#')
 			return false;
 		if (new_line[i] && new_line[i] != '#')
-			throw exc("Error: " + new_line + "\n");			
+			throw exc("Error: " + new_line + "\n");		
 	}
 	return false;
 }
@@ -40,6 +37,8 @@ bool checkLine(const std::string &new_line, int &brk)
 void ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator end, http& HttpBlock) {
 	it++;
 	for (; it != end; ++it) {
+		if (it->empty() == false && it->find('#') == NOT_FOUND && it->find('}') == NOT_FOUND && it->find('{') == NOT_FOUND && it->find(';') == NOT_FOUND)
+			throw exc("Error: \"" + *it + "\" not valid\n");
 		std::string line = *it;
 		if (line.find("server") != NOT_FOUND || line.find('}') != NOT_FOUND) {
 			it--;
@@ -58,6 +57,8 @@ void ParsServer(std::vector<std::string>::iterator& it, std::vector<std::string>
 	it++;
 	ServerBlock = server();
 	for (; it != end; ++it) {
+		if (it->empty() == false && it->find('#') == NOT_FOUND && it->find('}') == NOT_FOUND && it->find('{') == NOT_FOUND && it->find(';') == NOT_FOUND)
+			throw exc("Error: \"" + *it + "\" not valid\n");
 		std::string line = *it;
 		if (line.find("location") != NOT_FOUND || line.find('}') != NOT_FOUND) {
 			it--;
@@ -77,14 +78,14 @@ void ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::strin
 	LocationBlock = location();
 	if (it->find('/') != NOT_FOUND)
 		path = it->substr(it->find('/'), (it->find('{') - it->find('/')) - 1);
-	else if (it->find('\\') != NOT_FOUND)
-		path = it->substr(it->find('\\'), (it->find('{') - it->find('\\')) - 1);\
 	else
 	 	throw exc("Error: location not valid " + *it + "\n");
 	while (std::isspace(path[0]))
 		path.erase(0, 1);
 	it++;
 	for (; it != end; ++it) {
+		if (it->empty() == false && it->find('#') == NOT_FOUND && it->find('}') == NOT_FOUND && it->find('{') == NOT_FOUND && it->find(';') == NOT_FOUND)
+			throw exc("Error: \"" + *it + "\" not valid\n");
 		std::string line = *it;
 		if (line.find('}') != NOT_FOUND) {
 			it--;
@@ -120,6 +121,8 @@ void ParsConfFile(std::vector<std::string> config_content) {
 				subline = line.substr(0, line.find(';'));
 			else if (line.find('}') != NOT_FOUND)
 				subline = line.substr(0, line.find(' ') + 1);
+			else if (it->empty() == false && line.find('#') == NOT_FOUND && line.find('}') == NOT_FOUND && line.find('{') == NOT_FOUND && line.find(';') == NOT_FOUND)
+				throw exc("Error: \"" + *it + "\" not valid\n");
 			if (subline.empty() || subline[0] == '#')
 				continue ;
 			int i = subline.length() - 1;
@@ -157,7 +160,7 @@ void ParsConfFile(std::vector<std::string> config_content) {
 		}
 	ConfigurationBlock.addKey();
 	ConfigurationBlock.check();
-	ConfigurationBlock.printHttp();
+	// ConfigurationBlock.printHttp();
 	}
 	catch (std::exception& e) {
 		std::cerr << "\033[31m" << e.what() << "\033[0m";

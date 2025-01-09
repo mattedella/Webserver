@@ -7,8 +7,12 @@
 #include "Conf.hpp"
 #include "Ablock.hpp"
 #include "Exc.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 
 # define  NOT_FOUND std::string::npos
+
+extern int StatusCode;
 
 class cgi
 {
