@@ -1,5 +1,5 @@
 SRC = main.cpp \
-      Class/ABlock.cpp Class/Conf.cpp Class/Http.cpp Class/Server.cpp \
+      Class/ABlock.cpp Class/Conf.cpp Class/Http.cpp Class/Server.cpp Class/Request.cpp Class/Response.cpp \
       Parsing/Parsing.cpp
 CC = c++
 CFLAGS = -Wall -Wextra -Werror -g -std=c++98
@@ -18,7 +18,6 @@ $(NAME): $(SRC)
 
 clean:
 	@clear
-	@echo "$(RED)Nothing to clean, no .o files generated.$(WHITE)"
 
 fclean: clean
 	@$(RM) $(NAME)
