@@ -48,8 +48,10 @@ void location::addVal() {
 				std::string to_push = methods.substr(0, i);
 				if (to_push != "GET" && to_push != "POST" && to_push != "DELETE")
 					throw exc("Error: method \"" + to_push + "\" is not valid\n");
-				_methods.push_back(to_push);
 				methods.erase(0, to_push.length() + 1);
+				if (to_push == "GET")
+					continue ;
+				_methods.push_back(to_push);
 			}
 		}
 		else if (it->first == "error_page") {
@@ -144,8 +146,10 @@ void server::initVector() {
 				while (!std::isspace(methods[i]) || !methods[i])
 					i++;
 				std::string to_push = methods.substr(0, i);
-				_methods.push_back(to_push);
 				methods.erase(0, to_push.length() + 1);
+				if (to_push == "GET")
+					continue;
+				_methods.push_back(to_push);
 			}
 		}
 	}
@@ -246,7 +250,7 @@ void server::addVal()
 		_index = it->second;
 		_data.erase(it);
 	}
-	// printAll();
+	printAll();
 }
 
 void server::checkValue() {

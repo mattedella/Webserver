@@ -48,8 +48,9 @@ void http::printAll() {
 		std::cout<< "num: " << it->first << " = " << it->second <<"\n";
 	}
 	std::cout << "methods: ";
-	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++)
+	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++) {
 		std::cout << *it << " ";
+	}
 	std::cout << '\n';
 }
 
@@ -77,8 +78,10 @@ void http::addVal() {
 				while (!std::isspace(methods[i]) || !methods[i])
 					i++;
 				std::string to_push = methods.substr(0, i);
-				_methods.push_back(to_push);
 				methods.erase(0, to_push.length() + 1);
+				if (to_push == "GET")
+					continue; 
+				_methods.push_back(to_push);
 			}
 		}
 	}

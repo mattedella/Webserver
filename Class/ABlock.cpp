@@ -28,6 +28,7 @@ ABlock::ABlock() {
 		_special.push_back("upload_store");
 		_special.push_back("dav_methods");
 	}
+	_methods.push_back("GET");
 };
 
 void ABlock::printMap()
