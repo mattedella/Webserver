@@ -253,7 +253,7 @@ void server::addVal()
 		_index = it->second;
 		_data.erase(it);
 	}
-	printAll();
+	// printAll();
 }
 
 void server::checkValue() {

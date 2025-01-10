@@ -41,10 +41,8 @@ void ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::
 	it++;
 	for (; it != end; ++it) {
 		std::string line = *it;
-		std::cout << line << "|\n";
 		if (line.find("server") != NOT_FOUND || line.find('}') != NOT_FOUND) {
 			it--;
-			std::cout<<*it<<"\n";
 			break ;
 		}
 		if (line.find('#', 0) != NOT_FOUND)
@@ -113,7 +111,6 @@ conf *ParsConfFile(std::vector<std::string> config_content) {
 	conf		*ConfigurationBlock = new conf();
 	for (std::vector<std::string>::iterator it = config_content.begin(); it != config_content.end(); it++) {
 		std::string line = *it, subline;
-		std::cout<< line <<"\n";
 		if (checkLine(line, brk) == true)
 			continue ;
 		if (line.find('{') != NOT_FOUND)
@@ -156,16 +153,9 @@ conf *ParsConfFile(std::vector<std::string> config_content) {
 			else
 				throw exc("Error: invalid token: " + line + '\n');
 		}
+	}
 	ConfigurationBlock->addKey();
 	ConfigurationBlock->check();
-	ConfigurationBlock->printHttp();
-	// ConfigurationBlock.getServer("127.0.0.1:9191").init();
-	// ConfigurationBlock.getServer("127.0.0.1:9191").run();
-	
-	}
-	
-	// ConfigurationBlock.printServer();
-	// ConfigurationBlock.printHttp();
 	return ConfigurationBlock;
 	
 }

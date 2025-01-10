@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "../includes/webserv.hpp"
 
 // void server::handle_request(int client_fd, const std::string& request) {
 //     std::string method = extract_method(request);
@@ -100,39 +101,39 @@
 
 void server::run()
 {
-    std::cout << "Server running on port " << _server_sockets[0].port << std::endl;
+    for (size_t i = 0; i < _server_sockets.size(); i++)
+        std::cout << "Server running on port " << GREEN <<_server_sockets[i].port << RESET <<std::endl;
+    
     std::cout << "Available routes:" << std::endl;
 
     if (!_locations.empty())
 	{
-		std::cout<<"Tua mamma\n";
 		for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++)
 		{
-			std::cout<<it->second.getRoot() + it->first+"\n";
-			std::cout<<"Tu babbo\n";
+			std::cout<< YELLOW <<it->second.getRoot() + it->first+"\n" << RESET;
 		}
 	}
 
-	// while (true) {
-    //     int poll_count = poll(&_poll_fds[0], _poll_fds.size(), -1);
-    //     if (poll_count < 0) {
-    //         std::cerr << "Poll failed" << std::endl;
-    //         continue;
-    //     }
-    //     for (size_t i = 0; i < _poll_fds.size(); ++i) {
-    //         if (_poll_fds[i].revents == 0)
-    //             continue;
-    //         if (_poll_fds[i].fd == _server_sockets[0].fd) {
-    //             handle_new_connection(_server_sockets[0].fd);
-    //         } else {
-    //             if (_poll_fds[i].revents & POLLIN) {
-    //                 handle_client_data(i);
-    //             } else if (_poll_fds[i].revents & POLLOUT) {
-    //                 handle_client_response(i);
-    //             }
-    //         }
-    //     }
-    // }
+	while (true) {
+        int poll_count = poll(&_poll_fds[0], _poll_fds.size(), -1);
+        if (poll_count < 0) {
+            std::cerr << "Poll failed" << std::endl;
+            continue;
+        }
+        for (size_t i = 0; i < _poll_fds.size(); ++i) {
+            if (_poll_fds[i].revents == 0)
+                continue;
+            if (_poll_fds[i].fd == _server_sockets[0].fd) {
+                handle_new_connection(_server_sockets[0].fd);
+            } else {
+                if (_poll_fds[i].revents & POLLIN) {
+                    handle_client_data(i);
+                } else if (_poll_fds[i].revents & POLLOUT) {
+                    handle_client_response(i);
+                }
+            }
+        }
+    }
 }
 
 
@@ -154,7 +155,6 @@ bool	server::init(int port)
     struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-	// 127.0.0.1:8080
     address.sin_port = htons(port);
     if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         close(server_fd);
@@ -174,3 +174,42 @@ bool	server::init(int port)
     _poll_fds.push_back(pfd);
     return true;
 }
+
+// void server::run() {
+//     if (_server_sockets.empty()) {
+//         std::cerr << "no server found" << std::endl;
+//         return;
+//     }
+
+//     std::cout << "Server running on port: " << _server_sockets[0].port << std::endl;
+
+//     while (true) {
+//         int poll_count = poll(&_poll_fds[0], _poll_fds.size(), -1);
+        
+//         if (poll_count < 0) {
+//             if (errno == EINTR) continue;
+//             std::cerr << "Poll error: " << std::strerror(errno) << std::endl;
+//             break;
+//         }
+        
+//         for (size_t i = 0; i < _poll_fds.size(); ++i) {
+//             if (_poll_fds[i].revents == 0)
+//                 continue;
+//             try {
+//                 if (_poll_fds[i].fd == _server_sockets[0].fd) {
+//                     if (_poll_fds[i].revents & POLLIN) {
+//                         handle_new_connection(_server_sockets[0].fd);
+//                     }
+//                 } else {
+//                     if (_poll_fds[i].revents & POLLIN) {
+//                         handle_client_data(i);
+//                     } else if (_poll_fds[i].revents & POLLOUT) {
+//                         handle_client_response(i);
+//                     }
+//                 }
+//             } catch (const std::exception& e) {
+//                 close_connection(i);
+//             }
+//         }
+//     }
+// }

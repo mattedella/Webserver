@@ -27,12 +27,12 @@ int main (int argc, char **argv) {
 		std::map<int, server> startListen = c->getMapServer();
 		for (std::map<int, server>::iterator it = startListen.begin(); it != startListen.end(); it++)
 		{
-			std::cout<< it->first << ": starting\n";
+			std::cout<< BLUE << "Server " <<it->first << ": starting\n" << RESET;
 			it->second.startListens();			
 			it->second.run();
 		}
 	} catch (std::exception& e) {
-		std::cerr << "\033[31m" << e.what() << "\033[0m";
+		std::cerr << RED << e.what() << RESET;
 	}
 	delete c;
 }
