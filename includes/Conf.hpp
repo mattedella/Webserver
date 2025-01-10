@@ -24,6 +24,7 @@ class conf {
 
 		std::map<int, server> getMapServer();
 		server getServer(std::string port);
+		void	run();
 		conf();
 		~conf();
 };

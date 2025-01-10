@@ -7,6 +7,8 @@
 #include "Conf.hpp"
 #include "Ablock.hpp"
 #include "Exc.hpp"
+#include <cerrno>
+#include <string>
 
 # define	NOT_FOUND std::string::npos
 # define	BLUE "\033[34m"

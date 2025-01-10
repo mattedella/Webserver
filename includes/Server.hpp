@@ -64,13 +64,15 @@ class server : public ABlock {
 		void	addLocation(const std::string& Key, location loc);
 		void	addVal();
 		void	checkValue();
+		void	starting();
 		
 		
 		bool	init(int port);
-		void	run();
+		void	s_run();
 		void	handle_new_connection(int server_fd);
 		void	handle_client_data(int index);
 		void	handle_client_response(int index);
+		void	handle_request(int client_fd, const std::string& request);
 		void	close_connection(int index);
 		void	set_nonblocking(int fd);
 

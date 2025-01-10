@@ -29,8 +29,9 @@ int main (int argc, char **argv) {
 		{
 			std::cout<< BLUE << "Server " <<it->first << ": starting\n" << RESET;
 			it->second.startListens();			
-			it->second.run();
+			it->second.starting();
 		}
+		c->run();
 	} catch (std::exception& e) {
 		std::cerr << RED << e.what() << RESET;
 	}
