@@ -47,7 +47,8 @@ class ABlock {
 		bool		getMethods(std::string to_find);
 		int			getMethodsSize();
 
-		bool someInfo(std::string &str);
+		int		ErrorPageSize();
+		bool	someInfo(std::string &str);
 		void printMap();
 
 		virtual ~ABlock();

@@ -30,6 +30,10 @@ ABlock::ABlock() {
 	}
 };
 
+int ABlock::ErrorPageSize() {
+	return _error.size();
+}
+
 void ABlock::printMap()
 {
 	for (std::map<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); ++it) {
@@ -101,7 +105,7 @@ std::string ABlock::getErrorPage(int error) {
 		if (it->first == error)
 			return it->second;
 	
-	return NULL;
+	return "";
 }
 
 bool ABlock::getMethods(std::string to_find) {

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <filesystem>
 #include <iterator>
+#include <unistd.h>
 #include <map>
 #include <string>
 #include <utility>
@@ -79,25 +80,41 @@ server conf::getServer(int nbrServer) {
 	return vd;
 }
 
+std::string conf::getErrorPage(int error, int nbrServer, location location) { // fatto un po' a cazzo
+	std::string errorPage = "";
+	if (_http[0].ErrorPageSize() > 0)
+		errorPage = _http[0].getErrorPage(error);
+	if (_servers[nbrServer].ErrorPageSize() > 0)
+		errorPage = _servers[nbrServer].getErrorPage(error);
+	if (location.ErrorPageSize() > 0)
+		errorPage = location.getErrorPage(error);
+	if (errorPage == "" && (error == 404 || error == 403 || error == 408))
+		errorPage = "/400.html";
+	if (errorPage == "" && error == 500)
+		errorPage = "/500.html";
+}
+
+
+
 void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
 	// cosi controlliamo solo i valori di quel determinato server invece che in tutti
 	// capire se possiamo avere piu' HTTP (anche se penso di no)
 	// e, se si, capire se conviene aggiungere i server all'interno di http
 	// per semplicita' prendo solo il primo server
-	// prendere tutto il path (ex mdella-r/Desktop/webserv/../../)
-	std::string fullPath = _servers[0].getRoot();
+	StatusCode = 200;
+	_fullPath = chdir(_servers[0].getRoot().c_str());
 	location loc;
 	if (_servers[0].checkLocation(req->getURL())) {
 		loc = _servers[0].getLocation(req->getURL());
-		fullPath += loc.getRoot();
+		_fullPath += loc.getRoot();
 	}
 	else {
 	 	StatusCode = 404;
 		return ;
 	}
-	fullPath += req->getURL();
+	_fullPath += req->getURL();
 
-	if (_http[0].getMethodsSize() > 0) // non mi torna molto (ci pensero' domani)
+	if (_http[0].getMethodsSize() > 0)
 		if (!_http[0].getMethods(req->getMethod()))
 			StatusCode = 403;
 	if (_servers[0].getMethodsSize() > 0)
@@ -107,17 +124,26 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 		if (!loc.getMethods(req->getMethod()))
 			StatusCode = 403;
 	if (req->getURL() == "/") {
-		if (!(_servers[0].getIndex() == ""))
+		if (!(_servers[0].getIndex() == "")) {
 			if (!_servers[0].getListing())
 				StatusCode = 404;
+		}
+		else
+		 	_fullPath += _servers[0].getIndex();
 	}
 	else {
-		if (loc.getIndex() == "")
+		if (loc.getIndex() == "") {
 			if (!loc.getListing())
 				StatusCode = 404;
+		}
+		else
+			_fullPath += loc.getIndex();
 	}
-	StatusCode = 200;
 
+}
+
+location conf::getLocation(std::string to_find, int nbrServer) {
+	return _servers[nbrServer].getLocation(to_find);
 }
 
 conf::~conf() {}
