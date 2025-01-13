@@ -102,7 +102,9 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 	// e, se si, capire se conviene aggiungere i server all'interno di http
 	// per semplicita' prendo solo il primo server
 	StatusCode = 200;
-	_fullPath = chdir(_servers[0].getRoot().c_str());
+	char* buff;
+	getcwd(buff, sizeof(buff));
+	_fullPath = buff;
 	location loc;
 	if (_servers[0].checkLocation(req->getURL())) {
 		loc = _servers[0].getLocation(req->getURL());
