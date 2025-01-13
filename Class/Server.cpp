@@ -11,6 +11,7 @@
 
 location::location() : ABlock() {
 	_listing = false;
+	_index = "";
 }
 
 bool location::getListing() {
@@ -86,6 +87,7 @@ void location::printVal() {
 location::~location() {}
 
 server::server() : ABlock(), _listing(false) {
+	_index = "";
 }
 
 size_t server::getLocationSize() const {

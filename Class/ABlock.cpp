@@ -3,7 +3,6 @@
 #include <iterator>
 #include <map>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 ABlock::ABlock() {
@@ -29,7 +28,6 @@ ABlock::ABlock() {
 		_special.push_back("upload_store");
 		_special.push_back("dav_methods");
 	}
-	_methods.push_back("GET");
 };
 
 void ABlock::printMap()

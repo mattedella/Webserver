@@ -1,7 +1,10 @@
 
 #include "../includes/webserv.hpp"
 
+Response::Response() {}
+
 void Response::generateResponse(Request* req, conf ConfBlock) {
+	(void)ConfBlock;
 	switch (StatusCode) {
 		case 200:
 			_response = "HTTP/1.1 200 OK\r\n Content-Type: "
@@ -28,8 +31,11 @@ void Response::generateResponse(Request* req, conf ConfBlock) {
 					+ req->getHeader("Content-Type")
 					+ "\r\nConnection: close\r\n";
 			break ;
-		default:
-			delete req;
-			throw exc("Unespected behavior\n");	
 	}
 }
+
+std::string Response::getResponse() {
+	return _response;
+}
+
+Response::~Response() {}

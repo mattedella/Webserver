@@ -15,6 +15,8 @@ class Response {
 
 		void generateResponse(Request* req, conf ConfBlock);
 
+		std::string getResponse();
+
 		~Response();
 };
 

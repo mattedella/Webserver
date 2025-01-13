@@ -23,4 +23,5 @@ void sendResponse(int client_socket, conf ConfBlock) {
 	// controllare se request giusta
 	ConfBlock.checkRequest(req);
 	res->generateResponse(req, ConfBlock);
+	send(client_socket, res->getResponse().c_str(), res->getResponse().length(), 0);
 }

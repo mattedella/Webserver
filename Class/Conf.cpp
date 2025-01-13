@@ -84,34 +84,40 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 	// capire se possiamo avere piu' HTTP (anche se penso di no)
 	// e, se si, capire se conviene aggiungere i server all'interno di http
 	// per semplicita' prendo solo il primo server
+	// prendere tutto il path (ex mdella-r/Desktop/webserv/../../)
 	std::string fullPath = _servers[0].getRoot();
 	location loc;
-	if (_servers[0].checkLocation(req->getURL()))
+	if (_servers[0].checkLocation(req->getURL())) {
 		loc = _servers[0].getLocation(req->getURL());
+		fullPath += loc.getRoot();
+	}
 	else {
 	 	StatusCode = 404;
 		return ;
 	}
-	fullPath += loc.getRoot();
 	fullPath += req->getURL();
-	if (_http[0].getMethodsSize() > 0) {
+
+	if (_http[0].getMethodsSize() > 0) // non mi torna molto (ci pensero' domani)
 		if (!_http[0].getMethods(req->getMethod()))
 			StatusCode = 403;
-		else
-			StatusCode = 200;
-	}
-	if (_servers[0].getMethodsSize() > 0) {
-		if (!_servers[0].getMethods(req->getMethod()) && StatusCode != 200)
+	if (_servers[0].getMethodsSize() > 0)
+		if (!_servers[0].getMethods(req->getMethod()))
 			StatusCode = 403;
-		else
-			StatusCode = 200;
-	}
-	if (loc.getMethodsSize() > 0) {
-		if (!loc.getMethods(req->getMethod()) && StatusCode != 200)
+	if (loc.getMethodsSize() > 0)
+		if (!loc.getMethods(req->getMethod()))
 			StatusCode = 403;
-		else
-			StatusCode = 200;
+	if (req->getURL() == "/") {
+		if (!(_servers[0].getIndex() == ""))
+			if (!_servers[0].getListing())
+				StatusCode = 404;
 	}
+	else {
+		if (loc.getIndex() == "")
+			if (!loc.getListing())
+				StatusCode = 404;
+	}
+	StatusCode = 200;
+
 }
 
 conf::~conf() {}
