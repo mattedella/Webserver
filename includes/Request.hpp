@@ -22,7 +22,7 @@ class Request {
 		std::string	getURL();
 		std::string	getHttpVersion();
 		std::string	getMethod();
-		std::string	getHeader(std::string& Key);
+		std::string	getHeader(const std::string& Key);
 		void		printRequest();
 
 		~Request();

@@ -34,7 +34,7 @@ void Request::printRequest() {
 		std::cout << it->first + ": " + it->second + '\n';
 }
 
-std::string Request::getHeader(std::string& Key) {
+std::string Request::getHeader(const std::string& Key) {
 	return _headers[Key];
 }
 

@@ -102,9 +102,8 @@ std::string ABlock::getErrorPage(int error) {
 	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++)
 		if (it->first == error)
 			return it->second;
+	
 	return NULL;
-	
-	
 }
 
 bool ABlock::getMethods(std::string to_find) {

@@ -2,6 +2,8 @@
 # define RESPONSE_HPP
 
 #include "Ablock.hpp"
+#include "Conf.hpp"
+#include "Request.hpp"
 
 class Response {
 
@@ -11,7 +13,7 @@ class Response {
 	public:
 		Response();
 
-		std::string generateResponse(int client_socket);
+		void generateResponse(Request* req, conf ConfBlock);
 
 		~Response();
 };

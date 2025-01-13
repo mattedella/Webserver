@@ -46,10 +46,11 @@ class server : public ABlock {
 		void	addLocation(const std::string& Key, location loc);
 		void	addVal();
 		void	checkValue();
-
+		bool	checkLocation(std::string to_find);
+		
 		bool		getListing();
 		std::string	getIndex();
-		location	getLocation(std::string& to_find);
+		location	getLocation(std::string to_find);
 		std::string getListen(std::string& to_find);
 		std::string getServerName(std::string& to_find);
 

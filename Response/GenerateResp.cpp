@@ -19,6 +19,8 @@ Request* getRequest(int client_socket) {
 
 void sendResponse(int client_socket, conf ConfBlock) {
 	Request* req = getRequest(client_socket);
-	// controllare se request esiste
+	Response* res = new Response();
+	// controllare se request giusta
 	ConfBlock.checkRequest(req);
+	res->generateResponse(req, ConfBlock);
 }

@@ -1,6 +1,8 @@
 #include "../includes/webserv.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
+#include <filesystem>
 #include <iterator>
 #include <map>
 #include <string>
@@ -77,25 +79,38 @@ server conf::getServer(int nbrServer) {
 	return vd;
 }
 
-void conf::checkRequest(Request* req) {
-	std::string fullPath;
-	for (std::vector<http>::iterator it = _http.begin(); it != _http.end(); it++) {
-		if (it->getMethodsSize() > 0) {
-			if (!it->getMethods(req->getMethod()))
-				StatusCode = 403;
-			else
-				StatusCode = 200;
-			break;
-		}
+void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
+	// cosi controlliamo solo i valori di quel determinato server invece che in tutti
+	// capire se possiamo avere piu' HTTP (anche se penso di no)
+	// e, se si, capire se conviene aggiungere i server all'interno di http
+	// per semplicita' prendo solo il primo server
+	std::string fullPath = _servers[0].getRoot();
+	location loc;
+	if (_servers[0].checkLocation(req->getURL()))
+		loc = _servers[0].getLocation(req->getURL());
+	else {
+	 	StatusCode = 404;
+		return ;
 	}
-	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
-		if (it->second.getMethodsSize() > 0) {
-			if (!it->second.getMethods(req->getMethod()))
-				StatusCode = 403;
-			else
-				StatusCode = 200;
-			break;
-		}
+	fullPath += loc.getRoot();
+	fullPath += req->getURL();
+	if (_http[0].getMethodsSize() > 0) {
+		if (!_http[0].getMethods(req->getMethod()))
+			StatusCode = 403;
+		else
+			StatusCode = 200;
+	}
+	if (_servers[0].getMethodsSize() > 0) {
+		if (!_servers[0].getMethods(req->getMethod()) && StatusCode != 200)
+			StatusCode = 403;
+		else
+			StatusCode = 200;
+	}
+	if (loc.getMethodsSize() > 0) {
+		if (!loc.getMethods(req->getMethod()) && StatusCode != 200)
+			StatusCode = 403;
+		else
+			StatusCode = 200;
 	}
 }
 

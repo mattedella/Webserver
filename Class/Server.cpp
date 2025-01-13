@@ -313,7 +313,7 @@ std::string server::getIndex() {
 	return _index;
 }
 
-location server::getLocation(std::string& to_find) {
+location server::getLocation(std::string to_find) {
 	location null;
 	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++)
 		if (it->first == to_find)
@@ -333,6 +333,14 @@ std::string server::getServerName(std::string& to_find) {
 		if (*it == to_find)
 			return *it;
 	return NULL;
+}
+
+bool server::checkLocation(std::string to_find) {
+	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++) {
+		if (it->first == to_find)
+			return true;
+	}
+	return false;
 }
 
 server::~server() {}
