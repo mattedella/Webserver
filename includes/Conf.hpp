@@ -4,6 +4,7 @@
 
 #include "Ablock.hpp"
 #include "Http.hpp"
+#include "Request.hpp"
 #include "Server.hpp"
 
 class conf {
@@ -13,16 +14,15 @@ class conf {
 		std::map<int,server>	_servers;
 
 	public:
-		void addServer(int nbrServer, const server& srv);
-		void addKey();
-		void addHttp(const http& http);
-		void printServer();
-		void printHttp();
-		void check();
+		void	addServer(int nbrServer, const server& srv);
+		void	addKey();
+		void	addHttp(const http& http);
+		void	printServer();
+		void	printHttp();
+		void	check();
 		server	getServer(int nbrServer);
-		// int reload(int port);
-
-		
+		void	checkRequest(Request* req);
+		// int		reload(int port);
 
 		conf();
 		~conf();

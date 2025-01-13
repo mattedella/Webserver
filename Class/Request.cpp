@@ -7,8 +7,9 @@
 
 Request::Request() {}
 
-void Request::ParsRequest(std::string& Request) {
-	std::stringstream ss(Request);
+void Request::ParsRequest(char* Request) {
+	std::string to_pars(Request);
+	std::stringstream ss(to_pars);
 	std::string line;
 
 	std::getline(ss, line);
@@ -31,6 +32,22 @@ void Request::printRequest() {
 	std::cout << "Headers: \n";
 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
 		std::cout << it->first + ": " + it->second + '\n';
+}
+
+std::string Request::getHeader(std::string& Key) {
+	return _headers[Key];
+}
+
+std::string Request::getHttpVersion() {
+	return _httpVersion;
+}
+
+std::string Request::getMethod() {
+	return _method;
+}
+
+std::string Request::getURL() {
+	return _url;
 }
 
 Request::~Request() {}

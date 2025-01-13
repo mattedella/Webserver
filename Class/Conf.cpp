@@ -77,4 +77,26 @@ server conf::getServer(int nbrServer) {
 	return vd;
 }
 
+void conf::checkRequest(Request* req) {
+	std::string fullPath;
+	for (std::vector<http>::iterator it = _http.begin(); it != _http.end(); it++) {
+		if (it->getMethodsSize() > 0) {
+			if (!it->getMethods(req->getMethod()))
+				StatusCode = 403;
+			else
+				StatusCode = 200;
+			break;
+		}
+	}
+	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
+		if (it->second.getMethodsSize() > 0) {
+			if (!it->second.getMethods(req->getMethod()))
+				StatusCode = 403;
+			else
+				StatusCode = 200;
+			break;
+		}
+	}
+}
+
 conf::~conf() {}

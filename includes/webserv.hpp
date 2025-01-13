@@ -10,8 +10,6 @@
 #include "Request.hpp"
 #include "Response.hpp"
 
-# define  NOT_FOUND std::string::npos
-
 extern int StatusCode;
 
 class cgi

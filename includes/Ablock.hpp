@@ -20,6 +20,8 @@
 #include <exception>
 #include <sstream>
 
+# define  NOT_FOUND std::string::npos
+
 class ABlock {
 
 	protected:
@@ -42,7 +44,8 @@ class ABlock {
 		std::string	getRoot();
 		int			getTimeout();
 		int			getBodysize();
-		std::string	getMethods(std::string to_find);
+		bool		getMethods(std::string to_find);
+		int			getMethodsSize();
 
 		bool someInfo(std::string &str);
 		void printMap();

@@ -4,8 +4,6 @@
 #include "Ablock.hpp"
 #include <string>
 
-# define  NOT_FOUND std::string::npos
-
 // TCP connection, then GET or "methods" request
 // after response, TCP conection is closed
 
@@ -20,8 +18,12 @@ class Request {
 	public:
 		Request();
 
-		void	ParsRequest(std::string& Request);
-		void	printRequest();
+		void		ParsRequest(char* Request);
+		std::string	getURL();
+		std::string	getHttpVersion();
+		std::string	getMethod();
+		std::string	getHeader(std::string& Key);
+		void		printRequest();
 
 		~Request();
 };

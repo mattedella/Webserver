@@ -3,6 +3,7 @@
 #include <iterator>
 #include <map>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 ABlock::ABlock() {
@@ -106,12 +107,12 @@ std::string ABlock::getErrorPage(int error) {
 	
 }
 
-std::string ABlock::getMethods(std::string to_find) {
+bool ABlock::getMethods(std::string to_find) {
 	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++) {
 		if (*it == to_find)
-			return *it;
+			return true;
 	}
-	return NULL;
+	return false;
 }
 
 int ABlock::getBodysize() {
@@ -120,6 +121,10 @@ int ABlock::getBodysize() {
 
 int ABlock::getTimeout() {
 	return _timeout;
+}
+
+int ABlock::getMethodsSize() {
+	return _methods.size();
 }
 
 ABlock::~ABlock() {}
