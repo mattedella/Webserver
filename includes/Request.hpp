@@ -2,6 +2,7 @@
 # define REQUEST_HPP
 
 #include "Ablock.hpp"
+#include "webserv.hpp"
 #include <string>
 
 // TCP connection, then GET or "methods" request
