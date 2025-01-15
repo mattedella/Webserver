@@ -90,19 +90,16 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 		errorPage = location.getErrorPage(error);
 	if (errorPage == "" && (error == 404 || error == 403 || error == 408))
 		errorPage = "/400.html";
-	if (errorPage == "" && error == 500)
+	if (errorPage == "" && error == 501)
 		errorPage = "/500.html";
+	return errorPage;
 }
-
-
 
 void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
 	// cosi controlliamo solo i valori di quel determinato server invece che in tutti
-	// capire se possiamo avere piu' HTTP (anche se penso di no)
-	// e, se si, capire se conviene aggiungere i server all'interno di http
 	// per semplicita' prendo solo il primo server
 	StatusCode = 200;
-	char* buff;
+	char* buff = NULL;
 	getcwd(buff, sizeof(buff));
 	_fullPath = buff;
 	location loc;
@@ -118,13 +115,13 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 
 	if (_http[0].getMethodsSize() > 0)
 		if (!_http[0].getMethods(req->getMethod()))
-			StatusCode = 403;
+			StatusCode = 501;
 	if (_servers[0].getMethodsSize() > 0)
 		if (!_servers[0].getMethods(req->getMethod()))
-			StatusCode = 403;
+			StatusCode = 501;
 	if (loc.getMethodsSize() > 0)
 		if (!loc.getMethods(req->getMethod()))
-			StatusCode = 403;
+			StatusCode = 501;
 	if (req->getURL() == "/") {
 		if (!(_servers[0].getIndex() == "")) {
 			if (!_servers[0].getListing())
@@ -146,6 +143,10 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 
 location conf::getLocation(std::string to_find, int nbrServer) {
 	return _servers[nbrServer].getLocation(to_find);
+}
+
+std::string conf::getFullPath() {
+	return _fullPath;
 }
 
 conf::~conf() {}
