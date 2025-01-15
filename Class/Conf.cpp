@@ -1,7 +1,11 @@
 #include "../includes/webserv.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
+#include <filesystem>
 #include <iterator>
+#include <numeric>
+#include <unistd.h>
 #include <map>
 #include <string>
 #include <utility>
@@ -69,6 +73,95 @@ void conf::addKey()
 		it->addVal();
 }
 
+server conf::getServer(int nbrServer) {
+	server vd;
+	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+		if (it->first == nbrServer)
+			return it->second;
+	return vd;
+}
+
+std::string conf::getErrorPage(int error, int nbrServer, location location) { // fatto un po' a cazzo
+	std::string errorPage = "";
+	(void)nbrServer;
+	std::cout << _servers[1].ErrorPageSize() << '\n';
+	if (_http[0].ErrorPageSize() > 0)
+		errorPage = _http[0].getErrorPage(error);
+	if (_servers[1].ErrorPageSize() > 0)
+		errorPage = _servers[1].getErrorPage(error);
+	if (location.ErrorPageSize() > 0)
+		errorPage = location.getErrorPage(error);
+	if (errorPage == "" && (error == 404 || error == 403 || error == 408))
+		errorPage = "/400.html";
+	if (errorPage == "" && error == 501)
+		errorPage = "/50x.html";
+	std::cout << errorPage << '\n';
+	return errorPage;
+}
+
+void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
+	// cosi controlliamo solo i valori di quel determinato server invece che in tutti
+	// per semplicita' prendo solo il primo server
+	StatusCode = 200;
+	char buff[4062];
+	getcwd(buff, sizeof(buff) - 1);
+	_fullPath = buff;
+	_fullPath += _servers[1].getRoot();
+	std::cout << "server path: " + _servers[1].getRoot() << std::endl;
+	std::cout << "path fatto: " + _fullPath + "\n";
+	location loc;
+	if (_servers[1].checkLocation(req->getURL())) {
+		loc = _servers[1].getLocation(req->getURL());
+		_fullPath += loc.getRoot();
+	}
+	else {
+	 	StatusCode = 404;
+	}
+	if (StatusCode == 200)
+		_fullPath += req->getURL();
+	std::cout << "path fatto 2.0\n";
+	if (_http[0].getMethodsSize() > 0)
+		if (!_http[0].getMethods(req->getMethod())) {
+			std::cout << "HTTP\n";
+			StatusCode = 501;
+		}
+	if (_servers[1].getMethodsSize() > 0)
+		if (!_servers[1].getMethods(req->getMethod())) {
+			std::cout << "SERVER\n";
+			StatusCode = 501;
+		}
+	if (loc.getMethodsSize() > 0)
+		if (!loc.getMethods(req->getMethod())) {
+			std::cout << "LOCATION\n";
+			StatusCode = 501;
+		}
+	if (req->getURL() == "/" && StatusCode == 200) {
+		std::cout <<"index server: "<< _servers[1].getIndex() << std::endl;
+		if (_servers[1].getIndex() == "") {
+			if (!_servers[1].getListing())
+				StatusCode = 404;
+		}
+		else
+		 	_fullPath += _servers[1].getIndex();
+	}
+	else if (StatusCode == 200) {
+		if (loc.getIndex() == "") {
+			if (!loc.getListing())
+				StatusCode = 404;
+		}
+		else
+			_fullPath += loc.getIndex();
+	}
+	std::cout << "PATH: |" + _fullPath + "|\n";
+}
+
+location conf::getLocation(std::string to_find, int nbrServer) {
+	return _servers[nbrServer].getLocation(to_find);
+}
+
+std::string conf::getFullPath() {
+	return _fullPath;
+}
 
 server conf::getServer(std::string port)
 {
@@ -80,7 +173,7 @@ server conf::getServer(std::string port)
 	throw exc("ci pensiamo dopo\n");
 }
 
-std::map<int, server> conf::getMapServer()
+std::map<int, server>& conf::getMapServer()
 {
 	return _servers;
 }

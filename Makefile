@@ -1,7 +1,7 @@
 SRC = main.cpp \
-      Class/ABlock.cpp Class/Conf.cpp Class/Http.cpp Class/Server.cpp Class/Server2.cpp\
-      Parsing/Parsing.cpp Class/Conf2.cpp\
-	  # Class/Response.cpp Class/Request.cpp Response/GenerateResp.cpp
+      Class/ABlock.cpp Class/Conf.cpp Class/Conf2.cpp Class/Http.cpp Class/Server.cpp Class/Server2.cpp Class/Request.cpp Class/Response.cpp \
+	  Response/GenerateResp.cpp \
+      Parsing/Parsing.cpp
 CC = c++
 CFLAGS = -Wall -Wextra -Werror -g -std=c++98
 RM = rm -f
@@ -18,7 +18,9 @@ A = '\033[0;34m'
 all: $(NAME)
 
 $(NAME): $(SRC)
-	@echo				"														"
+	@echo $(A)			"Compiling webserv, please wait"$(NONE)
+	@$(CC) $(CFLAGS) $(SRC) -o $(NAME)
+	@clear
 	@echo $(CYAN)		" __          __  _     _____                      __  "$(NONE) 
 	@echo $(GREEN)		" \ \        / / | |   / ____|                  _  \ \ "$(NONE)
 	@echo $(RED)		"  \ \  /\  / /__| |__| (___   ___ _ ____   __ (_)  | |"$(NONE)
@@ -26,14 +28,9 @@ $(NAME): $(SRC)
 	@echo $(RED)		"    \  /\  /  __/ |_) |___) |  __/ |   \ V /   _   | |"$(NONE)
 	@echo $(GREEN)		"     \/  \/ \___|_.__/_____/ \___|_|    \_/   (_)  | |"$(NONE)
 	@echo $(CYAN)		"                                                  /_/ "$(NONE)
-	@echo $(A)			"\n\nCompiling webserv, please wait"$(NONE)
-	@$(CC) $(CFLAGS) $(SRC) -o $(NAME)
-	@clear
-	@echo $(GREEN)"Compiled $(NAME)"$(WHITE)
 
 clean:
 	@clear
-	@echo $(RED)"Nothing to clean, no .o files generated."$(WHITE)
 
 fclean: clean
 	@$(RM) $(NAME)

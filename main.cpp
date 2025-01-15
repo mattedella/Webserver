@@ -2,6 +2,8 @@
 #include "includes/webserv.hpp"
 #include <map>
 
+int StatusCode = 0;
+
 int main (int argc, char **argv) {
 
 	if (argc != 2) {
@@ -24,12 +26,13 @@ int main (int argc, char **argv) {
 	}
 	try {
 		c = ParsConfFile(conf_line);
-		std::map<int, server> startListen = c->getMapServer();
+		std::map<int, server>& startListen = c->getMapServer();
 		for (std::map<int, server>::iterator it = startListen.begin(); it != startListen.end(); it++)
 		{
 			std::cout<< BLUE << "Server " <<it->first << ": starting\n" << RESET;
 			it->second.startListens();			
 			it->second.starting();
+			std::cout << "PATH SERVER: " + it->second.getRoot() << std::endl;
 		}
 		c->run();
 	} catch (std::exception& e) {

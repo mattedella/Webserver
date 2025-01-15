@@ -30,6 +30,10 @@ ABlock::ABlock() {
 	}
 };
 
+int ABlock::ErrorPageSize() {
+	return _error.size();
+}
+
 void ABlock::printMap()
 {
 	for (std::map<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); ++it) {
@@ -100,17 +104,16 @@ std::string ABlock::getErrorPage(int error) {
 	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++)
 		if (it->first == error)
 			return it->second;
-	return NULL;
 	
-	
+	return "";
 }
 
-std::string ABlock::getMethods(std::string to_find) {
+bool ABlock::getMethods(std::string to_find) {
 	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++) {
 		if (*it == to_find)
-			return *it;
+			return true;
 	}
-	return NULL;
+	return false;
 }
 
 int ABlock::getBodysize() {
@@ -119,6 +122,10 @@ int ABlock::getBodysize() {
 
 int ABlock::getTimeout() {
 	return _timeout;
+}
+
+int ABlock::getMethodsSize() {
+	return _methods.size();
 }
 
 ABlock::~ABlock() {}

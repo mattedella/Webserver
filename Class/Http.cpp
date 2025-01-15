@@ -26,7 +26,7 @@ void http::initVector() {
 void http::checkVal()
 {
 	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++) {
-		if (it->first != 404 && it->first != 403 && it->first != 500)
+		if (it->first != 404 && it->first != 403 && it->first != 500 && it->first != 408)
 		 	throw exc("invalid error: " + it->second + "\n");
 		if (it->second.find('.') == NOT_FOUND)
 			throw exc("Error: invalid error page: " + it->second + "\n");
@@ -48,8 +48,9 @@ void http::printAll() {
 		std::cout<< "num: " << it->first << " = " << it->second <<"\n";
 	}
 	std::cout << "methods: ";
-	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++)
+	for (std::vector<std::string>::iterator it = _methods.begin(); it != _methods.end(); it++) {
 		std::cout << *it << " ";
+	}
 	std::cout << '\n';
 }
 
@@ -77,8 +78,8 @@ void http::addVal() {
 				while (!std::isspace(methods[i]) || !methods[i])
 					i++;
 				std::string to_push = methods.substr(0, i);
-				_methods.push_back(to_push);
 				methods.erase(0, to_push.length() + 1);
+				_methods.push_back(to_push);
 			}
 		}
 	}
@@ -87,8 +88,6 @@ void http::addVal() {
 	_data.erase("include");
 	if (_bodysize <= 0)
 		throw exc("Error: body size not found\n");
-	if (_include.size() <= 0)
-		throw exc("Error: include not found\n");
 }
 
 std::string http::getInclude(std::string to_find) {

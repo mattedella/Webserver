@@ -10,10 +10,8 @@
 #include <vector>
 
 location::location() : ABlock() {
-	_bodysize = 30;
-	_index  = "";
-	_root = "";
 	_listing = false;
+	_index = "";
 }
 
 bool location::getListing() {
@@ -51,8 +49,8 @@ void location::addVal() {
 				std::string to_push = methods.substr(0, i);
 				if (to_push != "GET" && to_push != "POST" && to_push != "DELETE")
 					throw exc("Error: method \"" + to_push + "\" is not valid\n");
-				_methods.push_back(to_push);
 				methods.erase(0, to_push.length() + 1);
+				_methods.push_back(to_push);
 			}
 		}
 		else if (it->first == "error_page") {
@@ -87,10 +85,7 @@ void location::printVal() {
 location::~location() {}
 
 server::server() : ABlock(), _listing(false) {
-	_timeout = 60;
-	_index = "index.html";
-	_root = "/";
-	_bodysize = 30;
+	_index = "";
 }
 
 size_t server::getLocationSize() const {
@@ -151,11 +146,20 @@ void server::initVector() {
 				while (!std::isspace(methods[i]) || !methods[i])
 					i++;
 				std::string to_push = methods.substr(0, i);
-				_methods.push_back(to_push);
 				methods.erase(0, to_push.length() + 1);
+				_methods.push_back(to_push);
 			}
 		}
+		else if (it->first == "error_page") {
+			std::string Key = it->second.substr(0, it->second.find(' '));
+			int nbrKey = std::atoi(Key.c_str());
+			std::string Tp = it->second.substr(it->second.find(' ') + 1);
+			_error.insert(std::make_pair(nbrKey, Tp));
+		}
+		else if (it->first.find("error_page") != NOT_FOUND && it->first != "error_page")
+			throw exc("Error: line not valid : " + it->first + " " + it->second + '\n');
 	}
+	_data.erase("error_page");
 	_data.erase("listen");
 	_data.erase("server_name");
 	_data.erase("autoindex");
@@ -260,19 +264,19 @@ void server::checkValue() {
 	std::string str;
 	int num;
 	for (std::vector<std::string>::iterator it = _listens.begin(); it != _listens.end(); it++) {
-		if (it->find(':') != NOT_FOUND)
-		{
+		int i = 0;
+		if (it->find(':') != NOT_FOUND) {
 			str = it->substr(0, it->find(':'));
 			std::string str2 = it->substr(it->find(':') + 1);
-			for (size_t i = 0; i < str2.length(); i++)
-				if (!std::isdigit(str2[i]))
-					throw exc("Error: invalid port: " + *it + '\n');
+			for (size_t j = 0; j < str2.length(); j++)
+				if (!std::isdigit(str2[j]))
+					throw exc("Error: invalid port: \"" + *it + "\"\n");
 			num = std::atoi(str2.c_str());
 			if (num > 65535 || num < 1)
 				throw exc("Error: invalid port: " + *it + '\n');
 			_ports.push_back(num);
 			if (str.find('.') != NOT_FOUND) {
-				for (int i = 0; str[i]; i++) {
+				for (; !str.empty(); i++) {
 					std::string substr;
 					if (str.find('.') != NOT_FOUND)
 						substr = str.substr(0, str.find('.'));
@@ -280,21 +284,23 @@ void server::checkValue() {
 					 	substr = str;
 					for (int j = 0; substr[j]; j++)
 						if (!std::isdigit(substr[j]))
-							throw exc("Error: invalid port: " + *it + '\n');
+							throw exc("Error: invalid port: \"" + *it + "\"\n");
 					int IPnum = std::atoi(substr.c_str());
 					if (IPnum > 255)
-						throw exc("Error: invalid port: " + *it + '\n');
+						throw exc("Error: invalid port: \"" + *it + "\"\n");
 					str.erase(0, substr.length() + 1);
 				}
+				std::cout << i << '\n';
+				if (i != 4)
+					throw exc("Error: invalid port: \"" + *it + "\"\n");
 			}
 		}
-		else
-		{
+		else {
 			str = *it;
 			for (size_t i = 0; i < str.length(); i++)
 			{
 				if (!std::isdigit(str[i]))
-					throw exc("Error: invalid port: " + *it + '\n');
+					throw exc("Error: invalid port: \"" + *it + "\"\n");
 			}
 			num = std::atoi(str.c_str());
 			if (num > 65535 || num < 1)
@@ -316,7 +322,7 @@ std::string server::getIndex() {
 	return _index;
 }
 
-location server::getLocation(std::string& to_find) {
+location server::getLocation(std::string to_find) {
 	location null;
 	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++)
 		if (it->first == to_find)
@@ -336,6 +342,15 @@ std::string server::getServerName(std::string& to_find) {
 		if (*it == to_find)
 			return *it;
 	return NULL;
+}
+
+bool server::checkLocation(std::string to_find) {
+	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++) {
+		if (it->first == to_find) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void server::startListens()

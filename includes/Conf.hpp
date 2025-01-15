@@ -4,6 +4,7 @@
 
 #include "Ablock.hpp"
 #include "Http.hpp"
+#include "Request.hpp"
 #include "Server.hpp"
 
 class conf {
@@ -11,18 +12,22 @@ class conf {
 	private:
 		std::vector<http>		_http;
 		std::map<int,server>	_servers;
+		std::string				_fullPath;
 
 	public:
-		void addServer(int nbrServer, const server& srv);
-		void addKey();
-		void addHttp(const http& http);
-		void printServer();
-		void printHttp();
-		void check();
-		// int reload(int port);
-
-
-		std::map<int, server> getMapServer();
+		void		addServer(int nbrServer, const server& srv);
+		void		addKey();
+		void		addHttp(const http& http);
+		void		printServer();
+		void		printHttp();
+		void		check();
+		std::string	getErrorPage(int error, int nbrServer, location location);
+		std::string	getFullPath();
+		location	getLocation(std::string to_find, int nbrServer);
+		server		getServer(int nbrServer);
+		void		checkRequest(Request* req);
+// int			reload(int port);
+		std::map<int, server>& getMapServer();
 		server getServer(std::string port);
 		void	run();
 		conf();

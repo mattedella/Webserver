@@ -1,4 +1,3 @@
-#include "../includes/Server.hpp"
 #include <iostream>
 #include <map>
 #include <string>
@@ -139,11 +138,16 @@ bool	server::init(int port)
     pfd.fd = server_fd;
     pfd.events = POLLIN;
     _poll_fds.push_back(pfd);
+
+
+    std::cout << "size of POll: "<<_poll_fds.size() << std::endl;
     return true;
 }
 
 void server::starting()
 {
+
+
     for (size_t i = 0; i < _server_sockets.size(); i++)
         std::cout << "Server running on port " << GREEN <<_server_sockets[i].port << RESET <<std::endl;
     
@@ -158,8 +162,18 @@ void server::starting()
     }
 }
 
-void server::s_run()
+void server::printFdsVect()
 {
+    std::vector<struct pollfd>::iterator it = _poll_fds.begin();
+    for(; it != _poll_fds.end(); it++ )
+    {
+        std::cout << it->fd << std::endl;
+    }
+}
+
+void server::s_run(conf ConfBlock, Request* req)
+{
+
     for (size_t i = 0; i < _poll_fds.size(); ++i)
     {
         poll(&_poll_fds[i], _poll_fds.size(), -1);
@@ -172,12 +186,20 @@ void server::s_run()
                 }
             } else {
                 if (_poll_fds[i].revents & POLLIN) {
-                    handle_client_data(i);
+                    // handle_client_data(i);
+                    std::cout << "richiesta\n";
+                    req->getRequest(_poll_fds[i].fd, _poll_fds[i].events);
                 } else if (_poll_fds[i].revents & POLLOUT) {
-                    handle_client_response(i);
+                    // handle_client_response(i);
+                    std::cout << "risposta\n";
+                    std::cout << "PATH SRUN: " + getRoot() + '\n';
+                    sendResponse(_poll_fds[i].fd, ConfBlock, req);
+                    close_connection(i);
+                    break ;
                 }
             }
         } catch (const std::exception& e) {
+            delete req;
             close_connection(i);
         }
     }

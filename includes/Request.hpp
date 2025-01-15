@@ -2,7 +2,6 @@
 # define REQUEST_HPP
 
 #include "Ablock.hpp"
-#include "webserv.hpp"
 #include <string>
 
 // TCP connection, then GET or "methods" request
@@ -12,6 +11,7 @@ class Request {
 
 	private:
 		std::string							_url;
+		std::string							_file;
 		std::string							_httpVersion;
 		std::string							_method;
 		std::map<std::string, std::string>	_headers;
@@ -20,7 +20,8 @@ class Request {
 		Request();
 
 		void		ParsRequest(char* Request);
-		std::string	getURL();
+		void		getRequest(int& client_socket, short& event);
+		std::string&	getURL();
 		std::string	getHttpVersion();
 		std::string	getMethod();
 		std::string	getHeader(const std::string& Key);

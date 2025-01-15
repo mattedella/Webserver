@@ -2,6 +2,7 @@
 # define SERVER_HPP
 
 #include "Ablock.hpp"
+#include "Request.hpp"
 #include <string>
 #include <vector>
 #include <map>
@@ -14,6 +15,7 @@
 static const int BUFFER_SIZE = 1024;
 
 class ABlock;
+class conf;
 
 class location : public ABlock {
 
@@ -41,9 +43,9 @@ class server : public ABlock {
 			int fd;
 			int port;
 		};
-		std::map<int, std::string> _client_buffers;
-		std::vector<ServerSocket> _server_sockets;
-		std::vector<struct pollfd> _poll_fds;
+		std::map<int, std::string>		_client_buffers;
+		std::vector<ServerSocket>		_server_sockets;
+		std::vector<struct pollfd>		_poll_fds;
 		std::map<int, std::string> 		_client_responses;
 
 		std::string						_index;
@@ -55,6 +57,7 @@ class server : public ABlock {
 
 	public:
 		server();
+		void 	printFdsVect();
 		int		stop();
 		void	printAll();
 		int		start();
@@ -64,11 +67,12 @@ class server : public ABlock {
 		void	addLocation(const std::string& Key, location loc);
 		void	addVal();
 		void	checkValue();
-		void	starting();
+		bool	checkLocation(std::string to_find);
+				void	starting();
 		
 		
 		bool	init(int port);
-		void	s_run();
+		void	s_run(conf ConfBlock, Request* req);
 		void	handle_new_connection(int server_fd);
 		void	handle_client_data(int index);
 		void	handle_client_response(int index);
@@ -78,8 +82,8 @@ class server : public ABlock {
 
 		bool		getListing();
 		std::string	getIndex();
-		void		startListens();
-		location	getLocation(std::string& to_find);
+		void 		startListens();
+		location	getLocation(std::string to_find);
 		std::string getListen(std::string& to_find);
 		std::string getServerName(std::string& to_find);
 

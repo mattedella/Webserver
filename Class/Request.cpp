@@ -1,9 +1,11 @@
 
 #include "../includes/Request.hpp"
+#include "../includes/Exc.hpp"
 #include <cstdio>
 #include <sstream>
 #include <string>
 #include <utility>
+#include <poll.h>
 
 Request::Request() {}
 
@@ -24,6 +26,21 @@ void Request::ParsRequest(char* Request) {
 		}
 	}
 }
+
+void Request::getRequest(int &client_socket, short& event) {
+	int bytes_recived;
+	char buffer[4096];
+
+	bytes_recived = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
+	if (bytes_recived < 0) {
+		throw exc("Error reading request\n");
+	}
+	buffer[bytes_recived] = '\0';
+	ParsRequest(buffer);
+	printRequest();
+	event = POLLOUT;
+}
+
 
 void Request::printRequest() {
 	std::cout << "Method: " + _method + '\n';
@@ -46,7 +63,7 @@ std::string Request::getMethod() {
 	return _method;
 }
 
-std::string Request::getURL() {
+std::string& Request::getURL() {
 	return _url;
 }
 
