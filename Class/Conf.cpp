@@ -102,6 +102,8 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
 	// cosi controlliamo solo i valori di quel determinato server invece che in tutti
 	// per semplicita' prendo solo il primo server
+	// se URL e' del tipo "/index.html" non funziona perche' cerca la location "/index.hml"
+	// ma deve cercare il file dentro la location "/" chiamato "index.html"
 	StatusCode = 200;
 	char buff[4062];
 	getcwd(buff, sizeof(buff) - 1);
