@@ -7,7 +7,9 @@
 #include <utility>
 #include <poll.h>
 
-Request::Request() {}
+Request::Request() {
+	_headers.insert(std::make_pair("Content-Type", "text/plain"));
+}
 
 void Request::ParsRequest(char* Request) {
     std::string to_pars(Request);
@@ -122,29 +124,25 @@ void Request::printRequest() {
 		std::cout << it->first + ": " + it->second + '\n';
 }
 
+void Request::setContentType(const std::string& fullPath) {
+
+	_headers.erase("Content-Type");
+	if (fullPath.find(".html") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "text/html"));
+	else if (fullPath.find(".css") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "text/css"));
+	else if (fullPath.find(".js") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "application/javascript"));
+	else if (fullPath.find(".png") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "image/png"));
+	else if (fullPath.find(".jpg") != std::string::npos || fullPath.find(".jpeg") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "image/jpeg"));
+	else
+		_headers.insert(std::make_pair("Content-Type", "text/plain"));
+	}
+
 std::string Request::getHeader(const std::string& Key) {
-    std::map<std::string, std::string>::iterator it = _headers.find(Key);
-    if (it != _headers.end()) {
-        return it->second;
-    }
-    
-    std::cout << "!!!!!!!!!!!!!!!!!!!!"<< _url << '\n';
-    if (Key == "Content-Type") {
-        if (_url.find(".html") != std::string::npos)
-            return "text/html";
-        else if (_url.find(".css") != std::string::npos)
-            return "text/css";
-        else if (_url.find(".js") != std::string::npos)
-            return "application/javascript";
-        else if (_url.find(".png") != std::string::npos)
-            return "image/png";
-        else if (_url.find(".jpg") != std::string::npos || _url.find(".jpeg") != std::string::npos)
-            return "image/jpeg";
-        else
-            return "text/plain";
-    }
-    
-    return "";
+	return _headers[Key];
 }
 
 std::string Request::getHttpVersion() {

@@ -29,6 +29,7 @@ class Request {
 		std::string	getHttpVersion();
 		std::string	getMethod();
 		std::string	getHeader(const std::string& Key);
+		void		setContentType(const std::string& fullPath);
 		void		printRequest();
 
         bool        isComplete() const;

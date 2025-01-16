@@ -155,6 +155,8 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 			_fullPath += loc.getIndex();
 	}
 	std::cout << "PATH: |" + _fullPath + "|\n";
+	if (StatusCode == 200)
+		req->setContentType(_fullPath);
 }
 
 location conf::getLocation(std::string to_find, int nbrServer) {

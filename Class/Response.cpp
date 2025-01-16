@@ -16,8 +16,7 @@ void Response::generateResponse(Request* req, conf ConfBlock) {
         file.open(ConfBlock.getFullPath().c_str());
         buff << file.rdbuf();
         request = buff.str();
-        _response = "HTTP/1.1 200 OK\r\n"
-                + std::string("Content-Type: ") + req->getHeader("Content-Type") + "\r\n"
+        _response = "HTTP/1.1 200 OK\r\nContent-Type: " + req->getHeader("Content-Type") + "\r\n"
                 + "Connection: keep-alive\r\n"
                 + "Content-Length: " + sizeToString(request.length()) + "\r\n"
                 + "\r\n"
@@ -28,10 +27,8 @@ void Response::generateResponse(Request* req, conf ConfBlock) {
         file.open((ConfBlock.getFullPath() + ConfBlock.getErrorPage(404, 1, ConfBlock.getLocation(req->getURL(), 1))).c_str());
         buff << file.rdbuf();
         request = buff.str();
-        _response = "HTTP/1.1 404 Not Found\r\n"
-                + std::string("Content-Type: ") + req->getHeader("Content-Type") + "\r\n"
-                + "Connection: keep-alive\r\n"
-                + "Content-Length: " + sizeToString(request.length()) + "\r\n"
+        _response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: "
+                + sizeToString(request.length()) + "\r\n"
                 + "\r\n"
                 + request;
         break;
@@ -40,10 +37,8 @@ void Response::generateResponse(Request* req, conf ConfBlock) {
         file.open((ConfBlock.getFullPath() + ConfBlock.getErrorPage(403, 1, ConfBlock.getLocation(req->getURL(),1 ))).c_str());
         buff << file.rdbuf();
         request = buff.str();
-        _response = "HTTP/1.1 403 Forbidden\r\n"
-                + std::string("Content-Type: ") + req->getHeader("Content-Type") + "\r\n"
-                + "Connection: keep-alive\r\n"
-                + "Content-Length: " + sizeToString(request.length()) + "\r\n"
+        _response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: "
+                + sizeToString(request.length()) + "\r\n"
                 + "\r\n"
                 + request;
         break;
@@ -52,10 +47,8 @@ void Response::generateResponse(Request* req, conf ConfBlock) {
         file.open((ConfBlock.getFullPath() + ConfBlock.getErrorPage(408, 1, ConfBlock.getLocation(req->getURL(), 1))).c_str());
         buff << file.rdbuf();
         request = buff.str();
-        _response = "HTTP/1.1 408 Request Timeout\r\n"
-                + std::string("Content-Type: ") + req->getHeader("Content-Type") + "\r\n"
-                + "Connection: keep-alive\r\n"
-                + "Content-Length: " + sizeToString(request.length()) + "\r\n"
+        _response = "HTTP/1.1 408 Request Timeout\r\nContent-Type: text/html\r\nConnection: keep-alive\r\nContent-Length: "
+                + sizeToString(request.length()) + "\r\n"
                 + "\r\n"
                 + request;
         break;
@@ -64,10 +57,8 @@ void Response::generateResponse(Request* req, conf ConfBlock) {
         file.open((ConfBlock.getFullPath() + ConfBlock.getErrorPage(501, 1, ConfBlock.getLocation(req->getURL(), 1))).c_str());
         buff << file.rdbuf();
         request = buff.str();
-        _response = "HTTP/1.1 501 Method Not Allowed\r\n"
-                + std::string("Content-Type: ") + req->getHeader("Content-Type") + "\r\n"
-                + "Connection: keep-alive\r\n"
-                + "Content-Length: " + sizeToString(request.length()) + "\r\n"
+        _response = "HTTP/1.1 501 Method Not Allowed\r\n Connection: keep-alive\r\nContent-Length: "
+                + sizeToString(request.length()) + "\r\n"
                 + "\r\n"
                 + request;
         break;

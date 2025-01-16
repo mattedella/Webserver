@@ -197,8 +197,10 @@ void server::s_run(conf ConfBlock, Request* req)
                     std::cout << "risposta\n";
                     std::cout << "PATH SRUN: " + getRoot() + '\n';
                     sendResponse(_poll_fds[i].fd, ConfBlock, req);
-                    req->clear();  // Clear request state instead of delete/new
-                    _poll_fds[i].events = POLLIN;
+                    close_connection(i);
+					break ;
+					// req->clear();  // Clear request state instead of delete/new
+                    // _poll_fds[i].events = POLLIN;
                 }
             }
         } catch (const std::exception& e) {
