@@ -173,7 +173,6 @@ void server::printFdsVect()
 
 void server::s_run(conf ConfBlock, Request* req)
 {
-
     for (size_t i = 0; i < _poll_fds.size(); ++i)
     {
         poll(&_poll_fds[i], _poll_fds.size(), -1);
@@ -184,23 +183,27 @@ void server::s_run(conf ConfBlock, Request* req)
                 if (_poll_fds[i].revents & POLLIN) {
                     handle_new_connection(_server_sockets[0].fd);
                 }
-            } else {
+            } 
+            else {
                 if (_poll_fds[i].revents & POLLIN) {
-                    // handle_client_data(i);
                     std::cout << "richiesta\n";
                     req->getRequest(_poll_fds[i].fd, _poll_fds[i].events);
-                } else if (_poll_fds[i].revents & POLLOUT) {
-                    // handle_client_response(i);
+        //            _poll_fds[i].events = POLLOUT;
+                }
+                else if (_poll_fds[i].revents & POLLOUT) {
                     std::cout << "risposta\n";
                     std::cout << "PATH SRUN: " + getRoot() + '\n';
                     sendResponse(_poll_fds[i].fd, ConfBlock, req);
-                    close_connection(i);
-                    break ;
+                    _poll_fds[i].events = POLLIN;
+    //                delete req;
+    //                req = new Request();
                 }
             }
         } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
             delete req;
             close_connection(i);
+            req = new Request();
         }
     }
 }
