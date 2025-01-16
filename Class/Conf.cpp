@@ -1,10 +1,5 @@
 #include "../includes/webserv.hpp"
-#include <algorithm>
 #include <cctype>
-#include <cstddef>
-#include <filesystem>
-#include <iterator>
-#include <numeric>
 #include <unistd.h>
 #include <map>
 #include <string>
@@ -91,7 +86,7 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 	if (location.ErrorPageSize() > 0)
 		errorPage = location.getErrorPage(error);
 	if (errorPage == "" && (error == 404 || error == 403 || error == 408))
-		errorPage = "/400.html";
+		errorPage = "/40x.html";
 	if (errorPage == "" && error == 501)
 		errorPage = "/50x.html";
 	return errorPage;
@@ -100,13 +95,14 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 void conf::checkGetRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
 	// cosi controlliamo solo i valori di quel determinato server invece che in tutti
 	// per semplicita' prendo solo il primo server
-	// se URL e' del tipo "/index.html" non funziona perche' cerca la location "/index.hml"
-	// ma deve cercare il file dentro la location "/" chiamato "index.html"
 	StatusCode = 200;
 	char buff[4062];
 	std::string url = req->getURL();
-	if (req->getURL().rfind(".") != NOT_FOUND)
+	std::string file;
+	if (req->getURL().rfind(".") != NOT_FOUND) {
+		file = url.substr(url.rfind('/') + 1);
 		url.erase(url.rfind('/') + 1, (url.length() - url.rfind('/')));
+	}
 	if (req->getURL() != "/" && req->getURL()[req->getURL().length() - 1] == '/')
 		url = req->getURL().substr(0, req->getURL().rfind('/'));
 	std::string subUrl = url;
@@ -143,18 +139,21 @@ void conf::checkGetRequest(Request* req) { // magari aggiungere "int nbrServer" 
 			if (!_servers[1].getListing())
 				StatusCode = 404;
 		}
-		else
+		else if (!file.empty() && file == _servers[1].getIndex())
 		 	_fullPath += _servers[1].getIndex();
+		else
+		 	StatusCode = 404;
 	}
 	else if (StatusCode == 200) {
 		if (loc.getIndex() == "") {
 			if (!loc.getListing())
 				StatusCode = 404;
 		}
-		else
+		else if (!file.empty() && file == loc.getIndex())
 			_fullPath += loc.getIndex();
+		else
+		 	StatusCode = 404;
 	}
-	std::cout << "FULL PATH: |" + _fullPath +"|\n";
 }
 
 location conf::getLocation(std::string to_find, int nbrServer) {
