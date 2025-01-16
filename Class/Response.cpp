@@ -5,7 +5,7 @@
 
 Response::Response() {}
 
-void Response::generateResponse(Request* req, conf ConfBlock) {
+void Response::generateGetResponse(Request* req, conf ConfBlock) {
 	
 	std::ifstream file;
 	std::stringstream buff;
@@ -18,7 +18,7 @@ void Response::generateResponse(Request* req, conf ConfBlock) {
 			request = buff.str();
 			_response = "HTTP/1.1 200 OK\r\n Content-Type: "
 					+ req->getHeader("Content-Type")
-					+ "\r\nConnection: close\r\n\r\n"
+					+ "\r\nConnection: " + req->getHeader("Connection") + "\r\n\r\n"
 					+ request;
 			break ;
 		case 404:

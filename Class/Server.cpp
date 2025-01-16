@@ -290,7 +290,6 @@ void server::checkValue() {
 						throw exc("Error: invalid port: \"" + *it + "\"\n");
 					str.erase(0, substr.length() + 1);
 				}
-				std::cout << i << '\n';
 				if (i != 4)
 					throw exc("Error: invalid port: \"" + *it + "\"\n");
 			}

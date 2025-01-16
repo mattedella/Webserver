@@ -40,5 +40,4 @@ void ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::strin
 void sendResponse(int client_socket, conf ConfBlock, Request* req);
 Request* getRequest(int& client_socket, short& event);
 
-
 #endif

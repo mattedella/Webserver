@@ -15,7 +15,6 @@ void conf::run()
 	Request *req = new Request();
 	while (i < 0) {
 		//it->second.printFdsVect();
-		std::cout << "PATH RUN: " + it->second.getRoot() + '\n';
 		it->second.s_run(*this, req);
     }
 }

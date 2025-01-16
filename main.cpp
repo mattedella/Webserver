@@ -30,9 +30,8 @@ int main (int argc, char **argv) {
 		for (std::map<int, server>::iterator it = startListen.begin(); it != startListen.end(); it++)
 		{
 			std::cout<< BLUE << "Server " <<it->first << ": starting\n" << RESET;
-			it->second.startListens();			
+			it->second.startListens();
 			it->second.starting();
-			std::cout << "PATH SERVER: " + it->second.getRoot() << std::endl;
 		}
 		c->run();
 	} catch (std::exception& e) {

@@ -13,7 +13,9 @@ class Response {
 	public:
 		Response();
 
-		void generateResponse(Request* req, conf ConfBlock);
+		void generateGetResponse(Request* req, conf ConfBlock);
+		void generatePostResponse(Request* req, conf ConfBlock);
+		void generateDeleteResponse(Request* req, conf ConfBlock);
 
 		std::string getResponse();
 

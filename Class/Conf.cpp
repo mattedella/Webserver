@@ -84,7 +84,6 @@ server conf::getServer(int nbrServer) {
 std::string conf::getErrorPage(int error, int nbrServer, location location) { // fatto un po' a cazzo
 	std::string errorPage = "";
 	(void)nbrServer;
-	std::cout << _servers[1].ErrorPageSize() << '\n';
 	if (_http[0].ErrorPageSize() > 0)
 		errorPage = _http[0].getErrorPage(error);
 	if (_servers[1].ErrorPageSize() > 0)
@@ -95,7 +94,6 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 		errorPage = "/400.html";
 	if (errorPage == "" && error == 501)
 		errorPage = "/50x.html";
-	std::cout << errorPage << '\n';
 	return errorPage;
 }
 
@@ -106,22 +104,24 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 	// ma deve cercare il file dentro la location "/" chiamato "index.html"
 	StatusCode = 200;
 	char buff[4062];
+	std::string url = req->getURL();
+	std::string subUrl = url;
+	if (req->getURL() != "/" && req->getURL()[req->getURL().length() - 1] == '/')
+		url = req->getURL().substr(0, req->getURL().rfind('/'));
 	getcwd(buff, sizeof(buff) - 1);
 	_fullPath = buff;
 	_fullPath += _servers[1].getRoot();
-	std::cout << "server path: " + _servers[1].getRoot() << std::endl;
-	std::cout << "path fatto: " + _fullPath + "\n";
+	if (url != "/")
+		subUrl = url.substr(url.rfind("/"));
 	location loc;
-	if (_servers[1].checkLocation(req->getURL())) {
-		loc = _servers[1].getLocation(req->getURL());
-		_fullPath += loc.getRoot();
+	if (_servers[1].checkLocation(subUrl)) {
+		loc = _servers[1].getLocation(subUrl);
 	}
 	else {
 	 	StatusCode = 404;
 	}
 	if (StatusCode == 200)
 		_fullPath += req->getURL();
-	std::cout << "path fatto 2.0\n";
 	if (_http[0].getMethodsSize() > 0)
 		if (!_http[0].getMethods(req->getMethod())) {
 			std::cout << "HTTP\n";
@@ -154,7 +154,6 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 		else
 			_fullPath += loc.getIndex();
 	}
-	std::cout << "PATH: |" + _fullPath + "|\n";
 }
 
 location conf::getLocation(std::string to_find, int nbrServer) {
