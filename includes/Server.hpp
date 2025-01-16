@@ -54,6 +54,7 @@ class server : public ABlock {
 		std::vector<int>				_ports;
 		std::vector<std::string>		_server_names;
 		std::map<std::string, location>	_locations;
+		
 
 	public:
 		server();

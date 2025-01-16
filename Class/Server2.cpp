@@ -184,8 +184,18 @@ void server::printFdsVect()
 
 void server::s_run(conf ConfBlock, Request* req)
 {
-    for (size_t i = 0; i < _poll_fds.size(); ++i)
-    {
+    while(true) {  // Add continuous loop
+        int ret = poll(&_poll_fds[0], _poll_fds.size(), -1);  // Move poll outside the loop
+        std::cout << ret << " RET\n";
+        if (ret < 0) {
+            std::cerr << "Poll error: " << strerror(errno) << std::endl;
+            continue;
+        }
+        if (ret == 0) {
+            continue; // Timeout, though unlikely with -1 timeout
+        }
+        for (size_t i = 0; i < _poll_fds.size(); ++i)
+        {
         poll(&_poll_fds[0], _poll_fds.size(), -1);  // Poll all FDs at once
         if (_poll_fds[i].revents == 0)
             continue;
@@ -202,7 +212,6 @@ void server::s_run(conf ConfBlock, Request* req)
                     break;
                 }
             }
-
             if (!is_server_socket) {
                 if (_poll_fds[i].revents & POLLIN) {
                     std::cout << "richiesta\n";
@@ -211,7 +220,7 @@ void server::s_run(conf ConfBlock, Request* req)
                         _poll_fds[i].events = POLLOUT;
                     }
                 }
-                else if (_poll_fds[i].revents & POLLOUT) {
+                if (_poll_fds[i].events & POLLOUT) {
                     std::cout << "risposta\n";
                     sendResponse(_poll_fds[i].fd, ConfBlock, req);
                     req->clear();
@@ -223,5 +232,6 @@ void server::s_run(conf ConfBlock, Request* req)
             req->clear();
             close_connection(i);
         }
+    }
     }
 }

@@ -53,7 +53,8 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "optional": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "cstring": "cpp"
     },
     "makefile.configureOnOpen": false
 }
