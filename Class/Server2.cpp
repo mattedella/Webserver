@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <cstring> 
 #include "../includes/webserv.hpp"
 
 void server::close_connection(int index) {
@@ -107,40 +108,50 @@ void server::set_nonblocking(int fd) {
     fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-bool	server::init(int port)
+bool server::init(int port)
 {
-	int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_fd < 0) return false;
-	int opt = 1;
-	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) 
-	{
-		close(server_fd);
-		return false;
-	}
-	set_nonblocking(server_fd);
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd < 0) 
+        return false;
+
+    int opt = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) 
+    {
+        close(server_fd);
+        return false;
+    }
+
+    set_nonblocking(server_fd);
+    
     struct sockaddr_in address;
+    std::memset(&address, 0, sizeof(address));
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(port);
+
     if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         close(server_fd);
         return false;
     }
-    if (listen(server_fd, 3) < 0) {
+
+    if (listen(server_fd, SOMAXCONN) < 0) {  // Use SOMAXCONN instead of 3
         close(server_fd);
         return false;
     }
+
+    // Add to server sockets array
     ServerSocket ss;
     ss.fd = server_fd;
     ss.port = port;
     _server_sockets.push_back(ss);
+
+    // Add to poll array
     struct pollfd pfd;
     pfd.fd = server_fd;
     pfd.events = POLLIN;
+    pfd.revents = 0;
     _poll_fds.push_back(pfd);
 
-
-    std::cout << "size of POll: "<<_poll_fds.size() << std::endl;
     return true;
 }
 
@@ -175,17 +186,24 @@ void server::s_run(conf ConfBlock, Request* req)
 {
     for (size_t i = 0; i < _poll_fds.size(); ++i)
     {
-        poll(&_poll_fds[i], _poll_fds.size(), -1);
+        poll(&_poll_fds[0], _poll_fds.size(), -1);  // Poll all FDs at once
         if (_poll_fds[i].revents == 0)
             continue;
 
         try {
-            if (_poll_fds[i].fd == _server_sockets[0].fd) {
-                if (_poll_fds[i].revents & POLLIN) {
-                    handle_new_connection(_server_sockets[0].fd);
+            // Check if this is any of our server sockets
+            bool is_server_socket = false;
+            for (size_t j = 0; j < _server_sockets.size(); ++j) {
+                if (_poll_fds[i].fd == _server_sockets[j].fd) {
+                    is_server_socket = true;
+                    if (_poll_fds[i].revents & POLLIN) {
+                        handle_new_connection(_server_sockets[j].fd);
+                    }
+                    break;
                 }
-            } 
-            else {
+            }
+
+            if (!is_server_socket) {
                 if (_poll_fds[i].revents & POLLIN) {
                     std::cout << "richiesta\n";
                     req->getRequest(_poll_fds[i].fd, _poll_fds[i].events);
@@ -195,18 +213,15 @@ void server::s_run(conf ConfBlock, Request* req)
                 }
                 else if (_poll_fds[i].revents & POLLOUT) {
                     std::cout << "risposta\n";
-                    std::cout << "PATH SRUN: " + getRoot() + '\n';
                     sendResponse(_poll_fds[i].fd, ConfBlock, req);
-                    close_connection(i);
-					break ;
-					// req->clear();  // Clear request state instead of delete/new
-                    // _poll_fds[i].events = POLLIN;
+                    req->clear();
+                    _poll_fds[i].events = POLLIN;
                 }
             }
         } catch (const std::exception& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
+            std::cerr << "Error on fd " << _poll_fds[i].fd << ": " << e.what() << std::endl;
             req->clear();
-            _poll_fds[i].events = POLLIN;
+            close_connection(i);
         }
     }
 }
