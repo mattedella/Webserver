@@ -178,6 +178,7 @@ void server::s_run(conf ConfBlock, Request* req)
         poll(&_poll_fds[i], _poll_fds.size(), -1);
         if (_poll_fds[i].revents == 0)
             continue;
+
         try {
             if (_poll_fds[i].fd == _server_sockets[0].fd) {
                 if (_poll_fds[i].revents & POLLIN) {
@@ -188,22 +189,22 @@ void server::s_run(conf ConfBlock, Request* req)
                 if (_poll_fds[i].revents & POLLIN) {
                     std::cout << "richiesta\n";
                     req->getRequest(_poll_fds[i].fd, _poll_fds[i].events);
-        //            _poll_fds[i].events = POLLOUT;
+                    if (req->isComplete()) {
+                        _poll_fds[i].events = POLLOUT;
+                    }
                 }
                 else if (_poll_fds[i].revents & POLLOUT) {
                     std::cout << "risposta\n";
                     std::cout << "PATH SRUN: " + getRoot() + '\n';
                     sendResponse(_poll_fds[i].fd, ConfBlock, req);
+                    req->clear();  // Clear request state instead of delete/new
                     _poll_fds[i].events = POLLIN;
-    //                delete req;
-    //                req = new Request();
                 }
             }
         } catch (const std::exception& e) {
             std::cerr << "Error: " << e.what() << std::endl;
-            delete req;
-            close_connection(i);
-            req = new Request();
+            req->clear();
+            _poll_fds[i].events = POLLIN;
         }
     }
 }

@@ -15,6 +15,10 @@ class Request {
 		std::string							_httpVersion;
 		std::string							_method;
 		std::map<std::string, std::string>	_headers;
+		
+        bool                                _headers_complete;  // New
+        bool                                _body_complete;     // New
+        size_t                              _content_length;    // New
 
 	public:
 		Request();
@@ -26,6 +30,12 @@ class Request {
 		std::string	getMethod();
 		std::string	getHeader(const std::string& Key);
 		void		printRequest();
+
+        bool        isComplete() const;
+        void        setHeadersComplete(bool complete);
+        void        setBodyComplete(bool complete);
+        void        setContentLength(size_t length);
+        void        clear();  
 
 		~Request();
 };
