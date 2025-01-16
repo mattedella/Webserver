@@ -113,16 +113,15 @@ void server::s_run(conf ConfBlock, Request* req)
 					req->getRequest(_poll_fds[i].fd, _poll_fds[i].events);
 					// req->printRequest();
 				}
-				else if (_poll_fds[i].revents & POLLOUT) {
-					sendResponse(_poll_fds[i].fd, ConfBlock, req);
+				if (_poll_fds[i].revents & POLLOUT) {
+					sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
 					close_connection(i);
-					delete req;
-					Request *req = new Request();
 					break ;
 				}
 			}
 		} catch (const std::exception& e) {
-			std::cerr << "Error: " << e.what() << std::endl;
+			std::cerr << e.what() << std::endl;
+			delete req;
 			close_connection(i);
 		}
 	}

@@ -97,7 +97,7 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 	return errorPage;
 }
 
-void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
+void conf::checkGetRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
 	// cosi controlliamo solo i valori di quel determinato server invece che in tutti
 	// per semplicita' prendo solo il primo server
 	// se URL e' del tipo "/index.html" non funziona perche' cerca la location "/index.hml"
@@ -105,9 +105,11 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 	StatusCode = 200;
 	char buff[4062];
 	std::string url = req->getURL();
-	std::string subUrl = url;
+	if (req->getURL().rfind(".") != NOT_FOUND)
+		url.erase(url.rfind('/') + 1, (url.length() - url.rfind('/')));
 	if (req->getURL() != "/" && req->getURL()[req->getURL().length() - 1] == '/')
 		url = req->getURL().substr(0, req->getURL().rfind('/'));
+	std::string subUrl = url;
 	getcwd(buff, sizeof(buff) - 1);
 	_fullPath = buff;
 	_fullPath += _servers[1].getRoot();
@@ -120,25 +122,23 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 	else {
 	 	StatusCode = 404;
 	}
-	if (StatusCode == 200)
+	if (StatusCode == 200 && req->getURL().rfind('.') == NOT_FOUND)
 		_fullPath += req->getURL();
+	else
+	 	_fullPath += req->getURL().substr(0, req->getURL().rfind("/") + 1);
 	if (_http[0].getMethodsSize() > 0)
 		if (!_http[0].getMethods(req->getMethod())) {
-			std::cout << "HTTP\n";
 			StatusCode = 501;
 		}
 	if (_servers[1].getMethodsSize() > 0)
 		if (!_servers[1].getMethods(req->getMethod())) {
-			std::cout << "SERVER\n";
 			StatusCode = 501;
 		}
 	if (loc.getMethodsSize() > 0)
 		if (!loc.getMethods(req->getMethod())) {
-			std::cout << "LOCATION\n";
 			StatusCode = 501;
 		}
-	if (req->getURL() == "/" && StatusCode == 200) {
-		std::cout <<"index server: "<< _servers[1].getIndex() << std::endl;
+	if (url == "/" && StatusCode == 200) {
 		if (_servers[1].getIndex() == "") {
 			if (!_servers[1].getListing())
 				StatusCode = 404;
@@ -154,6 +154,7 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 		else
 			_fullPath += loc.getIndex();
 	}
+	std::cout << "FULL PATH: |" + _fullPath +"|\n";
 }
 
 location conf::getLocation(std::string to_find, int nbrServer) {

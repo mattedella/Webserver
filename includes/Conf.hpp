@@ -25,7 +25,9 @@ class conf {
 		std::string	getFullPath();
 		location	getLocation(std::string to_find, int nbrServer);
 		server		getServer(int nbrServer);
-		void		checkRequest(Request* req);
+
+		void		checkGetRequest(Request* req);
+
 // int			reload(int port);
 		std::map<int, server>& getMapServer();
 		server getServer(std::string port);
