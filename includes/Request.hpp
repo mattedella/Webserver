@@ -2,10 +2,8 @@
 # define REQUEST_HPP
 
 #include "Ablock.hpp"
+#include <sstream>
 #include <string>
-
-// TCP connection, then GET or "methods" request
-// after response, TCP conection is closed
 
 class Request {
 
@@ -15,16 +13,22 @@ class Request {
 		std::string							_httpVersion;
 		std::string							_method;
 		std::map<std::string, std::string>	_headers;
+		std::map<std::string, std::string>	_body;
 
 	public:
 		Request();
 
 		void			ParsRequest(char* Request);
+		void			parsGet(std::stringstream& file, std::string& line);
+		void			parsPost(std::stringstream& file, std::string& line);
+		void			parsDelete(std::stringstream& file, std::string& line);
+
 		void			getRequest(int& client_socket, short& event);
 		std::string&	getURL();
 		std::string		getHttpVersion();
 		std::string		getMethod();
 		std::string		getHeader(const std::string& Key);
+
 		void			printRequest();
 
 		~Request();
