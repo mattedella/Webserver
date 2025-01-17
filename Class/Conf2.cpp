@@ -10,12 +10,16 @@
 
 void conf::run()
 {
-	int i = -1;
-	std::map<int, server>::iterator it = _servers.begin();
-	Request *req = new Request();
-	while (i < 0) {
-		//it->second.printFdsVect();
-		std::cout << "PATH RUN: " + it->second.getRoot() + '\n';
-		it->second.s_run(*this, req);
+    Request *req = new Request();
+    bool running = true;
+
+    while(running) {
+        for (std::map<int, server>::iterator it = _servers.begin(); 
+             it != _servers.end(); ++it) 
+        {
+            // Run one iteration of server event loop
+            it->second.s_run(*this, req);
+        }
     }
+    delete req;
 }

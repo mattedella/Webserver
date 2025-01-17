@@ -182,56 +182,61 @@ void server::printFdsVect()
     }
 }
 
+int server::getPort() const 
+{
+    if (!_server_sockets.empty()) {
+        return _server_sockets[0].port;
+    }
+    return -1;
+}
+
 void server::s_run(conf ConfBlock, Request* req)
 {
-    while(true) {  // Add continuous loop
-        int ret = poll(&_poll_fds[0], _poll_fds.size(), -1);  // Move poll outside the loop
-        std::cout << ret << " RET\n";
-        if (ret < 0) {
-            std::cerr << "Poll error: " << strerror(errno) << std::endl;
-            continue;
-        }
-        if (ret == 0) {
-            continue; // Timeout, though unlikely with -1 timeout
-        }
-        for (size_t i = 0; i < _poll_fds.size(); ++i)
-        {
-        poll(&_poll_fds[0], _poll_fds.size(), -1);  // Poll all FDs at once
-        if (_poll_fds[i].revents == 0)
-            continue;
-
-        try {
-            // Check if this is any of our server sockets
-            bool is_server_socket = false;
-            for (size_t j = 0; j < _server_sockets.size(); ++j) {
-                if (_poll_fds[i].fd == _server_sockets[j].fd) {
-                    is_server_socket = true;
-                    if (_poll_fds[i].revents & POLLIN) {
-                        handle_new_connection(_server_sockets[j].fd);
-                    }
-                    break;
-                }
-            }
-            if (!is_server_socket) {
-                if (_poll_fds[i].revents & POLLIN) {
-                    std::cout << "richiesta\n";
-                    req->getRequest(_poll_fds[i].fd, _poll_fds[i].events);
-                    if (req->isComplete()) {
-                        _poll_fds[i].events = POLLOUT;
-                    }
-                }
-                if (_poll_fds[i].events & POLLOUT) {
-                    std::cout << "risposta\n";
-                    sendResponse(_poll_fds[i].fd, ConfBlock, req);
-                    req->clear();
-                    _poll_fds[i].events = POLLIN;
-                }
-            }
-        } catch (const std::exception& e) {
-            std::cerr << "Error on fd " << _poll_fds[i].fd << ": " << e.what() << std::endl;
-            req->clear();
-            close_connection(i);
-        }
+    // Single iteration of event handling
+    int ret = poll(&_poll_fds[0], _poll_fds.size(), 0); // Non-blocking poll
+    
+    if (ret < 0) {
+        std::cerr << "Poll error: " << strerror(errno) << std::endl;
+        return;
     }
+
+    if (ret > 0) {
+        for (size_t i = 0; i < _poll_fds.size(); ++i) {
+            if (_poll_fds[i].revents == 0)
+                continue;
+
+            try {
+                bool is_server_socket = false;
+                for (size_t j = 0; j < _server_sockets.size(); ++j) {
+                    if (_poll_fds[i].fd == _server_sockets[j].fd) {
+                        is_server_socket = true;
+                        if (_poll_fds[i].revents & POLLIN) {
+                            handle_new_connection(_server_sockets[j].fd);
+                        }
+                        break;
+                    }
+                }
+                if (!is_server_socket) {
+                    if (_poll_fds[i].revents & POLLIN) {
+                        std::cout << "Request on server port " << getPort() << std::endl;
+                        req->getRequest(_poll_fds[i].fd, _poll_fds[i].events);
+                        if (req->isComplete()) {
+                            _poll_fds[i].events = POLLOUT;
+                        }
+                    }
+                    if (_poll_fds[i].events & POLLOUT) {
+                        std::cout << "Response from server port " << getPort() << std::endl;
+                        sendResponse(_poll_fds[i].fd, ConfBlock, req);
+                        req->clear();
+                        _poll_fds[i].events = POLLIN;
+                    }
+                }
+            } catch (const std::exception& e) {
+                std::cerr << "Error on fd " << _poll_fds[i].fd << ": " << e.what() << std::endl;
+                req->clear();
+                close_connection(i);
+            }
+            _poll_fds[i].revents = 0;
+        }
     }
 }

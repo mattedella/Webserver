@@ -81,6 +81,8 @@ class server : public ABlock {
 		void	close_connection(int index);
 		void	set_nonblocking(int fd);
 
+    	int getPort() const;
+
 		bool		getListing();
 		std::string	getIndex();
 		void 		startListens();
