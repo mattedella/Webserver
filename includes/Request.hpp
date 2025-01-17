@@ -18,16 +18,17 @@ class Request {
 	public:
 		Request();
 
-		void			ParsRequest(char* Request);
+		void			ParsRequest(std::string& to_pars);
 		void			parsGet(std::stringstream& file, std::string& line);
 		void			parsPost(std::stringstream& file, std::string& line);
 		void			parsDelete(std::stringstream& file, std::string& line);
 
-		void			getRequest(int& client_socket, short& event);
+		void			getRequest(int& client_socket, short& event, int MaxSize);
 		std::string&	getURL();
 		std::string		getHttpVersion();
 		std::string		getMethod();
 		std::string		getHeader(const std::string& Key);
+		void			clear();
 
 		void			printRequest();
 

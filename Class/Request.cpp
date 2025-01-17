@@ -1,6 +1,5 @@
 
-#include "../includes/Request.hpp"
-#include "../includes/Exc.hpp"
+#include "../includes/webserv.hpp"
 #include <cstdio>
 #include <sstream>
 #include <string>
@@ -8,6 +7,15 @@
 #include <poll.h>
 
 Request::Request() {}
+
+void Request::clear() {
+	_method.clear();
+	_headers.clear();
+	_file.clear();
+	_httpVersion.clear();
+	_url.clear();
+	_body.clear();
+}
 
 void Request::parsGet(std::stringstream& file, std::string& line) {
 	while (std::getline(file, line) && !line.empty()) {
@@ -30,10 +38,11 @@ void Request::parsPost(std::stringstream& file, std::string& line) {
 			_headers.insert(std::make_pair(Key, Tp));
 		}
 	}
+	// if (_headers["Content-Type"].find("boundary") != NOT_FOUND)
 	std::getline(file, body);
 	if (body.find('&') != NOT_FOUND) {
 		while (!body.empty()) {
-			std::cout << body << '\n';
+			// std::cout << body << '\n';
 			if (body.rfind('&') != NOT_FOUND) {
 				value = body.substr(body.rfind('&') + 1);
 				body.erase(body.rfind('&'), value.length() + 1);
@@ -52,8 +61,6 @@ void Request::parsPost(std::stringstream& file, std::string& line) {
 		Tp = body.substr(body.find('=') + 1);
 		_body.insert(std::make_pair(Key, Tp));
 	}
-
-	std::cout << "parsPost\n";
 }
 
 void Request::parsDelete(std::stringstream& file, std::string& line) {
@@ -62,12 +69,12 @@ void Request::parsDelete(std::stringstream& file, std::string& line) {
 	std::cout << "parsDelete\n";
 }
 
-void Request::ParsRequest(char* Request) {
-	std::string to_pars(Request);
+void Request::ParsRequest(std::string& to_pars) {
 	std::stringstream ss(to_pars);
 	std::string line;
 	std::getline(ss, line);
 	std::stringstream req_line(line);
+	// std::cout << "______RICHIESTA NON PARSATA______\n" << to_pars << "\n_______________\n";
 	req_line >> _method >> _url >> _httpVersion;
 	if (_method == "GET")
 		parsGet(ss, line);
@@ -77,31 +84,38 @@ void Request::ParsRequest(char* Request) {
 		parsDelete(ss, line);
 }
 
-void Request::getRequest(int &client_socket, short& event) {
-	int bytes_recived;
-	char buffer[4096];
+void Request::getRequest(int &client_socket, short& event, int MaxSize) {
+	int bytes_recived = 0, total_bytes = 0;
+	char *tmp_buffer = new char[MaxSize];
+	std::string buffer;
+	while ((bytes_recived = recv(client_socket, tmp_buffer, MaxSize, 0)) > 0) {
+		total_bytes += bytes_recived;
+		std::cout << "BYTE RECIVED: " << bytes_recived << '\n';
+		std::cout << "REQUEST: " << tmp_buffer << '\n';
+		buffer += tmp_buffer;
+		delete [] tmp_buffer;
+		tmp_buffer = new char[MaxSize];
 
-	bytes_recived = recv(client_socket, buffer, sizeof(buffer) - 1, 0);
-	if (bytes_recived < 0) {
+	}
+	if (total_bytes < 0) {
 		throw exc("Error reading request\n");
 	}
-	buffer[bytes_recived] = '\0';
 	ParsRequest(buffer);
-	printRequest();
+	// printRequest();
 	event = POLLOUT;
 }
 
 
 void Request::printRequest() {
-	std::cout << "Method: " + _method + '\n';
-	std::cout << "URL: " + _url + '\n';
-	std::cout << "HTTP Version: " + _httpVersion + '\n';
-	std::cout << "Headers: \n";
-	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
-		std::cout << it->first + ": " + it->second + '\n';
-	std::cout << "Body: \n";
-	for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
-		std::cout << bit->first + ": " + bit->second + '\n';
+	// std::cout << "Method: " + _method + '\n';
+	// std::cout << "URL: " + _url + '\n';
+	// std::cout << "HTTP Version: " + _httpVersion + '\n';
+	// std::cout << "Headers: \n";
+	// for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+	// 	std::cout << it->first + ": " + it->second + '\n';
+	// std::cout << "Body: \n";
+	// for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
+	// 	std::cout << bit->first + ": " + bit->second + '\n';
 }
 
 std::string Request::getHeader(const std::string& Key) {

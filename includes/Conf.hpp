@@ -27,6 +27,8 @@ class conf {
 		server		getServer(int nbrServer);
 
 		void		checkGetRequest(Request* req);
+		void		checkPostRequest(Request* req);
+		void		checkDeleteRequest(Request* req);
 
 // int			reload(int port);
 		std::map<int, server>& getMapServer();

@@ -92,6 +92,12 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 	return errorPage;
 }
 
+void conf::checkPostRequest(Request * req) {
+	StatusCode = 200;
+	(void)req;
+	// req->printRequest();
+}
+
 void conf::checkGetRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
 	// cosi controlliamo solo i valori di quel determinato server invece che in tutti
 	// per semplicita' prendo solo il primo server
@@ -134,11 +140,14 @@ void conf::checkGetRequest(Request* req) { // magari aggiungere "int nbrServer" 
 		if (!loc.getMethods(req->getMethod())) {
 			StatusCode = 501;
 		}
+	std::cout <<  "|" + file + "|" << '\n';
 	if (url == "/" && StatusCode == 200) {
 		if (_servers[1].getIndex() == "") {
 			if (!_servers[1].getListing())
 				StatusCode = 404;
 		}
+		if (file.empty() && _servers[1].getIndex() != "")
+			_fullPath += _servers[1].getIndex();
 		else if (!file.empty() && file == _servers[1].getIndex())
 		 	_fullPath += _servers[1].getIndex();
 		else

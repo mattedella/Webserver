@@ -17,7 +17,7 @@ Response::Response() {}
 				throw exc("Error: file \"" + ConfBlock.getFullPath() + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
-			_response = "HTTP/1.1 200 OK\r\n Content-Type: text/html\r\nConnection: "
+			_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: "
 					+ req->getHeader("Connection") + "\r\n\r\n"
 					+ request;
 			break ;
@@ -27,7 +27,7 @@ Response::Response() {}
 				throw exc("Error: file \"" + ConfBlock.getFullPath() + ConfBlock.getErrorPage(404, 1, ConfBlock.getLocation(req->getURL(), 1)) + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
-			_response = "HTTP/1.1 404 Not Found\r\n Content-Type: "
+			_response = "HTTP/1.1 404 Not Found\r\nContent-Type: "
 					+ req->getHeader("Content-Type")
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
@@ -38,7 +38,7 @@ Response::Response() {}
 				throw exc("Error: file \"" + ConfBlock.getFullPath() + ConfBlock.getErrorPage(403, 1, ConfBlock.getLocation(req->getURL(), 1)) + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
-			_response = "HTTP/1.1 403 Forbidden\r\n Content-Type: "
+			_response = "HTTP/1.1 403 Forbidden\r\nContent-Type: "
 					+ req->getHeader("Content-Type")
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
@@ -49,7 +49,7 @@ Response::Response() {}
 				throw exc("Error: file \"" + ConfBlock.getFullPath() + ConfBlock.getErrorPage(408, 1, ConfBlock.getLocation(req->getURL(), 1)) + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
-			_response = "HTTP/1.1 408 Request Timeout\r\n Content-Type: "
+			_response = "HTTP/1.1 408 Request Timeout\r\nContent-Type: "
 					+ req->getHeader("Content-Type")
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
@@ -61,13 +61,13 @@ Response::Response() {}
 				throw exc("Error: file \"" + ConfBlock.getFullPath() + ConfBlock.getErrorPage(501, 1, ConfBlock.getLocation(req->getURL(), 1)) + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
-			_response = "HTTP/1.1 501 Method not Allowed\r\n Content-Type: "
+			_response = "HTTP/1.1 501 Method not Allowed\r\nContent-Type: "
 					+ req->getHeader("Content-Type")
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
 			break ;
 	}
-	std::cout << "--------RISPOSTA--------\n" << getResponse() << '\n';
+	// std::cout << "--------RISPOSTA--------\n" << getResponse() << '\n';
 	}
 
 std::string Response::getResponse() {
