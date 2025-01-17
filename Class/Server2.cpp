@@ -6,11 +6,20 @@
 #include "../includes/webserv.hpp"
 
 void server::close_connection(int index) {
+    if (index < 0 || (int)getPollFds().size()) {
+        std::cerr << "Invalid poll_fds index" << std::endl;
+        return;
+    }
     int client_fd = _poll_fds[index].fd;
-    close(client_fd);
-    _client_buffers.erase(client_fd);
-    _client_responses.erase(client_fd);
-    _poll_fds.erase(_poll_fds.begin() + index);
+
+    if(client_fd > 0)
+    {
+        close(client_fd);
+        _client_buffers.erase(client_fd);
+        _client_responses.erase(client_fd);
+    }
+    if (index < (int)getPollFds().size())
+        _poll_fds.erase(_poll_fds.begin() + index);
 }
 
 
@@ -32,6 +41,10 @@ void server::handle_new_connection(int server_fd)
 
 
 void server::handle_client_response(int index) {
+    if (index < 0 || index >= (int)getPollFds().size()) {
+        std::cerr << "Invalid poll_fds index" << std::endl;
+        return;
+    }
     int client_fd = _poll_fds[index].fd;
     if (_client_responses.find(client_fd) == _client_responses.end()) {
         close_connection(index);
@@ -39,10 +52,12 @@ void server::handle_client_response(int index) {
     }
     const std::string& response = _client_responses[client_fd];
     ssize_t bytes_sent = send(client_fd, response.c_str(), response.length(), 0);
-    if (bytes_sent <= 0) {
+    if (bytes_sent < 0 || static_cast<size_t>(bytes_sent) != response.length()) {
+        std::cerr << "Send error or partial send" << std::endl;
         close_connection(index);
         return;
     }
+
     close_connection(index);
 }
 
@@ -86,21 +101,34 @@ void server::handle_request(int client_fd, const std::string& request) {
 }
 
 
+
+
 void server::handle_client_data(int index) {
-    char buffer[BUFFER_SIZE];
+    if (index < 0 || index >= (int)getPollFds().size()) {
+        std::cerr << "Invalid poll_fds index" << std::endl;
+        return;
+    }
+
     int client_fd = _poll_fds[index].fd;
+
+    char buffer[BUFFER_SIZE];
+    std::memset(buffer, 0, BUFFER_SIZE);
     ssize_t bytes_read = recv(client_fd, buffer, BUFFER_SIZE - 1, 0);
     if (bytes_read <= 0) {
         close_connection(index);
         return;
     }
     buffer[bytes_read] = '\0';
-    _client_buffers[client_fd] += buffer;
+    _client_buffers[client_fd].append(buffer, bytes_read);
     if (_client_buffers[client_fd].find("\r\n\r\n") != std::string::npos) {
         handle_request(client_fd, _client_buffers[client_fd]);
-        _poll_fds[index].events = POLLOUT;
+        if (index < (int)getPollFds().size()) {
+            _poll_fds[index].events = POLLOUT;
+        }
     }
 }
+
+
 
 
 void server::set_nonblocking(int fd) {

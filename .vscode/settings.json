@@ -54,7 +54,8 @@
         "typeinfo": "cpp",
         "optional": "cpp",
         "ranges": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "bitset": "cpp"
     },
     "makefile.configureOnOpen": false
 }

@@ -4,6 +4,13 @@
 
 int StatusCode = 0;
 
+int closeServer(int sig) {
+	(void)sig;
+	std::cout << RED << "Server is closing" << RESET << std::endl;
+	
+	exit(0);
+}
+
 int main (int argc, char **argv) {
 
 	if (argc != 2) {
@@ -38,5 +45,5 @@ int main (int argc, char **argv) {
 	} catch (std::exception& e) {
 		std::cerr << RED << e.what() << RESET;
 	}
-	delete c;
+	initializeCleanup(c);
 }

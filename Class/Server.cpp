@@ -44,7 +44,7 @@ void location::addVal() {
 			std::string methods = it->second;
 			while (!methods.empty()) {
 				int i = 0;
-				while (!std::isspace(methods[i]) || !methods[i])
+				while (!std::isspace(methods[i]))
 					i++;
 				std::string to_push = methods.substr(0, i);
 				if (to_push != "GET" && to_push != "POST" && to_push != "DELETE")
@@ -120,7 +120,7 @@ void server::initVector() {
 			std::string methods = it->second;
 			while (!methods.empty()) {
 				int i = 0;
-				while (!std::isspace(methods[i]) || !methods[i])
+				while (!std::isspace(methods[i]))
 					i++;
 				std::string to_push = methods.substr(0, i);
 				_server_names.push_back(to_push);
@@ -143,7 +143,7 @@ void server::initVector() {
 			std::string methods = it->second;
 			while (!methods.empty()) {
 				int i = 0;
-				while (!std::isspace(methods[i]) || !methods[i])
+				while (!std::isspace(methods[i]))
 					i++;
 				std::string to_push = methods.substr(0, i);
 				methods.erase(0, to_push.length() + 1);
@@ -359,6 +359,31 @@ void server::startListens()
 	{
 		init(*it);
 	}
+}
+
+ std::map<int, std::string>& server::getClientBuffers()  {
+    return _client_buffers;
+}
+
+ std::vector<struct pollfd>& server::getPollFds()  {
+    return _poll_fds;
+}
+
+ std::map<int, std::string>& server::getClientResponses()  {
+    return _client_responses;
+}
+
+
+ std::vector<int>& server::getPorts()  {
+    return _ports;
+}
+
+ std::vector<std::string>& server::getServerNames()  {
+    return _server_names;
+}
+
+std::vector<server::ServerSocket>& server::getServerSockets() {
+    return _server_sockets;
 }
 
 server::~server() {}

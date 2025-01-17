@@ -1,5 +1,5 @@
 SRC = main.cpp \
-      Class/ABlock.cpp Class/Conf.cpp Class/Conf2.cpp Class/Http.cpp Class/Server.cpp Class/Server2.cpp Class/Request.cpp Class/Response.cpp \
+      Class/ABlock.cpp Class/Conf.cpp Class/Conf2.cpp Class/Http.cpp Class/Server.cpp Class/Server2.cpp Class/Request.cpp Class/Response.cpp Class/clean.cpp \
 	  Response/GenerateResp.cpp \
       Parsing/Parsing.cpp
 CC = c++

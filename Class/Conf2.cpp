@@ -10,16 +10,16 @@
 
 void conf::run()
 {
-    Request *req = new Request();
     bool running = true;
 
     while(running) {
         for (std::map<int, server>::iterator it = _servers.begin(); 
              it != _servers.end(); ++it) 
         {
+            Request *req = new Request();
             // Run one iteration of server event loop
             it->second.s_run(*this, req);
+            delete req;
         }
     }
-    delete req;
 }

@@ -89,6 +89,12 @@ class server : public ABlock {
 		location	getLocation(std::string to_find);
 		std::string getListen(std::string& to_find);
 		std::string getServerName(std::string& to_find);
+		std::map<int, std::string>& getClientBuffers();
+		std::vector<ServerSocket>& getServerSockets();
+		std::vector<struct pollfd>& getPollFds();
+		std::map<int, std::string>& getClientResponses() ;
+		std::vector<int>& getPorts();
+		std::vector<std::string>& getServerNames() ;
 
 		~server();
 };

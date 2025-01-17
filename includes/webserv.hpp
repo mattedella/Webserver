@@ -9,6 +9,7 @@
 #include "Exc.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+#include "Clean.hpp"
 #include <cerrno>
 #include <string>
 
