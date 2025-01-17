@@ -8,7 +8,7 @@
 #include <poll.h>
 
 Request::Request() {
-	_headers.insert(std::make_pair("Content-Type", "text/plain"));
+	//_headers.insert(std::make_pair("Content-Type", "text/plain"));
 }
 
 void Request::ParsRequest(char* Request) {
