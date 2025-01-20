@@ -110,7 +110,7 @@ void server::s_run(conf ConfBlock, Request* req)
 			else {
 				if (_poll_fds[i].revents & POLLIN) {
 					std::cout << "------RICHIESTA------\n";
-					req->getRequest(_poll_fds[i].fd, _poll_fds[i].events, _bodysize * 100000);
+					req->getRequest(_poll_fds[i].fd, _poll_fds[i].events, _bodysize * 1000000);
 					// req->printRequest();
 				}
 				if (_poll_fds[i].revents & POLLOUT) {

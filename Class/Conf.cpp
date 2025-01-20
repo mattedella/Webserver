@@ -94,8 +94,30 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 
 void conf::checkPostRequest(Request * req) {
 	StatusCode = 200;
-	(void)req;
-	// req->printRequest();
+	char buff[_servers[1].getBodysize()*1000000];
+	std::string url = req->getURL();
+	std::string file;
+	if (req->getURL().rfind(".") != NOT_FOUND) {
+		file = url.substr(url.rfind('/') + 1);
+		url.erase(url.rfind('/') + 1, (url.length() - url.rfind('/')));
+	}
+	if (req->getURL() != "/" && req->getURL()[req->getURL().length() - 1] == '/')
+		url = req->getURL().substr(0, req->getURL().rfind('/'));
+	std::string subUrl = url;
+	getcwd(buff, sizeof(buff) - 1);
+	_fullPath = buff;
+	_fullPath += _servers[1].getRoot();
+	if (url != "/")
+		subUrl = url.substr(url.rfind("/"));
+	location loc;
+	if (_servers[1].checkLocation(subUrl)) {
+		loc = _servers[1].getLocation(subUrl);
+	}
+	else {
+	 	StatusCode = 404;
+	}
+	if (access(_fullPath.c_str(), R_OK | W_OK | X_OK) < 0)
+		throw exc("ERROR: Cannot open the directory\n");
 }
 
 void conf::checkGetRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
@@ -128,6 +150,8 @@ void conf::checkGetRequest(Request* req) { // magari aggiungere "int nbrServer" 
 		_fullPath += req->getURL();
 	else
 	 	_fullPath += req->getURL().substr(0, req->getURL().rfind("/") + 1);
+	if (access(_fullPath.c_str(), R_OK | W_OK | X_OK) < 0)
+		throw exc("ERROR: Cannot open the directory\n");
 	if (_http[0].getMethodsSize() > 0)
 		if (!_http[0].getMethods(req->getMethod())) {
 			StatusCode = 501;
@@ -140,7 +164,6 @@ void conf::checkGetRequest(Request* req) { // magari aggiungere "int nbrServer" 
 		if (!loc.getMethods(req->getMethod())) {
 			StatusCode = 501;
 		}
-	std::cout <<  "|" + file + "|" << '\n';
 	if (url == "/" && StatusCode == 200) {
 		if (_servers[1].getIndex() == "") {
 			if (!_servers[1].getListing())

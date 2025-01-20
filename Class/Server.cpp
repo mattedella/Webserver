@@ -44,7 +44,7 @@ void location::addVal() {
 			std::string methods = it->second;
 			while (!methods.empty()) {
 				int i = 0;
-				while (!std::isspace(methods[i]) || !methods[i])
+				while (methods[i] && !std::isspace(methods[i]))
 					i++;
 				std::string to_push = methods.substr(0, i);
 				if (to_push != "GET" && to_push != "POST" && to_push != "DELETE")
@@ -117,14 +117,14 @@ void server::initVector() {
 				if (it->second == *vec)
 					throw exc ("Error: server name already exist: " + it->second + '\n');
 			}
-			std::string methods = it->second;
-			while (!methods.empty()) {
+			std::string nameS = it->second;
+			while (!nameS.empty()) {
 				int i = 0;
-				while (!std::isspace(methods[i]) || !methods[i])
+				while (nameS[i] && !std::isspace(nameS[i]))
 					i++;
-				std::string to_push = methods.substr(0, i);
+				std::string to_push = nameS.substr(0, i);
 				_server_names.push_back(to_push);
-				methods.erase(0, to_push.length() + 1);
+				nameS.erase(0, to_push.length() + 1);
 			}
 		}
 		else if (it->first == "autoindex") {
@@ -141,9 +141,10 @@ void server::initVector() {
 		}
 		else if (it->first == "dav_methods") {
 			std::string methods = it->second;
+			int i = 0;
 			while (!methods.empty()) {
-				int i = 0;
-				while (!std::isspace(methods[i]) || !methods[i])
+				i = 0;
+				while (methods[i] && !std::isspace(methods[i]))
 					i++;
 				std::string to_push = methods.substr(0, i);
 				methods.erase(0, to_push.length() + 1);

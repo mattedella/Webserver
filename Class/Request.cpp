@@ -1,6 +1,8 @@
 
 #include "../includes/webserv.hpp"
 #include <cstdio>
+#include <ios>
+#include <netinet/in.h>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -28,6 +30,53 @@ void Request::parsGet(std::stringstream& file, std::string& line) {
 		}
 }
 
+void Request::parsMultipart(std::stringstream& file, std::string& line, std::string Type) {
+	std::string Key, Tp, Value, Boundary;
+	Boundary = Type.substr(Type.find(";") + 11);
+	while (std::getline(file, line)) {
+		if (line.substr(2) == Boundary) {
+			while (std::getline(file, line) && !line.substr(0, line.length() - 1).empty()) {
+				Key = line.substr(0, line.find(':'));
+				Tp = line.substr(line.find(':') + 1);
+				_body.insert(std::make_pair(Key, Tp));
+			}
+		}
+		else {
+			std::string Content = _body["Content-Disposition"];
+			std::string _nameFile = Content.substr(Content.rfind(';') + 12, (Content.rfind('"') - (Content.rfind(';') + 12)));
+			_contentFile = line.substr(0, line.length() - line.find('\r') + 3);
+			std::cout << _contentFile << std::endl;
+		}
+	}
+}
+
+void Request::parsApplication(std::stringstream& file, std::string& line) {
+	std::string Key, Tp, value;
+	
+	std::getline(file, line);
+	if (line.find('&') != NOT_FOUND) {
+		while (!line.empty()) {
+			// std::cout << line << '\n';
+			if (line.rfind('&') != NOT_FOUND) {
+				value = line.substr(line.rfind('&') + 1);
+				line.erase(line.rfind('&'), value.length() + 1);
+			}
+			else {
+			 	value = line;
+				line.erase(0, value.length());
+			}
+			Key = value.substr(0, value.find('='));
+			Tp = value.substr(value.find('=') + 1);
+			_body.insert(std::make_pair(Key, Tp)); 
+		}
+	}
+	else {
+		Key = line.substr(0, line.find('='));
+		Tp = line.substr(line.find('=') + 1);
+		_body.insert(std::make_pair(Key, Tp));
+	}
+}
+
 void Request::parsPost(std::stringstream& file, std::string& line) {
 	std::string body, value, Key, Tp;
 	while (std::getline(file, line) && !line.substr(0, line.length() - 1).empty()) {
@@ -38,29 +87,30 @@ void Request::parsPost(std::stringstream& file, std::string& line) {
 			_headers.insert(std::make_pair(Key, Tp));
 		}
 	}
-	// if (_headers["Content-Type"].find("boundary") != NOT_FOUND)
-	std::getline(file, body);
-	if (body.find('&') != NOT_FOUND) {
-		while (!body.empty()) {
-			// std::cout << body << '\n';
-			if (body.rfind('&') != NOT_FOUND) {
-				value = body.substr(body.rfind('&') + 1);
-				body.erase(body.rfind('&'), value.length() + 1);
-			}
-			else {
-			 	value = body;
-				body.erase(0, value.length());
-			}
-			Key = value.substr(0, value.find('='));
-			Tp = value.substr(value.find('=') + 1);
-			_body.insert(std::make_pair(Key, Tp)); 
-		}
-	}
-	else {
-		Key = body.substr(0, body.find('='));
-		Tp = body.substr(body.find('=') + 1);
-		_body.insert(std::make_pair(Key, Tp));
-	}
+	if (_headers["Content-Type"] == "application/x-www-form-urlencoded") // name=aegfs&email=fasefe
+		parsApplication(file, line);
+	else if (_headers["Content-Type"].find("multipart/form-data") != NOT_FOUND)
+		parsMultipart(file, line, _headers["Content-Type"]);
+	// else if (_headers["Content-Type"] == "application/json") // 
+	// 	parsJSon(file, line);
+	// else if (_headers["Content-Type"] == "application/xml")
+	// 	parsXml(file, line);
+	// else if (_headers["Content-Type"] == "text/plain")
+	// 	parsText(file, line);
+	// else if (_headers["Content-Type"] == "application/octet-stream")
+	// 	parsOctet(file, line);
+	// else if (_headers["Content-Type"] == "application/ld+json")
+	// 	parsLdJson(file, line);
+	// else if (_headers["Content-Type"] == "text/csv")
+	// 	parsTextCsv(file, line);
+	// else if (_headers["Content-Type"] == "application/graphql")
+	// 	parsGraph(file, line);
+	// else if (_headers["Content-Type"] == "application/protobuf")
+	// 	parsProtobuf(file, line);
+	// else if (_headers["Content-Type"] == "text/event-stream")
+	// 	parsEventStream(file, line);
+	// else if (_headers["Content-Type"] == "application/zip")
+	// 	parsZip(file, line);
 }
 
 void Request::parsDelete(std::stringstream& file, std::string& line) {
