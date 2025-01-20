@@ -10,9 +10,8 @@ void sendResponse(int client_socket, conf ConfBlock, Request* req, short& event)
 		res->generateGetResponse(req, ConfBlock);
 	}
 	else if (req->getMethod() == "POST") {
-		std::cout << "POST Response\n";
 		ConfBlock.checkPostRequest(req);
-		// res->generatePostResponse(req, ConfBlock);
+		res->generatePostResponse(req, ConfBlock);
 	}
 	else if (req->getMethod() == "DELETE")
 		std::cout << "DELETE Response\n";

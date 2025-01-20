@@ -1,6 +1,7 @@
 
 #include "../includes/webserv.hpp"
 #include <cstdio>
+#include <fstream>
 #include <ios>
 #include <netinet/in.h>
 #include <sstream>
@@ -9,6 +10,28 @@
 #include <poll.h>
 
 Request::Request() {}
+
+std::string Request::getContentFile() {
+	return _contentFile;
+}
+
+std::string Request::getFileName() {
+	return _nameFile;
+}
+
+std::string Request::getBody(const std::string& Key) {
+	return _body[Key];
+}
+
+void Request::setPostName(std::string Path) {
+	std::cout << Path << std::endl;
+	_POSTFile.open((Path + _nameFile).c_str(), std::ios::binary);
+	if (!_POSTFile.is_open()) {
+		std::cout << "Error: cannot open the file\n";
+	}
+	_POSTFile.write(_contentFile.c_str(), _contentFile.length());
+	_POSTFile.close();
+}
 
 void Request::clear() {
 	_method.clear();
@@ -34,7 +57,7 @@ void Request::parsMultipart(std::stringstream& file, std::string& line, std::str
 	std::string Key, Tp, Value, Boundary;
 	Boundary = Type.substr(Type.find(";") + 11);
 	while (std::getline(file, line)) {
-		if (line.substr(2) == Boundary) {
+		if (line.find(Boundary) != NOT_FOUND) {
 			while (std::getline(file, line) && !line.substr(0, line.length() - 1).empty()) {
 				Key = line.substr(0, line.find(':'));
 				Tp = line.substr(line.find(':') + 1);
@@ -43,8 +66,8 @@ void Request::parsMultipart(std::stringstream& file, std::string& line, std::str
 		}
 		else {
 			std::string Content = _body["Content-Disposition"];
-			std::string _nameFile = Content.substr(Content.rfind(';') + 12, (Content.rfind('"') - (Content.rfind(';') + 12)));
-			_contentFile = line.substr(0, line.length() - line.find('\r') + 3);
+			_nameFile = Content.substr(Content.rfind(';') + 12, (Content.rfind('"') - (Content.rfind(';') + 12)));
+			_contentFile = line.substr(0, line.length() - line.find('\r'));
 			std::cout << _contentFile << std::endl;
 		}
 	}
@@ -157,15 +180,15 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize) {
 
 
 void Request::printRequest() {
-	// std::cout << "Method: " + _method + '\n';
-	// std::cout << "URL: " + _url + '\n';
-	// std::cout << "HTTP Version: " + _httpVersion + '\n';
-	// std::cout << "Headers: \n";
-	// for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
-	// 	std::cout << it->first + ": " + it->second + '\n';
-	// std::cout << "Body: \n";
-	// for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
-	// 	std::cout << bit->first + ": " + bit->second + '\n';
+	std::cout << "Method: " + _method + '\n';
+	std::cout << "URL: " + _url + '\n';
+	std::cout << "HTTP Version: " + _httpVersion + '\n';
+	std::cout << "Headers: \n";
+	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+		std::cout << it->first + ": " + it->second + '\n';
+	std::cout << "Body: \n";
+	for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
+		std::cout << bit->first + ": " + bit->second + '\n';
 }
 
 std::string Request::getHeader(const std::string& Key) {

@@ -44,6 +44,10 @@ class Request {
 		std::string		getHttpVersion();
 		std::string		getMethod();
 		std::string		getHeader(const std::string& Key);
+		std::string		getBody(const std::string& Key);
+		void			setPostName(std::string Path);
+		std::string		getFileName();
+		std::string		getContentFile();
 		void			clear();
 
 		void			printRequest();
