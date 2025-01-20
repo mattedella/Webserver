@@ -6,7 +6,9 @@
 #include <utility>
 #include <vector>
 
-conf::conf() {}
+conf::conf() {
+	_running = true;
+}
 
 void conf::check()
 {

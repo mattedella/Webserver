@@ -6,6 +6,7 @@
 #include "Http.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
+#include <csignal>
 
 class conf {
 
@@ -13,6 +14,7 @@ class conf {
 		std::vector<http>		_http;
 		std::map<int,server>	_servers;
 		std::string				_fullPath;
+		bool					_running;
 
 	public:
 		void		addServer(int nbrServer, const server& srv);
@@ -29,6 +31,7 @@ class conf {
 		void		checkGetRequest(Request* req);
 		void		checkPostRequest(Request* req);
 		void		checkDeleteRequest(Request* req);
+		static void	handleSignal(int sig);
 
 // int			reload(int port);
 		std::map<int, server>& getMapServer();
