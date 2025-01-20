@@ -25,7 +25,7 @@ std::string Request::getBody(const std::string& Key) {
 
 void Request::setPostName(std::string Path) {
 	std::cout << Path << std::endl;
-	_POSTFile.open((Path + _nameFile).c_str(), std::ios::binary);
+	_POSTFile.open(_nameFile.c_str(), std::ios::binary);
 	if (!_POSTFile.is_open()) {
 		std::cout << "Error: cannot open the file\n";
 	}
@@ -67,7 +67,8 @@ void Request::parsMultipart(std::stringstream& file, std::string& line, std::str
 		else {
 			std::string Content = _body["Content-Disposition"];
 			_nameFile = Content.substr(Content.rfind(';') + 12, (Content.rfind('"') - (Content.rfind(';') + 12)));
-			_contentFile = line.substr(0, line.length() - line.find('\r'));
+			while (std::getline(file, line) && !line.substr(0, line.length() - 1).empty())
+				_contentFile += line;
 			std::cout << _contentFile << std::endl;
 		}
 	}

@@ -16,6 +16,7 @@ void sendResponse(int client_socket, conf ConfBlock, Request* req, short& event)
 	else if (req->getMethod() == "DELETE")
 		std::cout << "DELETE Response\n";
 		// res->generateDeleteResponse(req, ConfBlock);
+	std::cout << res->getResponse() << std::endl;
 	int byte_send = send(client_socket, res->getResponse().c_str(), res->getResponse().length(), 0);
 	if (byte_send <= 0)
 		std::cout << "Error: response not send\n";

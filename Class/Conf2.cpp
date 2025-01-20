@@ -10,17 +10,17 @@
 
 void conf::handleSignal(int sig)
 {
-	char e;
+	// char e;
 	if (sig == SIGINT)
 	{
-		std::cout<< "\nSIGINT (CTRL + C) recived, do you want to exit? (y/n)\n";
-		std::cin>>e;
-		if (e == 'y' || e == 'Y')
+		// std::cout<< "\nSIGINT (CTRL + C) recived, do you want to exit? (y/n)\n";
+		// std::cin>>e;
+		// if (e == 'y' || e == 'Y')
 			exit(1);
-		else if (e == 'n' || e == 'N')
-		 	return ;
-		else
-		 	std::cout<< "\nYou are stupid, you had only two options (y/n), then I will continue\n"; 
+		// else if (e == 'n' || e == 'N')
+		//  	return ;
+		// else
+		//  	std::cout<< "\nYou are stupid, you had only two options (y/n), then I will continue\n"; 
 	}
 
 }

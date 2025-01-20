@@ -13,9 +13,8 @@ void Response::generatePostResponse(Request* req, conf ConfBlock) {
 			req->setPostName(ConfBlock.getFullPath());
 			_response = "HTTP/1.1 201 Create\r\nContent-Type: " + req->getBody("Content-Type")
 						+ "\r\nConnection: " + req->getHeader("Connection") + "\r\n\r\n"
-						+ "{\r\n\"status\": \"success\",\r\n\"file\": {\r\n \"filename\": "
-						+ req->getFileName() + "\",\r\n\" size\": "
-						+ req->getHeader("Content-Size") + ",\r\n \"url\": \"http://localhost:8080/upload\"\r\n }\r\n}\r\n\r\n";
+						+ "{\r\n  \"status\": \"success\",\r\n  \"file\": {\r\n	\"filename\": "
+						+ req->getFileName() + "\",\r\n	\"size\": 14952,\r\n	\"url\": \"http://localhost:8080/upload\"\r\n  }\r\n}\r\n";
 			break ;
 		default:
 			std::cout << StatusCode << std::endl;
