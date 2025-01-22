@@ -6,14 +6,13 @@
 #include <netinet/in.h>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 #include <utility>
 #include <poll.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 Request::Request() {}
-
-std::string Request::getContentFile() {
-	return _contentFile;
-}
 
 std::string Request::getFileName() {
 	return _nameFile;
@@ -24,12 +23,11 @@ std::string Request::getBody(const std::string& Key) {
 }
 
 void Request::setPostName(std::string Path) {
-	std::cout << Path << std::endl;
-	_POSTFile.open(_nameFile.c_str(), std::ios::binary);
+	_POSTFile.open((Path + "/" + _nameFile).c_str(), std::ios::binary);
 	if (!_POSTFile.is_open()) {
 		std::cout << "Error: cannot open the file\n";
 	}
-	_POSTFile.write(_contentFile.c_str(), _contentFile.length());
+	_POSTFile << _contentFile.data();
 	_POSTFile.close();
 }
 
@@ -53,34 +51,19 @@ void Request::parsGet(std::stringstream& file, std::string& line) {
 		}
 }
 
-void Request::parsMultipart(std::stringstream& file, std::string& line, std::string Type) {
-	std::string Key, Tp, Value, Boundary;
-	Boundary = Type.substr(Type.find(";") + 11);
-	while (std::getline(file, line)) {
-		if (line.find(Boundary) != NOT_FOUND) {
-			while (std::getline(file, line) && !line.substr(0, line.length() - 1).empty()) {
-				Key = line.substr(0, line.find(':'));
-				Tp = line.substr(line.find(':') + 1);
-				_body.insert(std::make_pair(Key, Tp));
-			}
-		}
-		else {
-			std::string Content = _body["Content-Disposition"];
-			_nameFile = Content.substr(Content.rfind(';') + 12, (Content.rfind('"') - (Content.rfind(';') + 12)));
-			while (std::getline(file, line) && !line.substr(0, line.length() - 1).empty())
-				_contentFile += line;
-			std::cout << _contentFile << std::endl;
-		}
-	}
+void Request::parsDelete(std::stringstream& file, std::string& line) {
+	(void)file;
+	(void)line;
+	std::cout << "parsDelete\n";
 }
 
-void Request::parsApplication(std::stringstream& file, std::string& line) {
+void Request::parsApplication(std::stringstream& bodyData, std::string& line) {
 	std::string Key, Tp, value;
-	
-	std::getline(file, line);
+	while (std::getline(bodyData, line) && line.substr(0, line.length() - 1).empty())
+		;
+	std::getline(bodyData, line);
 	if (line.find('&') != NOT_FOUND) {
 		while (!line.empty()) {
-			// std::cout << line << '\n';
 			if (line.rfind('&') != NOT_FOUND) {
 				value = line.substr(line.rfind('&') + 1);
 				line.erase(line.rfind('&'), value.length() + 1);
@@ -101,6 +84,46 @@ void Request::parsApplication(std::stringstream& file, std::string& line) {
 	}
 }
 
+void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std::string Type) {
+	std::string Key, Tp, Value, Boundary, endBoundary;
+	Boundary = "--" + Type.substr(Type.find(";") + 11);
+	endBoundary = Boundary + "--";
+	while (std::getline(bodyData, line) && !line.empty()) {
+        size_t colonPos = line.find(':');
+        if (colonPos != NOT_FOUND) {
+            Key = line.substr(0, colonPos);
+            Tp = line.substr(colonPos + 2);
+            _body.insert(std::make_pair(Key, Tp));
+        }
+    }
+    
+    // Get Content-Disposition info
+    std::string Content = _body["Content-Disposition"];
+    _nameFile = Content.substr(Content.rfind(';') + 12, (Content.rfind('"') - (Content.rfind(';') + 12)));
+    
+    // Read the binary data
+    std::string binaryData;
+    char ch;
+    std::string temp;
+    
+    // Read until we find the boundary
+    while (bodyData.get(ch)) {
+        temp += ch;
+        if (ch == '\n') {
+            // Check if we've hit the boundary
+            if (temp.find(endBoundary) != std::string::npos || temp.find(Boundary) != std::string::npos) {
+                // Remove boundary from binary data
+                binaryData = binaryData.substr(0, binaryData.length() - temp.length());
+                break;
+            }
+            binaryData += temp;
+            temp.clear();
+        }
+    }
+    // Store the binary data
+    _contentFile.insert(_contentFile.begin(), binaryData.begin(), binaryData.end());
+}
+
 void Request::parsPost(std::stringstream& file, std::string& line) {
 	std::string body, value, Key, Tp;
 	while (std::getline(file, line) && !line.substr(0, line.length() - 1).empty()) {
@@ -116,64 +139,51 @@ void Request::parsPost(std::stringstream& file, std::string& line) {
 	else if (_headers["Content-Type"].find("multipart/form-data") != NOT_FOUND)
 		parsMultipart(file, line, _headers["Content-Type"]);
 	// else if (_headers["Content-Type"] == "application/json") // 
-	// 	parsJSon(file, line);
+	// 	parsJSon(bodyData, line);
 	// else if (_headers["Content-Type"] == "application/xml")
-	// 	parsXml(file, line);
+	// 	parsXml(bodyData, line);
 	// else if (_headers["Content-Type"] == "text/plain")
-	// 	parsText(file, line);
+	// 	parsText(bodyData, line);
 	// else if (_headers["Content-Type"] == "application/octet-stream")
-	// 	parsOctet(file, line);
+	// 	parsOctet(bodyData, line);
 	// else if (_headers["Content-Type"] == "application/ld+json")
-	// 	parsLdJson(file, line);
+	// 	parsLdJson(bodyData, line);
 	// else if (_headers["Content-Type"] == "text/csv")
-	// 	parsTextCsv(file, line);
+	// 	parsTextCsv(bodyData, line);
 	// else if (_headers["Content-Type"] == "application/graphql")
-	// 	parsGraph(file, line);
+	// 	parsGraph(bodyData, line);
 	// else if (_headers["Content-Type"] == "application/protobuf")
-	// 	parsProtobuf(file, line);
+	// 	parsProtobuf(bodyData, line);
 	// else if (_headers["Content-Type"] == "text/event-stream")
-	// 	parsEventStream(file, line);
+	// 	parsEventStream(bodyData, line);
 	// else if (_headers["Content-Type"] == "application/zip")
-	// 	parsZip(file, line);
+	// 	parsZip(bodyData, line);
 }
 
-void Request::parsDelete(std::stringstream& file, std::string& line) {
-	(void)file;
-	(void)line;
-	std::cout << "parsDelete\n";
-}
-
-void Request::ParsRequest(std::string& to_pars) {
-	std::stringstream ss(to_pars);
+void Request::ParsRequest(std::stringstream& to_pars) {
 	std::string line;
-	std::getline(ss, line);
+	std::getline(to_pars, line);
 	std::stringstream req_line(line);
-	// std::cout << "______RICHIESTA NON PARSATA______\n" << to_pars << "\n_______________\n";
 	req_line >> _method >> _url >> _httpVersion;
 	if (_method == "GET")
-		parsGet(ss, line);
+		parsGet(to_pars, line);
 	else if (_method == "POST")
-		parsPost(ss, line);
+		parsPost(to_pars, line);
 	else if (_method == "DELETE")
-		parsDelete(ss, line);
-}
+		parsDelete(to_pars, line);
+	}
 
 void Request::getRequest(int &client_socket, short& event, int MaxSize) {
-	int bytes_recived = 0, total_bytes = 0;
-	char *tmp_buffer = new char[MaxSize];
-	std::string buffer;
-	while ((bytes_recived = recv(client_socket, tmp_buffer, MaxSize, 0)) > 0) {
-		total_bytes += bytes_recived;
-		std::cout << "BYTE RECIVED: " << bytes_recived << '\n';
-		std::cout << "REQUEST: " << tmp_buffer << '\n';
-		buffer += tmp_buffer;
-		delete [] tmp_buffer;
-		tmp_buffer = new char[MaxSize];
+	int bytes_received = 0;
+	std::stringstream buffer;
+	char* tmp_buffer = new char[MaxSize];
 
-	}
-	if (total_bytes < 0) {
+	bytes_received = recv(client_socket, tmp_buffer, MaxSize, 0);
+	if (bytes_received < 0) {
 		throw exc("Error reading request\n");
 	}
+	buffer.write(tmp_buffer, bytes_received);
+	delete [] tmp_buffer;
 	ParsRequest(buffer);
 	// printRequest();
 	event = POLLOUT;
