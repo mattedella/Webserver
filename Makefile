@@ -29,6 +29,9 @@ $(NAME): $(SRC)
 	@echo $(GREEN)		"     \/  \/ \___|_.__/_____/ \___|_|    \_/   (_)  | |"$(NONE)
 	@echo $(CYAN)		"                                                  /_/ "$(NONE)
 
+run: all
+	./$(NAME) test.conf
+
 clean:
 	@clear
 
