@@ -9,6 +9,8 @@
 #include "Exc.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+#include <iostream>
+#include "Cgi.hpp"
 #include <cerrno>
 #include <string>
 
