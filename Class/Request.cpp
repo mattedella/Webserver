@@ -71,7 +71,7 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line) {
 			else {
 			 	value = line;
 				line.erase(0, value.length());
-			}
+			} 
 			Key = value.substr(0, value.find('='));
 			Tp = value.substr(value.find('=') + 1);
 			_body.insert(std::make_pair(Key, Tp)); 
@@ -134,7 +134,8 @@ void Request::parsPost(std::stringstream& file, std::string& line) {
 			_headers.insert(std::make_pair(Key, Tp));
 		}
 	}
-	if (_headers["Content-Type"] == "application/x-www-form-urlencoded") // name=aegfs&email=fasefe
+	std::cout << _headers["Content-Type"] << '\n';
+	if (_headers["Content-Type"].find("application/x-www-form-urlencoded")) // name=aegfs&email=fasefe
 		parsApplication(file, line);
 	else if (_headers["Content-Type"].find("multipart/form-data") != NOT_FOUND)
 		parsMultipart(file, line, _headers["Content-Type"]);
