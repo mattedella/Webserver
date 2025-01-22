@@ -1,5 +1,6 @@
 #include "../includes/webserv.hpp"
 #include <cctype>
+#include <iostream>
 #include <unistd.h>
 #include <map>
 #include <string>

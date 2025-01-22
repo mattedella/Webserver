@@ -85,44 +85,54 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line) {
 }
 
 void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std::string Type) {
-	std::string Key, Tp, Value, Boundary, endBoundary;
-	Boundary = "--" + Type.substr(Type.find(";") + 11);
-	endBoundary = Boundary + "--";
-	while (std::getline(bodyData, line) && !line.empty()) {
+    std::string Key, Tp, Value, Boundary, endBoundary;
+
+    // Calcolo del Boundary
+	std::cout<< "INIZIO PARSMULTYPART\n";
+    std::cout << "Type: " << Type << std::endl;
+    size_t boundaryPos = Type.find("boundary=");
+    if (boundaryPos != std::string::npos) {
+        Boundary = "--" + Type.substr(boundaryPos + 9); // 9 è la lunghezza di "boundary="
+        endBoundary = Boundary + "--";
+        std::cout << "Boundary calcolato: " << Boundary << std::endl;
+        std::cout << "EndBoundary calcolato: " << endBoundary << std::endl;
+    } else {
+        std::cerr << "Errore: Boundary non trovato in Content-Type." << std::endl;
+        return;
+    }
+
+    // Lettura del corpo della richiesta
+    while (std::getline(bodyData, line)) {
+        std::cout << "Riga letta: [" << line << "]" << std::endl;
+
+        if (line.empty()) {
+            std::cout << "Riga vuota, salto al prossimo ciclo." << std::endl;
+            continue;
+        }
+
         size_t colonPos = line.find(':');
-        if (colonPos != NOT_FOUND) {
+        if (colonPos != std::string::npos) {
             Key = line.substr(0, colonPos);
-            Tp = line.substr(colonPos + 2);
-            _body.insert(std::make_pair(Key, Tp));
+            Tp = line.substr(colonPos + 2); // Salta ": " (due punti e spazio)
+            std::cout << "Key trovata: [" << Key << "]" << std::endl;
+            std::cout << "Tp trovata: [" << Tp << "]" << std::endl;
+
+            _body.insert(std::map<std::string, std::string>::value_type(Key, Tp));
+            std::cout << "Inserito in _body: {" << Key << ": " << Tp << "}" << std::endl;
+        } else {
+            std::cout << "Nessun ':' trovato nella riga, continuazione del ciclo." << std::endl;
         }
     }
-    
-    // Get Content-Disposition info
-    std::string Content = _body["Content-Disposition"];
-    _nameFile = Content.substr(Content.rfind(';') + 12, (Content.rfind('"') - (Content.rfind(';') + 12)));
-    
-    // Read the binary data
-    std::string binaryData;
-    char ch;
-    std::string temp;
-    
-    // Read until we find the boundary
-    while (bodyData.get(ch)) {
-        temp += ch;
-        if (ch == '\n') {
-            // Check if we've hit the boundary
-            if (temp.find(endBoundary) != std::string::npos || temp.find(Boundary) != std::string::npos) {
-                // Remove boundary from binary data
-                binaryData = binaryData.substr(0, binaryData.length() - temp.length());
-                break;
-            }
-            binaryData += temp;
-            temp.clear();
-        }
+
+    // Stato finale
+    std::cout << "Parsing completato. Stato di _body:" << std::endl;
+    std::map<std::string, std::string>::iterator it;
+    for (it = _body.begin(); it != _body.end(); ++it) {
+        std::cout << "  {" << it->first << ": " << it->second << "}" << std::endl;
     }
-    // Store the binary data
-    _contentFile.insert(_contentFile.begin(), binaryData.begin(), binaryData.end());
 }
+
+
 
 void Request::parsPost(std::stringstream& file, std::string& line) {
 	std::string body, value, Key, Tp;
@@ -134,11 +144,14 @@ void Request::parsPost(std::stringstream& file, std::string& line) {
 			_headers.insert(std::make_pair(Key, Tp));
 		}
 	}
-	std::cout << _headers["Content-Type"] << '\n';
-	if (_headers["Content-Type"].find("application/x-www-form-urlencoded")) // name=aegfs&email=fasefe
+	if (_headers["Content-Type"].find("application/x-www-form-urlencoded") == 0) 
+	{
 		parsApplication(file, line);
-	else if (_headers["Content-Type"].find("multipart/form-data") != NOT_FOUND)
+	}
+	else if (_headers["Content-Type"].find("multipart/form-data") == 0) 
+	{
 		parsMultipart(file, line, _headers["Content-Type"]);
+	}
 	// else if (_headers["Content-Type"] == "application/json") // 
 	// 	parsJSon(bodyData, line);
 	// else if (_headers["Content-Type"] == "application/xml")
