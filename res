@@ -12,30 +12,9 @@ Available routes:
 [33m/www/example/
 [0m[33m/cgi
 [0m[33m/www/images
-[0m------RICHIESTA------
-Method: GET
-URL: /
-HTTP Version: HTTP/1.1
-Headers: 
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
-Accept-Encoding: gzip, deflate, br, zstd
-Accept-Language: en-US,en
-Connection: keep-alive
-Host: localhost:8080
-Sec-Fetch-Dest: document
-Sec-Fetch-Mode: navigate
-Sec-Fetch-Site: none
-Sec-Fetch-User: ?1
-Sec-GPC: 1
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36
-sec-ch-ua: "Not A(Brand";v="8", "Chromium";v="132", "Brave";v="132"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Linux"
-Body: 
-HTTP/1.1 200 OK
+[0mHTTP/1.1 200 OK
 Content-Type: text/html
-Connection: keep-alive
+Connection: keep-alive
 
 <!DOCTYPE html>
 <html lang="en">
@@ -162,48 +141,4 @@ data: {"message": "Hello"}
 </body>
 </html>
 
-------RICHIESTA------
-INIZIO PARSMULTYPART
-Type: multipart/form-data; boundary=----WebKitFormBoundaryvA4DzhLD7GMF1atW
-Boundary calcolato: ------WebKitFormBoundaryvA4DzhLD7GMF1atW
-EndBoundary calcolato: ------WebKitFormBoundaryvA4DzhLD7GMF1atW--
-Parsing completato. Stato di _body:
-Method: POST
-URL: /upload
-HTTP Version: HTTP/1.1
-Headers: 
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8
-Accept-Encoding: gzip, deflate, br, zstd
-Accept-Language: en-US,en
-Cache-Control: max-age=0
-Connection: keep-alive
-Content-Length: 10271
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryvA4DzhLD7GMF1atW
-Host: localhost:8080
-Origin: http://localhost:8080
-Referer: http://localhost:8080/
-Sec-Fetch-Dest: document
-Sec-Fetch-Mode: navigate
-Sec-Fetch-Site: same-origin
-Sec-Fetch-User: ?1
-Sec-GPC: 1
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36
-sec-ch-ua: "Not A(Brand";v="8", "Chromium";v="132", "Brave";v="132"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Linux"
-Body: 
-Error: cannot open the file
-HTTP/1.1 201 Create
-Content-Type: 
-Connection: keep-alive
-
-{
-  "status": "success",
-  "file": {
-	"filename": "",
-	"size": 14952,
-	"url": "http://localhost:8080/upload"
-  }
-}
-
+PORCACCIO I DIO

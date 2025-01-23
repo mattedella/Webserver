@@ -27,7 +27,7 @@ void Request::setPostName(std::string Path) {
 	if (!_POSTFile.is_open()) {
 		std::cout << "Error: cannot open the file\n";
 	}
-	_POSTFile << _contentFile;
+	// _POSTFile << _contentFile;
 	_POSTFile.close();
 }
 
@@ -91,21 +91,54 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std:
 	if (boundaryPos != NOT_FOUND) {
 		Boundary = "--" + Type.substr(boundaryPos + 9);
 		endBoundary = Boundary + "--";
+	} else {
+		throw exc("Boundary not found in Content-Type");
 	}
-	else
-		return;
 
-	while (std::getline(bodyData, line) && !line.substr(0, line.length() - 1).empty()) {
-		size_t colonPos = line.find(':');
-		if (colonPos != NOT_FOUND) {
-			Key = line.substr(0, colonPos);
-			Tp = line.substr(colonPos + 2, (line.length() - colonPos) - 3);
-			_body.insert(std::map<std::string, std::string>::value_type(Key, Tp));
-		} 
+	std::string body = bodyData.str();
+	size_t startPos = body.find(Boundary);
+	while (startPos != std::string::npos) {
+		startPos += Boundary.length();
+		size_t endPos = body.find(Boundary, startPos);
+		if (endPos == std::string::npos)
+			break;
+
+		// Estrai la sezione tra i boundary
+		std::string part = body.substr(startPos, endPos - startPos);
+
+		// Analizza i metadati e i dati
+		size_t headerEnd = part.find("\r\n\r\n");
+		if (headerEnd != std::string::npos) {
+			std::string headers = part.substr(0, headerEnd);
+			std::string data = part.substr(headerEnd + 4);
+
+			size_t filenamePos = headers.find("filename=");
+			if (filenamePos != std::string::npos) {
+				std::string filename = headers.substr(
+					filenamePos + 10, headers.find('"', filenamePos + 10) - (filenamePos + 10));
+				_nameFile = filename;
+
+				// Salva il file su disco
+				std::ofstream file(_nameFile.c_str(), std::ios::binary);
+				if (!file.is_open()) {
+					throw exc("Error: cannot open the file");
+				}
+				file.write(data.c_str(), data.size());
+				file.close();
+			} else {
+				std::cout << "No filename found in headers!" << std::endl;
+			}
+		}
+		startPos = endPos;
 	}
-	size_t namepos = _body["Content-Disposition"].rfind(";");
-	std::string name = _body["Content-Disposition"].substr(namepos);
-	_nameFile = name.substr(name.find('"') + 1, (name.rfind('"') - name.find('"')) - 1);
+	std::cout << "Headers parsed:" << std::endl;
+	for (std::map<std::string, std::string>::iterator it = _body.begin(); it != _body.end(); ++it) {
+		std::cout << it->first << ": " << it->second << std::endl;
+	}
+
+	// Stampa del nome del file
+	std::cout << "Filename: " << _nameFile << std::endl;
+	(void)line;
 }
 
 
