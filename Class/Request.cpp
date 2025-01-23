@@ -27,7 +27,7 @@ void Request::setPostName(std::string Path) {
 	if (!_POSTFile.is_open()) {
 		std::cout << "Error: cannot open the file\n";
 	}
-	_POSTFile << _contentFile.data();
+	_POSTFile << _contentFile;
 	_POSTFile.close();
 }
 
@@ -42,13 +42,13 @@ void Request::clear() {
 
 void Request::parsGet(std::stringstream& file, std::string& line) {
 	while (std::getline(file, line) && !line.empty()) {
-			size_t colon_pos = line.find(':');
-			if (colon_pos != NOT_FOUND) {
-				std::string Key = line.substr(0, colon_pos);
-				std::string Tp = line.substr(colon_pos + 2);
-				_headers.insert(std::make_pair(Key, Tp));
-			}
+		size_t colon_pos = line.find(':');
+		if (colon_pos != NOT_FOUND) {
+			std::string Key = line.substr(0, colon_pos);
+			std::string Tp = line.substr(colon_pos + 2, (line.length() - colon_pos) - 3);
+			_headers.insert(std::make_pair(Key, Tp));
 		}
+	}
 }
 
 void Request::parsDelete(std::stringstream& file, std::string& line) {
@@ -59,7 +59,7 @@ void Request::parsDelete(std::stringstream& file, std::string& line) {
 
 void Request::parsApplication(std::stringstream& bodyData, std::string& line) {
 	std::string Key, Tp, value;
-	while (std::getline(bodyData, line) && line.substr(0, line.length() - 1).empty())
+	while (std::getline(bodyData, line) && !line.substr(0, line.length() - 1).empty())
 		;
 	std::getline(bodyData, line);
 	if (line.find('&') != NOT_FOUND) {
@@ -85,51 +85,27 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line) {
 }
 
 void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std::string Type) {
-    std::string Key, Tp, Value, Boundary, endBoundary;
+	std::string Key, Tp, Value, Boundary, endBoundary;
 
-    // Calcolo del Boundary
-	std::cout<< "INIZIO PARSMULTYPART\n";
-    std::cout << "Type: " << Type << std::endl;
-    size_t boundaryPos = Type.find("boundary=");
-    if (boundaryPos != std::string::npos) {
-        Boundary = "--" + Type.substr(boundaryPos + 9); // 9 è la lunghezza di "boundary="
-        endBoundary = Boundary + "--";
-        std::cout << "Boundary calcolato: " << Boundary << std::endl;
-        std::cout << "EndBoundary calcolato: " << endBoundary << std::endl;
-    } else {
-        std::cerr << "Errore: Boundary non trovato in Content-Type." << std::endl;
-        return;
-    }
+	size_t boundaryPos = Type.find("boundary=");
+	if (boundaryPos != NOT_FOUND) {
+		Boundary = "--" + Type.substr(boundaryPos + 9);
+		endBoundary = Boundary + "--";
+	}
+	else
+		return;
 
-    // Lettura del corpo della richiesta
-    while (std::getline(bodyData, line)) {
-        std::cout << "Riga letta: [" << line << "]" << std::endl;
-
-        if (line.empty()) {
-            std::cout << "Riga vuota, salto al prossimo ciclo." << std::endl;
-            continue;
-        }
-
-        size_t colonPos = line.find(':');
-        if (colonPos != std::string::npos) {
-            Key = line.substr(0, colonPos);
-            Tp = line.substr(colonPos + 2); // Salta ": " (due punti e spazio)
-            std::cout << "Key trovata: [" << Key << "]" << std::endl;
-            std::cout << "Tp trovata: [" << Tp << "]" << std::endl;
-
-            _body.insert(std::map<std::string, std::string>::value_type(Key, Tp));
-            std::cout << "Inserito in _body: {" << Key << ": " << Tp << "}" << std::endl;
-        } else {
-            std::cout << "Nessun ':' trovato nella riga, continuazione del ciclo." << std::endl;
-        }
-    }
-
-    // Stato finale
-    std::cout << "Parsing completato. Stato di _body:" << std::endl;
-    std::map<std::string, std::string>::iterator it;
-    for (it = _body.begin(); it != _body.end(); ++it) {
-        std::cout << "  {" << it->first << ": " << it->second << "}" << std::endl;
-    }
+	while (std::getline(bodyData, line) && !line.substr(0, line.length() - 1).empty()) {
+		size_t colonPos = line.find(':');
+		if (colonPos != NOT_FOUND) {
+			Key = line.substr(0, colonPos);
+			Tp = line.substr(colonPos + 2, (line.length() - colonPos) - 3);
+			_body.insert(std::map<std::string, std::string>::value_type(Key, Tp));
+		} 
+	}
+	size_t namepos = _body["Content-Disposition"].rfind(";");
+	std::string name = _body["Content-Disposition"].substr(namepos);
+	_nameFile = name.substr(name.find('"') + 1, (name.rfind('"') - name.find('"')) - 1);
 }
 
 
@@ -140,18 +116,14 @@ void Request::parsPost(std::stringstream& file, std::string& line) {
 		size_t colon_pos = line.find(':');
 		if (colon_pos != NOT_FOUND) {
 			std::string Key = line.substr(0, colon_pos);
-			std::string Tp = line.substr(colon_pos + 2);
+			std::string Tp = line.substr(colon_pos + 2, (line.length() - colon_pos) - 3);
 			_headers.insert(std::make_pair(Key, Tp));
 		}
 	}
-	if (_headers["Content-Type"].find("application/x-www-form-urlencoded") == 0) 
-	{
+	if (_headers["Content-Type"].find("application/x-www-form-urlencoded") == 0)
 		parsApplication(file, line);
-	}
-	else if (_headers["Content-Type"].find("multipart/form-data") == 0) 
-	{
+	else if (_headers["Content-Type"].find("multipart/form-data") == 0)
 		parsMultipart(file, line, _headers["Content-Type"]);
-	}
 	// else if (_headers["Content-Type"] == "application/json") // 
 	// 	parsJSon(bodyData, line);
 	// else if (_headers["Content-Type"] == "application/xml")
@@ -205,15 +177,15 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize) {
 
 
 void Request::printRequest() {
-	std::cout << "Method: " + _method + '\n';
-	std::cout << "URL: " + _url + '\n';
-	std::cout << "HTTP Version: " + _httpVersion + '\n';
-	std::cout << "Headers: \n";
-	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
-		std::cout << it->first + ": " + it->second + '\n';
-	std::cout << "Body: \n";
-	for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
-		std::cout << bit->first + ": " + bit->second + '\n';
+	// std::cout << "Method: " + _method + '\n';
+	// std::cout << "URL: " + _url + '\n';
+	// std::cout << "HTTP Version: " + _httpVersion + '\n';
+	// std::cout << "Headers: \n";
+	// for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+	// 	std::cout << it->first + ": " + it->second + '\n';
+	// std::cout << "Body: \n";
+	// for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
+	// 	std::cout << bit->first + ": " + bit->second + '\n';
 }
 
 std::string Request::getHeader(const std::string& Key) {
