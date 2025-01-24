@@ -77,55 +77,62 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line, st
 }
 
 void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std::string Path, std::string Type) {
-	std::string Value, Boundary, endBoundary;
-	std::stringstream contentBody;
+    (void)line; // Suppress unused parameter warning
+    std::string Value, Boundary, endBoundary;
+    
+    size_t boundaryPos = Type.find("boundary=");
+    if (boundaryPos != NOT_FOUND) {
+        Boundary = "--" + Type.substr(boundaryPos + 9);
+        endBoundary = Boundary + "--";
+    }
+    else
+        throw exc("Boundary not found in Content-Type");
 
-	size_t boundaryPos = Type.find("boundary=");
-	if (boundaryPos != NOT_FOUND) {
-		Boundary = "--" + Type.substr(boundaryPos + 9);
-		endBoundary = Boundary + "--";
-	}
-	else
-		throw exc("Boundary not found in Content-Type");
+	
+    std::string body = bodyData.str();
+    size_t startPos = body.find(Boundary);
+    size_t lastPos = 0;
 
-	std::string body = bodyData.str();
-	size_t startPos = body.find(Boundary);
-	while (startPos != std::string::npos) {
-		startPos += Boundary.length();
-		size_t endPos = body.find(Boundary, startPos);
-		if (endPos == std::string::npos)
-			break;
+    while (startPos != std::string::npos && startPos > lastPos) {
+        lastPos = startPos;
+        
+        // Check for end boundary
+        if (body.substr(startPos, endBoundary.length()) == endBoundary) {
+            break;
+        }
 
-		std::string part = body.substr(startPos, endPos - startPos);
-		contentBody << part;
-		std::getline(contentBody, line);
-		while (std::getline(contentBody, line) && !line.substr(0, line.length() - 1).empty()) {
-			std::string Key = line.substr(0, line.find(':'));
-			std::string tp = line.substr(line.find(':') + 2);
-			_body.insert(std::make_pair(Key, tp));
-		}
+        // Find content boundaries
+        size_t headerStart = body.find("\r\n", startPos) + 2;
+        size_t headerEnd = body.find("\r\n\r\n", headerStart);
+        if (headerEnd == std::string::npos) break;
+        
+        size_t contentStart = headerEnd + 4;
+        size_t contentEnd = body.find(Boundary, contentStart) - 2; // -2 for \r\n
+        if (contentEnd == std::string::npos || contentEnd <= contentStart) break;
 
-		size_t headerEnd = part.find("\r\n\r\n");
-		if (headerEnd != std::string::npos) {
-			std::string headers = part.substr(0, headerEnd);
-			std::string _contentFile = part.substr(headerEnd + 4);
-			size_t filenamePos = headers.find("filename=");
-			if (filenamePos != std::string::npos) {
-				std::string filename = headers.substr(
-					filenamePos + 10, headers.find('"', filenamePos + 10) - (filenamePos + 10));
-				_nameFile = filename;
-				std::ofstream file((Path + "/" + _nameFile).c_str(), std::ios::binary);
-				if (!file.is_open()) {
-					throw exc("Error: cannot open the file");
-				}
-				file.write(_contentFile.c_str(), _contentFile.size());
-				file.close();
-			} 
-			else
-				std::cout << "No filename found in headers!" << std::endl;
-		}
-		startPos = endPos;
-	}
+        // Parse headers
+        std::string headers = body.substr(headerStart, headerEnd - headerStart);
+        size_t filenamePos = headers.find("filename=\"");
+        if (filenamePos != std::string::npos) {
+            std::string filename = headers.substr(
+                filenamePos + 10,
+                headers.find('"', filenamePos + 10) - (filenamePos + 10)
+            );
+            _nameFile = filename;
+
+            // Write file content
+            std::string content = body.substr(contentStart, contentEnd - contentStart);
+            std::ofstream file((Path + "/" + _nameFile).c_str(), 
+                             std::ios::binary | std::ios::trunc);
+            if (!file.is_open()) {
+                throw exc("Error: cannot open the file");
+            }
+            file.write(content.c_str(), content.length());
+            file.close();
+        }
+        
+        startPos = body.find(Boundary, contentEnd);
+    }
 }
 
 
@@ -181,19 +188,50 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 }
 
 void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* ConfBlock) {
-	int bytes_received = 0;
-	std::stringstream buffer;
-	char* tmp_buffer = new char[MaxSize];
+    std::stringstream buffer;
+    size_t total_received = 0;
+    size_t content_length = 0;
+    bool headers_complete = false;
+    std::string temp_buffer;
+    size_t header_end = std::string::npos;
 
-	bytes_received = recv(client_socket, tmp_buffer, MaxSize, 0);
-	if (bytes_received < 0) {
-		throw exc("Error reading request\n");
-	}
-	buffer.write(tmp_buffer, bytes_received);
-	delete [] tmp_buffer;
-	ParsRequest(buffer, ConfBlock);
-	// printRequest();
-	event = POLLOUT;
+    while (true) {
+        char* chunk = new char[MaxSize];
+        int bytes_received = recv(client_socket, chunk, MaxSize, 0);
+        
+        if (bytes_received <= 0) {
+            delete[] chunk;
+            break;
+        }
+
+        buffer.write(chunk, bytes_received);
+        delete[] chunk;
+        total_received += bytes_received;
+
+        if (!headers_complete) {
+            temp_buffer = buffer.str();
+            header_end = temp_buffer.find("\r\n\r\n");
+            if (header_end != std::string::npos) {
+                headers_complete = true;
+                std::string headers = temp_buffer.substr(0, header_end);
+                size_t cl_pos = headers.find("Content-Length: ");
+                if (cl_pos != std::string::npos) {
+                    size_t cl_end = headers.find("\r\n", cl_pos);
+                    std::stringstream ss(headers.substr(cl_pos + 16, cl_end - (cl_pos + 16)));
+                    ss >> content_length;
+                }
+            }
+        }
+
+        if (headers_complete && content_length > 0) {
+            if (total_received >= header_end + 4 + content_length) {
+                break;
+            }
+        }
+    }
+
+    ParsRequest(buffer, ConfBlock);
+    event = POLLOUT;
 }
 
 void Request::printRequest() {
