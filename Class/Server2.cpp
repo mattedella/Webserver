@@ -1,8 +1,30 @@
+#include <fstream>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "../includes/webserv.hpp"
+
+void server::addNametoHost() {
+	std::ofstream		hosts;
+	std::stringstream	checker;
+	std::string			to_check;
+	hosts.open("/etc/hosts", std::ios::app);
+	if (!hosts.is_open()) {
+		std::cout << "ERROR: cannot open \"/etc/hosts\"\n";
+		return ;
+	}
+	checker << hosts.rdbuf();
+	to_check = checker.str();
+	for (std::vector<std::string>::iterator it = _server_names.begin(); it != _server_names.end(); it++) {
+		std::string to_add = "127.0.1.1 " + *it + '\n';
+		if (to_check.find(to_add) != NOT_FOUND)
+			continue ;
+		hosts.write(to_add.c_str(), to_add.size());
+	}
+	hosts.close();
+}
 
 void server::close_connection(int index) {
 	int client_fd = _poll_fds[index].fd;

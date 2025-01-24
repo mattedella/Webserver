@@ -79,6 +79,7 @@ class server : public ABlock {
 		void	handle_request(int client_fd, const std::string& request);
 		void	close_connection(int index);
 		void	set_nonblocking(int fd);
+		void	addNametoHost();
 
 		bool		getListing();
 		std::string	getIndex();

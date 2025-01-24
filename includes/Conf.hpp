@@ -27,6 +27,7 @@ class conf {
 		std::string	getFullPath();
 		location	getLocation(std::string to_find, int nbrServer);
 		server		getServer(int nbrServer);
+		void		addHost();
 
 		void		checkRequest(Request* req);
 		static void	handleSignal(int sig);

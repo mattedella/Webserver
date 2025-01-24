@@ -1,5 +1,6 @@
 #include "../includes/webserv.hpp"
 #include <cctype>
+#include <fstream>
 #include <iostream>
 #include <unistd.h>
 #include <map>
@@ -9,6 +10,11 @@
 
 conf::conf() {
 	_running = true;
+}
+
+void conf::addHost() {
+	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); it++)
+		it->second.addNametoHost();
 }
 
 void conf::check()
