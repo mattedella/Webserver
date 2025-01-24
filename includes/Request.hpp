@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+class conf;
+
 class Request {
 
 	private:
@@ -18,31 +20,30 @@ class Request {
 		std::map<std::string, std::string>	_headers;
 		std::map<std::string, std::string>	_body;
 		std::string							_nameFile;
-		std::vector<char>					_contentFile;
+		std::string							_contentFile;
 		size_t								_contentLength;
 		std::ofstream						_POSTFile;
 
 	public:
 		Request();
 
-		void			ParsRequest(std::stringstream& to_pars);
-		void			parsGet(std::stringstream& file, std::string& line);
-		void			parsPost(std::stringstream& file, std::string& line);
+		void			ParsRequest(std::stringstream& to_pars, conf* ConfBlock);
+		void			parsPost(std::stringstream& file, std::string& line, std::string Path);
 		void			parsDelete(std::stringstream& file, std::string& line);
-		void			parsApplication(std::stringstream& bodyData, std::string& line);
-		void			parsMultipart(std::stringstream& bodyData, std::string& line, std::string Type);
-		void			parsJSon(std::stringstream& bodyData, std::string& line);
-		void			parsXml(std::stringstream& bodyData, std::string& line);
-		void			parsText(std::stringstream& bodyData, std::string& line);
-		void			parsOctet(std::stringstream& bodyData, std::string& line);
-		void			parsLdJson(std::stringstream& bodyData, std::string& line);
-		void			parsTextCsv(std::stringstream& bodyData, std::string& line);
-		void			parsGraph(std::stringstream& bodyData, std::string& line);
-		void			parsProtobuf(std::stringstream& bodyData, std::string& line);
-		void			parsEventStream(std::stringstream& bodyData, std::string& line);
-		void			parsZip(std::stringstream& bodyData, std::string& line);
+		void			parsApplication(std::stringstream& bodyData, std::string& line, std::string Path);
+		void			parsMultipart(std::stringstream& bodyData, std::string& line, std::string Path, std::string Type);
+		void			parsJSon(std::stringstream& bodyData, std::string& line, std::string Path);
+		void			parsXml(std::stringstream& bodyData, std::string& line, std::string Path);
+		void			parsText(std::stringstream& bodyData, std::string& line, std::string Path);
+		void			parsOctet(std::stringstream& bodyData, std::string& line, std::string Path);
+		void			parsLdJson(std::stringstream& bodyData, std::string& line, std::string Path);
+		void			parsTextCsv(std::stringstream& bodyData, std::string& line, std::string Path);
+		void			parsGraph(std::stringstream& bodyData, std::string& line, std::string Path);
+		void			parsProtobuf(std::stringstream& bodyData, std::string& line, std::string Path);
+		void			parsEventStream(std::stringstream& bodyData, std::string& line, std::string Path);
+		void			parsZip(std::stringstream& bodyData, std::string& line, std::string Path);
 
-		void			getRequest(int& client_socket, short& event, int MaxSize);
+		void			getRequest(int& client_socket, short& event, int MaxSize, conf* ConfBlock);
 		std::string&	getURL();
 		std::string		getHttpVersion();
 		std::string		getMethod();

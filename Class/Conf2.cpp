@@ -34,6 +34,6 @@ void conf::run()
 	Request *req = new Request();
 	while (i < 0 && _running == true) {
 		//it->second.printFdsVect();
-		it->second.s_run(*this, req);
+		it->second.s_run(this, req);
     }
 }

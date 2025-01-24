@@ -28,9 +28,7 @@ class conf {
 		location	getLocation(std::string to_find, int nbrServer);
 		server		getServer(int nbrServer);
 
-		void		checkGetRequest(Request* req);
-		void		checkPostRequest(Request* req);
-		void		checkDeleteRequest(Request* req);
+		void		checkRequest(Request* req);
 		static void	handleSignal(int sig);
 
 // int			reload(int port);

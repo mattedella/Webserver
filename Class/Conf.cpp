@@ -95,48 +95,7 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 	return errorPage;
 }
 
-void conf::checkPostRequest(Request * req) {
-	StatusCode = 200;
-	char buff[4096];
-	std::string url = req->getURL();
-	std::string file;
-	if (req->getURL().rfind(".") != NOT_FOUND) {
-		file = url.substr(url.rfind('/') + 1);
-		url.erase(url.rfind('/') + 1, (url.length() - url.rfind('/')));
-	}
-	if (req->getURL() != "/" && req->getURL()[req->getURL().length() - 1] == '/')
-		url = req->getURL().substr(0, req->getURL().rfind('/'));
-	std::string subUrl = url;
-	getcwd(buff, sizeof(buff) - 1);
-	_fullPath = buff;
-	_fullPath += _servers[1].getRoot();
-	if (url != "/")
-		subUrl = url.substr(url.rfind("/"));
-	location loc;
-	if (_servers[1].checkLocation(subUrl)) {
-		loc = _servers[1].getLocation(subUrl);
-	}
-	else {
-	 	StatusCode = 404;
-	}
-	_fullPath += req->getURL();
-	if (access(_fullPath.c_str(), R_OK | W_OK | X_OK) < 0)
-		StatusCode = 403;
-	if (_http[0].getMethodsSize() > 0)
-		if (!_http[0].getMethods(req->getMethod())) {
-			StatusCode = 501;
-		}
-	if (_servers[1].getMethodsSize() > 0)
-		if (!_servers[1].getMethods(req->getMethod())) {
-			StatusCode = 501;
-		}
-	if (loc.getMethodsSize() > 0)
-		if (!loc.getMethods(req->getMethod())) {
-			StatusCode = 501;
-		}
-}
-
-void conf::checkGetRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
+void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
 	// cosi controlliamo solo i valori di quel determinato server invece che in tutti
 	// per semplicita' prendo solo il primo server
 	StatusCode = 200;
@@ -180,27 +139,29 @@ void conf::checkGetRequest(Request* req) { // magari aggiungere "int nbrServer" 
 		if (!loc.getMethods(req->getMethod())) {
 			StatusCode = 501;
 		}
-	if (url == "/" && StatusCode == 200) {
-		if (_servers[1].getIndex() == "") {
-			if (!_servers[1].getListing())
+	if (req->getMethod() == "GET") {
+		if (url == "/" && StatusCode == 200) {
+			if (_servers[1].getIndex() == "") {
+				if (!_servers[1].getListing())
+					StatusCode = 404;
+			}
+			if (file.empty() && _servers[1].getIndex() != "")
+				_fullPath += _servers[1].getIndex();
+			else if (!file.empty() && file == _servers[1].getIndex())
+				_fullPath += _servers[1].getIndex();
+			else
 				StatusCode = 404;
 		}
-		if (file.empty() && _servers[1].getIndex() != "")
-			_fullPath += _servers[1].getIndex();
-		else if (!file.empty() && file == _servers[1].getIndex())
-		 	_fullPath += _servers[1].getIndex();
-		else
-		 	StatusCode = 404;
-	}
-	else if (StatusCode == 200) {
-		if (loc.getIndex() == "") {
-			if (!loc.getListing())
+		else if (StatusCode == 200) {
+			if (loc.getIndex() == "") {
+				if (!loc.getListing())
+					StatusCode = 404;
+			}
+			else if (!file.empty() && file == loc.getIndex())
+				_fullPath += loc.getIndex();
+			else
 				StatusCode = 404;
 		}
-		else if (!file.empty() && file == loc.getIndex())
-			_fullPath += loc.getIndex();
-		else
-		 	StatusCode = 404;
 	}
 }
 

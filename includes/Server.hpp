@@ -72,7 +72,7 @@ class server : public ABlock {
 		
 		
 		bool	init(int port);
-		void	s_run(conf ConfBlock, Request* req);
+		void	s_run(conf* ConfBlock, Request* req);
 		void	handle_new_connection(int server_fd);
 		void	handle_client_data(int index);
 		void	handle_client_response(int index);

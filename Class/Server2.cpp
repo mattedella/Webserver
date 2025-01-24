@@ -94,7 +94,7 @@ void server::printFdsVect()
 	}
 }
 
-void server::s_run(conf ConfBlock, Request* req)
+void server::s_run(conf* ConfBlock, Request* req)
 {
 	for (size_t i = 0; i < _poll_fds.size(); ++i)
 	{
@@ -109,7 +109,7 @@ void server::s_run(conf ConfBlock, Request* req)
 			} 
 			else {
 				if (_poll_fds[i].revents & POLLIN) {
-					req->getRequest(_poll_fds[i].fd, _poll_fds[i].events, _bodysize * 1000000);
+					req->getRequest(_poll_fds[i].fd, _poll_fds[i].events, _bodysize * 1000000, ConfBlock);
 					req->printRequest();
 				}
 				if (_poll_fds[i].revents & POLLOUT) {
