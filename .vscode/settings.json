@@ -51,7 +51,10 @@
         "sstream": "cpp",
         "stdexcept": "cpp",
         "streambuf": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "csignal": "cpp",
+        "optional": "cpp",
+        "ranges": "cpp"
     },
     "makefile.configureOnOpen": false
 }
