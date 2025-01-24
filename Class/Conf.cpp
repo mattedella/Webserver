@@ -140,6 +140,10 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 			StatusCode = 501;
 		}
 	if (req->getMethod() == "GET") {
+		if (file == "favicon.ico") {
+			_fullPath += "favicon.ico";
+			return ;
+		}
 		if (url == "/" && StatusCode == 200) {
 			if (_servers[1].getIndex() == "") {
 				if (!_servers[1].getListing())

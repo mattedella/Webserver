@@ -40,6 +40,7 @@ class Request {
 		std::string		getFileName();
 		std::string		getContentFile();
 		void			clear();
+		void			setContentType(const std::string& fullPath);
 
 		void			printRequest();
 

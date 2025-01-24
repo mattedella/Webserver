@@ -30,9 +30,6 @@ void Request::clear() {
 	_httpVersion.clear();
 	_url.clear();
 	_body.clear();
-	_file.clear();
-	_nameFile.clear();
-	_body.clear();
 }
 
 void Request::parsDelete(std::stringstream& file, std::string& line) {
@@ -70,70 +67,72 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line, st
 }
 
 void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std::string& Path, std::string Type) {
-    (void)line; // Suppress unused parameter warning
-    std::string Value, Boundary, endBoundary;
-    
-    size_t boundaryPos = Type.find("boundary=");
-    if (boundaryPos != NOT_FOUND) {
-        Boundary = "--" + Type.substr(boundaryPos + 9);
-        endBoundary = Boundary + "--";
-    }
-    else
-        throw exc("Boundary not found in Content-Type");
+	(void)line; // Suppress unused parameter warning
+	std::string Value, Boundary, endBoundary;
+	
+	size_t boundaryPos = Type.find("boundary=");
+	if (boundaryPos != NOT_FOUND) {
+		Boundary = "--" + Type.substr(boundaryPos + 9);
+		endBoundary = Boundary + "--";
+	}
+	else
+		throw exc("Boundary not found in Content-Type");
 
 	
-    std::string body = bodyData.str();
-    size_t startPos = body.find(Boundary);
-    size_t lastPos = 0;
+	std::string body = bodyData.str();
+	size_t startPos = body.find(Boundary);
+	size_t lastPos = 0;
 
-    while (startPos != std::string::npos && startPos > lastPos) {
-        lastPos = startPos;
-        
-        // Check for end boundary
-        if (body.substr(startPos, endBoundary.length()) == endBoundary) {
-            break;
-        }
+	while (startPos != std::string::npos && startPos > lastPos) {
+		lastPos = startPos;
 
-        // Find content boundaries
-        size_t headerStart = body.find("\r\n", startPos) + 2;
-        size_t headerEnd = body.find("\r\n\r\n", headerStart);
-        if (headerEnd == std::string::npos) break;
-        
-        size_t contentStart = headerEnd + 4;
-        size_t contentEnd = body.find(Boundary, contentStart) - 2; // -2 for \r\n
-        if (contentEnd == std::string::npos || contentEnd <= contentStart) break;
+		if (body.substr(startPos, endBoundary.length()) == endBoundary) {
+			break;
+		}
 
-        // Parse headers
-        std::string headers = body.substr(headerStart, headerEnd - headerStart);
-        size_t filenamePos = headers.find("filename=\"");
-        if (filenamePos != std::string::npos) {
-            std::string filename = headers.substr(
-                filenamePos + 10,
-                headers.find('"', filenamePos + 10) - (filenamePos + 10)
-            );
-            _nameFile = filename;
+		// Find content boundaries
+		size_t headerStart = body.find("\r\n", startPos) + 2;
+		size_t headerEnd = body.find("\r\n\r\n", headerStart);
+		if (headerEnd == std::string::npos) break;
+		
+		size_t contentStart = headerEnd + 4;
+		size_t contentEnd = body.find(Boundary, contentStart) - 2; // -2 for \r\n
+		if (contentEnd == std::string::npos || contentEnd <= contentStart) break;
 
-            // Write file content
-            std::string content = body.substr(contentStart, contentEnd - contentStart);
-            std::ofstream file((Path + "/" + _nameFile).c_str(), 
-                             std::ios::binary | std::ios::trunc);
-            if (!file.is_open()) {
-                throw exc("Error: cannot open the file");
-            }
-            file.write(content.c_str(), content.length());
-            file.close();
-        }
-        
-        startPos = body.find(Boundary, contentEnd);
-    }
+		// Parse headers
+		std::string headers = body.substr(headerStart, headerEnd - headerStart);
+		size_t filenamePos = headers.find("filename=\"");
+		if (filenamePos != std::string::npos) {
+			std::string filename = headers.substr(
+				filenamePos + 10,
+				headers.find('"', filenamePos + 10) - (filenamePos + 10)
+			);
+			_nameFile = filename;
+
+			// Write file content
+			std::string content = body.substr(contentStart, contentEnd - contentStart);
+			std::ofstream file((Path + "/" + _nameFile).c_str(), 
+							std::ios::binary | std::ios::trunc);
+			if (!file.is_open()) {
+				throw exc("Error: cannot open the file");
+			}
+			file.write(content.c_str(), content.length());
+			file.close();
+		}
+		
+		startPos = body.find(Boundary, contentEnd);
+	}
 }
 
 
 
 void Request::parsPost(std::stringstream& file, std::string& line, std::string Path) {
-	if (_headers["Content-Type"].find("application/x-www-form-urlencoded") != NOT_FOUND)
+	std::string body, value, Key, Tp;
+	while (std::getline(file, line) && !line.substr(0, line.length() - 1).empty()) {
+	}
+	if (_headers["Content-Type"].find("application/x-www-form-urlencoded") == 0)
 		parsApplication(file, line, Path);
-	else if (_headers["Content-Type"].find("multipart/form-data") != NOT_FOUND)
+	else if (_headers["Content-Type"].find("multipart/form-data") == 0)
 		parsMultipart(file, line, Path, _headers["Content-Type"]);
 }
 
@@ -158,32 +157,79 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 }
 
 void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* ConfBlock) {
-	int bytes_received = 0;
 	std::stringstream buffer;
-	char* tmp_buffer = new char[MaxSize];
+	size_t total_received = 0;
+	size_t content_length = 0;
+	bool headers_complete = false;
+	std::string temp_buffer;
+	size_t header_end = std::string::npos;
 
-	bytes_received = recv(client_socket, tmp_buffer, MaxSize, 0);
-	if (bytes_received < 0) {
-		throw exc("Error reading request\n");
+	while (true) {
+		char* chunk = new char[MaxSize];
+		int bytes_received = recv(client_socket, chunk, MaxSize, 0);
+		if (bytes_received <= 0 || bytes_received == MaxSize) {
+			delete[] chunk;
+			break;
+		}
+
+		buffer.write(chunk, bytes_received);
+		delete[] chunk;
+		total_received += bytes_received;
+
+		if (!headers_complete) {
+			temp_buffer = buffer.str();
+			header_end = temp_buffer.find("\r\n\r\n");
+			if (header_end != std::string::npos) {
+				headers_complete = true;
+				std::string headers = temp_buffer.substr(0, header_end);
+				size_t cl_pos = headers.find("Content-Length: ");
+				if (cl_pos != std::string::npos) {
+					size_t cl_end = headers.find("\r\n", cl_pos);
+					std::stringstream ss(headers.substr(cl_pos + 16, cl_end - (cl_pos + 16)));
+					ss >> content_length;
+				}
+			}
+		}
+
+		if (headers_complete && content_length > 0) {
+			if (total_received >= header_end + 4 + content_length) {
+				break;
+			}
+		}
 	}
-	buffer.write(tmp_buffer, bytes_received);
-	delete [] tmp_buffer;
+	std::cout << buffer.str() << std::endl;
 	ParsRequest(buffer, ConfBlock);
-	// printRequest();
 	event = POLLOUT;
 }
 
 void Request::printRequest() {
-// 	std::cout << "Method: " + _method + '\n';
-// 	std::cout << "URL: " + _url + '\n';
-// 	std::cout << "HTTP Version: " + _httpVersion + '\n';
-// 	std::cout << "Headers: \n";
-// 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
-// 		std::cout << it->first + ": " + it->second + '\n';
-// 	std::cout << "Body: \n";
-// 	for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
-// 		std::cout << bit->first + ": " + bit->second + '\n';
+	// std::cout << "Method: " + _method + '\n';
+	// std::cout << "URL: " + _url + '\n';
+	// std::cout << "HTTP Version: " + _httpVersion + '\n';
+	// std::cout << "Headers: \n";
+	// for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+	// 	std::cout << it->first + ": " + it->second + '\n';
+	// std::cout << "Body: \n";
+	// for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
+	// 	std::cout << bit->first + ": " + bit->second + '\n';
 }
+
+void Request::setContentType(const std::string& fullPath) {
+
+	_headers.erase("Content-Type");
+	if (fullPath.find(".html") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "text/html"));
+	else if (fullPath.find(".css") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "text/css"));
+	else if (fullPath.find(".js") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "application/javascript"));
+	else if (fullPath.find(".png") != std::string::npos || fullPath.find(".ico") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "image/png"));
+	else if (fullPath.find(".jpg") != std::string::npos || fullPath.find(".jpeg") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "image/jpeg"));
+	else
+		_headers.insert(std::make_pair("Content-Type", "text/plain"));
+	}
 
 std::string Request::getHeader(const std::string& Key) {
 	return _headers[Key];
