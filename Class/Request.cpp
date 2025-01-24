@@ -15,6 +15,22 @@
 
 Request::Request() {}
 
+void Request::setPostContentType(const std::string& fullPath) {
+	_body.erase("Content-Type");
+	if (fullPath.find(".html") != std::string::npos)
+		_body.insert(std::make_pair("Content-Type", "text/html"));
+	else if (fullPath.find(".css") != std::string::npos)
+		_body.insert(std::make_pair("Content-Type", "text/css"));
+	else if (fullPath.find(".js") != std::string::npos)
+		_body.insert(std::make_pair("Content-Type", "application/javascript"));
+	else if (fullPath.find(".png") != std::string::npos || fullPath.find(".ico") != std::string::npos)
+		_body.insert(std::make_pair("Content-Type", "image/png"));
+	else if (fullPath.find(".jpg") != std::string::npos || fullPath.find(".jpeg") != std::string::npos)
+		_body.insert(std::make_pair("Content-Type", "image/jpeg"));
+	else
+		_body.insert(std::make_pair("Content-Type", "text/plain"));
+}
+
 std::string Request::getFileName() {
 	return _nameFile;
 }
@@ -93,13 +109,13 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std:
 		// Find content boundaries
 		size_t headerStart = body.find("\r\n", startPos) + 2;
 		size_t headerEnd = body.find("\r\n\r\n", headerStart);
-		if (headerEnd == std::string::npos) break;
+		if (headerEnd == std::string::npos)
+			break;
 		
 		size_t contentStart = headerEnd + 4;
-		size_t contentEnd = body.find(Boundary, contentStart) - 2; // -2 for \r\n
+		size_t contentEnd = body.find(Boundary, contentStart) - 2;
 		if (contentEnd == std::string::npos || contentEnd <= contentStart) break;
 
-		// Parse headers
 		std::string headers = body.substr(headerStart, headerEnd - headerStart);
 		size_t filenamePos = headers.find("filename=\"");
 		if (filenamePos != std::string::npos) {
@@ -197,7 +213,7 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 			}
 		}
 	}
-	std::cout << buffer.str() << std::endl;
+
 	ParsRequest(buffer, ConfBlock);
 	event = POLLOUT;
 }
@@ -229,7 +245,7 @@ void Request::setContentType(const std::string& fullPath) {
 		_headers.insert(std::make_pair("Content-Type", "image/jpeg"));
 	else
 		_headers.insert(std::make_pair("Content-Type", "text/plain"));
-	}
+}
 
 std::string Request::getHeader(const std::string& Key) {
 	return _headers[Key];

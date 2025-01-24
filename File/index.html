@@ -13,49 +13,47 @@
             box-sizing: border-box;
         }
 
-        /* Set background with animated gradient (rosa) */
+        /* Background with subtle Magic: The Gathering theme */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(45deg, #ff7c9e, #ff5088, #e84393, #d5006e); /* Rosa gradiente */
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            color: #333;
+            background-color: #2c2f3a; /* Dark, Magic-like background */
+            color: #f0f0f0;
             display: flex;
-            justify-content: center; /* Centrare il contenuto orizzontalmente */
-            align-items: center; /* Centrare il contenuto verticalmente */
+            justify-content: center;
+            align-items: center;
             height: 100vh;
             overflow: hidden;
             position: relative;
-            flex-direction: column; /* Aggiunto per disporre header sopra il box */
+            flex-direction: column;
+            background-image: url('https://www.mtggoldfish.com/static/images/mtg-logo-small.png'); /* Magic logo background */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 150px;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Header styling */
+        /* Header styling with a Magic touch */
         header {
-            background-color: #1e2a47;
-            color: white;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #ffcc00;
             text-align: center;
             padding: 40px;
             font-size: 2.4em;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
             margin-bottom: 30px;
             width: 300px;
+            position: relative;
+            text-shadow: 0px 0px 8px rgba(255, 204, 0, 0.8); /* Glowing Magic-like effect */
         }
 
-        /* Form container styling */
+        /* Form container with more thematic colors */
         .container {
             width: 100%;
             max-width: 650px;
             padding: 30px;
-            background-color: rgba(255, 255, 255, 0.85);
+            background-color: rgba(40, 40, 40, 0.85);
             border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -69,14 +67,16 @@
 
         h2 {
             font-size: 1.8em;
-            color: #1e2a47;
+            color: #ffcc00;
             text-transform: uppercase;
             margin-bottom: 20px;
+            font-family: "Garamond", serif; /* Magic-themed font */
+            text-shadow: 0px 0px 8px rgba(255, 204, 0, 0.8);
         }
 
         label {
             font-weight: bold;
-            color: #34495e;
+            color: #b5b5b5;
             font-size: 1.1em;
             margin-bottom: 6px;
             display: block;
@@ -87,23 +87,23 @@
             padding: 12px;
             margin-top: 8px;
             margin-bottom: 20px;
-            border: 2px solid #7f8c8d;
+            border: 2px solid #444444;
             border-radius: 10px;
             font-size: 1em;
-            background-color: #ecf0f1;
+            background-color: #333333;
             transition: all 0.3s ease;
         }
 
         input[type="text"]:focus, input[type="file"]:focus {
-            border-color: #6a11cb;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(106, 17, 203, 0.6);
+            border-color: #ffcc00;
+            background-color: #1e1e1e;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.6);
             outline: none;
         }
 
         button {
-            background-color: #6a11cb;
-            color: white;
+            background-color: #ffcc00;
+            color: black;
             padding: 12px 28px;
             font-size: 1.1em;
             font-weight: bold;
@@ -116,26 +116,26 @@
         }
 
         button:hover {
-            background-color: #2575fc;
+            background-color: #f1c40f;
             transform: scale(1.05);
         }
 
         button:active {
             transform: scale(1);
-            background-color: #0f4b6e;
+            background-color: #e67e22;
         }
 
-        /* Add a cool dynamic effect on the right side */
+        /* Magical dynamic effect on the side */
         .right-effect {
             position: absolute;
             top: 50%;
             right: -150px;
             width: 250px;
             height: 250px;
-            background: radial-gradient(circle, rgba(0, 204, 255, 0.7), rgba(106, 17, 203, 0.6));
+            background: radial-gradient(circle, rgba(255, 204, 0, 0.7), rgba(255, 0, 0, 0.5));
             border-radius: 50%;
             animation: rightEffectAnim 3s ease infinite;
-            box-shadow: 0 0 30px rgba(106, 17, 203, 0.6);
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.6);
         }
 
         @keyframes rightEffectAnim {
@@ -153,7 +153,7 @@
             }
         }
 
-        /* Preview of image styling */
+        /* Preview container with card-like design */
         .preview-container {
             position: absolute;
             top: 50%;
@@ -169,7 +169,7 @@
             justify-content: center;
             align-items: center;
             background-color: #f4f4f4;
-            background-image: url('https://img.icons8.com/ios/452/upload.png'); /* Icon for upload */
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/MTG_Logo.svg/1200px-MTG_Logo.svg.png'); /* Magic: The Gathering Logo */
             background-position: center;
             background-repeat: no-repeat;
             background-size: 50%;
@@ -184,6 +184,29 @@
             height: 100%;
             object-fit: cover;
         }
+
+        /* Mana Symbol Hover Effects */
+        .mana-symbol {
+            width: 40px;
+            height: 40px;
+            margin: 0 10px;
+            display: inline-block;
+            background-color: transparent;
+            background-size: contain;
+            transition: all 0.3s ease;
+        }
+
+        .mana-symbol:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
+        }
+
+        /* Mana Symbols */
+        .white { background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Mana_White.svg/1200px-Mana_White.svg.png'); }
+        .blue { background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Mana_Blue.svg/1200px-Mana_Blue.svg.png'); }
+        .black { background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Mana_Black.svg/1200px-Mana_Black.svg.png'); }
+        .red { background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Mana_Red.svg/1200px-Mana_Red.svg.png'); }
+        .green { background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Mana_Green.svg/1200px-Mana_Green.svg.png'); }
 
         /* Responsive Styles */
         @media (max-width: 768px) {
@@ -204,7 +227,7 @@
 </head>
 <body>
 
-<header>DreamTeam's Webserv</header>
+<header>DreamTeam's Webserver</header>
 
 <div class="container">
     <div class="form-section">
@@ -221,7 +244,7 @@
     </div>
 
     <div class="form-section">
-        <h2>Load a File</h2>
+        <h2>Load a Magic Item</h2>
         <form action="/upload" method="POST" enctype="multipart/form-data">
             <label for="file">Upload File:</label>
             <input type="file" id="file" name="file" accept="image/*" required><br>
@@ -231,7 +254,16 @@
     </div>
 </div>
 
-<!-- Dynamic right-side effect -->
+<!-- Mana Symbol Row -->
+<div class="mana-symbols">
+    <div class="mana-symbol white"></div>
+    <div class="mana-symbol blue"></div>
+    <div class="mana-symbol black"></div>
+    <div class="mana-symbol red"></div>
+    <div class="mana-symbol green"></div>
+</div>
+
+<!-- Magical right-side effect -->
 <div class="right-effect"></div>
 
 <!-- Image preview container -->

@@ -41,6 +41,7 @@ class Request {
 		std::string		getContentFile();
 		void			clear();
 		void			setContentType(const std::string& fullPath);
+		void			setPostContentType(const std::string& fullPath);
 
 		void			printRequest();
 

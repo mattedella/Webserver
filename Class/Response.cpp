@@ -10,6 +10,7 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 	std::ofstream file;
 	std::stringstream buff;
 	std::string request;
+	req->setPostContentType(ConfBlock->getFullPath() + "/" + req->getFileName());
 	switch (StatusCode) {
 		case 200:
 			file.open((ConfBlock->getFullPath() + "/" + req->getFileName()).c_str(), std::ios::binary);
