@@ -23,22 +23,15 @@ std::string Request::getBody(const std::string& Key) {
 	return _body[Key];
 }
 
-void Request::setPostName(std::string Path) {
-	_POSTFile.open((Path + "/" + _nameFile).c_str(), std::ios::binary);
-	if (!_POSTFile.is_open()) {
-		std::cout << "Error: cannot open the file\n";
-	}
-	std::cout << &_contentFile << " => " + _contentFile << std::endl;
-	_POSTFile.write(_contentFile.c_str(), _contentFile.size());
-	_POSTFile.close();
-}
-
 void Request::clear() {
 	_method.clear();
 	_headers.clear();
 	_file.clear();
 	_httpVersion.clear();
 	_url.clear();
+	_body.clear();
+	_file.clear();
+	_nameFile.clear();
 	_body.clear();
 }
 
@@ -76,7 +69,7 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line, st
 	}
 }
 
-void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std::string Path, std::string Type) {
+void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std::string& Path, std::string Type) {
 	std::string Value, Boundary, endBoundary;
 	std::stringstream contentBody;
 
@@ -104,7 +97,6 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std:
 			std::string tp = line.substr(line.find(':') + 2);
 			_body.insert(std::make_pair(Key, tp));
 		}
-
 		size_t headerEnd = part.find("\r\n\r\n");
 		if (headerEnd != std::string::npos) {
 			std::string headers = part.substr(0, headerEnd);
@@ -115,12 +107,11 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std:
 					filenamePos + 10, headers.find('"', filenamePos + 10) - (filenamePos + 10));
 				_nameFile = filename;
 				std::ofstream file((Path + "/" + _nameFile).c_str(), std::ios::binary);
-				if (!file.is_open()) {
+				if (!file.is_open())
 					throw exc("Error: cannot open the file");
-				}
 				file.write(_contentFile.c_str(), _contentFile.size());
 				file.close();
-			} 
+			}
 			else
 				std::cout << "No filename found in headers!" << std::endl;
 		}
@@ -131,33 +122,10 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std:
 
 
 void Request::parsPost(std::stringstream& file, std::string& line, std::string Path) {
-	std::string body, value, Key, Tp;
-	while (std::getline(file, line) && !line.substr(0, line.length() - 1).empty()) {
-	}
-	if (_headers["Content-Type"].find("application/x-www-form-urlencoded") == 0)
+	if (_headers["Content-Type"].find("application/x-www-form-urlencoded") != NOT_FOUND)
 		parsApplication(file, line, Path);
-	else if (_headers["Content-Type"].find("multipart/form-data") == 0)
+	else if (_headers["Content-Type"].find("multipart/form-data") != NOT_FOUND)
 		parsMultipart(file, line, Path, _headers["Content-Type"]);
-	// else if (_headers["Content-Type"] == "application/json") // 
-	// 	parsJSon(file, line, Path);
-	// else if (_headers["Content-Type"] == "application/xml")
-	// 	parsXml(file, line, Path);
-	// else if (_headers["Content-Type"] == "text/plain")
-	// 	parsText(file, line, Path);
-	// else if (_headers["Content-Type"] == "application/octet-stream")
-	// 	parsOctet(file, line, Path);
-	// else if (_headers["Content-Type"] == "application/ld+json")
-	// 	parsLdJson(file, line, Path);
-	// else if (_headers["Content-Type"] == "text/csv")
-	// 	parsTextCsv(file, line, Path);
-	// else if (_headers["Content-Type"] == "application/graphql")
-	// 	parsGraph(file, line, Path);
-	// else if (_headers["Content-Type"] == "application/protobuf")
-	// 	parsProtobuf(file, line, Path);
-	// else if (_headers["Content-Type"] == "text/event-stream")
-	// 	parsEventStream(file, line, Path);
-	// else if (_headers["Content-Type"] == "application/zip")
-	// 	parsZip(file, line, Path);
 }
 
 void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
@@ -184,9 +152,8 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 	int bytes_received = 0;
 	std::stringstream buffer;
 	char* tmp_buffer = new char[MaxSize];
-
 	bytes_received = recv(client_socket, tmp_buffer, MaxSize, 0);
-	if (bytes_received < 0) {
+	if (bytes_received < 0 || bytes_received == MaxSize) {
 		throw exc("Error reading request\n");
 	}
 	buffer.write(tmp_buffer, bytes_received);
@@ -197,15 +164,15 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 }
 
 void Request::printRequest() {
-	std::cout << "Method: " + _method + '\n';
-	std::cout << "URL: " + _url + '\n';
-	std::cout << "HTTP Version: " + _httpVersion + '\n';
-	std::cout << "Headers: \n";
-	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
-		std::cout << it->first + ": " + it->second + '\n';
-	std::cout << "Body: \n";
-	for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
-		std::cout << bit->first + ": " + bit->second + '\n';
+// 	std::cout << "Method: " + _method + '\n';
+// 	std::cout << "URL: " + _url + '\n';
+// 	std::cout << "HTTP Version: " + _httpVersion + '\n';
+// 	std::cout << "Headers: \n";
+// 	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+// 		std::cout << it->first + ": " + it->second + '\n';
+// 	std::cout << "Body: \n";
+// 	for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
+// 		std::cout << bit->first + ": " + bit->second + '\n';
 }
 
 std::string Request::getHeader(const std::string& Key) {
