@@ -29,6 +29,9 @@ $(NAME): $(SRC)
 	@echo $(GREEN)		"     \/  \/ \___|_.__/_____/ \___|_|    \_/   (_)  | |"$(NONE)
 	@echo $(CYAN)		"                                                  /_/ "$(NONE)
 
+val: all
+	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) test.conf
+
 run: all
 	./$(NAME) test.conf
 

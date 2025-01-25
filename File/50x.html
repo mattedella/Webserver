@@ -6,25 +6,73 @@
     <title>501 Not Implemented</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
+            font-family: 'Roboto', sans-serif;
+            background-color: #111;
+            color: #e0e0e0;
             text-align: center;
             padding: 50px;
+            margin: 0;
+            overflow: hidden;
         }
         h1 {
-            font-size: 100px;
-            color: #d9534f;
+            font-size: 120px;
+            color: #1e90ff;
+            margin: 0;
+            font-weight: 700;
+            text-shadow: 0 5px 15px rgba(30, 144, 255, 0.6);
+            animation: pulse 2s infinite;
         }
         p {
-            font-size: 24px;
+            font-size: 20px;
+            color: #ccc;
+            line-height: 1.6;
+            margin-top: 20px;
         }
         .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #222;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
             display: inline-block;
+            margin-top: 40px;
+            animation: slideIn 1.5s ease-out;
+        }
+        .container p {
+            margin: 15px 0;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #333;
+            color: #aaa;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 14px;
+        }
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                text-shadow: 0 5px 15px rgba(30, 144, 255, 0.6);
+            }
+            50% {
+                text-shadow: 0 0 25px rgba(30, 144, 255, 0.8);
+            }
+            100% {
+                text-shadow: 0 5px 15px rgba(30, 144, 255, 0.6);
+            }
+        }
+
+        @keyframes slideIn {
+            0% {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -35,6 +83,10 @@
         <p>Not Implemented</p>
         <p>The server does not support the functionality required to fulfill the request.</p>
     </div>
+
+    <footer>
+        &copy; Mdella-r, Aconti
+    </footer>
 
 </body>
 </html>
