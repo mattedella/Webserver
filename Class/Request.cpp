@@ -1,5 +1,6 @@
 
 #include "../includes/webserv.hpp"
+#include <cerrno>
 #include <cstdio>
 #include <fstream>
 #include <ios>
@@ -82,7 +83,7 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line, st
 	}
 }
 
-void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std::string& Path, std::string Type) {
+void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std::string Path, std::string Type) {
 	(void)line; // Suppress unused parameter warning
 	std::string Value, Boundary, endBoundary;
 	
@@ -101,7 +102,8 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std:
 
 	while (startPos != std::string::npos && startPos > lastPos) {
 		lastPos = startPos;
-
+		
+		// Check for end boundary
 		if (body.substr(startPos, endBoundary.length()) == endBoundary) {
 			break;
 		}
@@ -116,31 +118,43 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std:
 		size_t contentEnd = body.find(Boundary, contentStart) - 2;
 		if (contentEnd == std::string::npos || contentEnd <= contentStart) break;
 
+		// Parse headers
 		std::string headers = body.substr(headerStart, headerEnd - headerStart);
 		size_t filenamePos = headers.find("filename=\"");
+		size_t TypePos = headers.find("Content-Type:");
 		if (filenamePos != std::string::npos) {
 			std::string filename = headers.substr(
 				filenamePos + 10,
 				headers.find('"', filenamePos + 10) - (filenamePos + 10)
 			);
 			_nameFile = filename;
-
+		if (TypePos != NOT_FOUND) {
+			std::string contentType = headers.substr(TypePos + 14, headers.find("\r\n") - (TypePos + 14));
+			std::cout << "Content-Type= |" + contentType << "|\n";
+			_body.insert(std::make_pair("Content-Type", contentType));
+		}
 			// Write file content
 			std::string content = body.substr(contentStart, contentEnd - contentStart);
-			std::ofstream file((Path + "/" + _nameFile).c_str(), 
+			_PostFile.open((Path + "/" + _nameFile).c_str(), 
 							std::ios::binary | std::ios::trunc);
-			if (!file.is_open()) {
-				throw exc("Error: cannot open the file");
+			if (!_PostFile.is_open()) {
+				throw exc("Error: cannot open the file\n");
 			}
-			file.write(content.c_str(), content.length());
-			file.close();
+			_PostFile.write(content.c_str(), content.length());
 		}
 		
 		startPos = body.find(Boundary, contentEnd);
 	}
 }
 
+std::ofstream& Request::getPostFile() {
+	return _PostFile;
 
+}
+
+void Request::closeFile() {
+	_PostFile.close();
+}
 
 void Request::parsPost(std::stringstream& file, std::string& line, std::string Path) {
 	std::string body, value, Key, Tp;
@@ -155,6 +169,7 @@ void Request::parsPost(std::stringstream& file, std::string& line, std::string P
 void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 	std::string line;
 	std::getline(to_pars, line);
+
 	std::stringstream req_line(line);
 	req_line >> _method >> _url >> _httpVersion;
 	while (std::getline(to_pars, line) && !line.substr(0, line.length() - 1).empty()) {
@@ -174,16 +189,27 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 
 void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* ConfBlock) {
 	std::stringstream buffer;
-	size_t total_received = 0;
-	size_t content_length = 0;
+	size_t total_received = 0, content_length = 0, header_end = std::string::npos;
 	bool headers_complete = false;
 	std::string temp_buffer;
-	size_t header_end = std::string::npos;
 
 	while (true) {
+		std::cout << "ms: " << MaxSize << '\n';
 		char* chunk = new char[MaxSize];
 		int bytes_received = recv(client_socket, chunk, MaxSize, 0);
+		std::cout << "br: " << bytes_received << '\n';
 		if (bytes_received <= 0 || bytes_received == MaxSize) {
+			int err = errno;
+			if (err == EAGAIN) {
+				std::cout << "EAGAIN No data available, try again later." << std::endl;
+			}
+			else if (err == EWOULDBLOCK) {
+				std::cout << "EWOULDBLOCK No data available, try again later." << std::endl;
+			}
+			else if (err == ECONNRESET) {
+				std::cout << "Connection reset by peer." << std::endl;
+				// Close the socket or handle the error.
+			}
 			delete[] chunk;
 			break;
 		}
@@ -208,12 +234,12 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 		}
 
 		if (headers_complete && content_length > 0) {
-			if (total_received >= header_end + 4 + content_length) {
+			if (total_received >= content_length + header_end + 4) {
 				break;
 			}
 		}
 	}
-
+	std::cout << buffer.str() << '\n';
 	ParsRequest(buffer, ConfBlock);
 	event = POLLOUT;
 }

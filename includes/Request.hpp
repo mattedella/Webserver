@@ -20,6 +20,7 @@ class Request {
 		std::map<std::string, std::string>	_headers;
 		std::map<std::string, std::string>	_body;
 		std::string							_nameFile;
+		std::ofstream						_PostFile;
 
 	public:
 		Request();
@@ -28,22 +29,25 @@ class Request {
 		void			parsPost(std::stringstream& file, std::string& line, std::string Path);
 		void			parsDelete(std::stringstream& file, std::string& line);
 		void			parsApplication(std::stringstream& bodyData, std::string& line, std::string Path);
-		void			parsMultipart(std::stringstream& bodyData, std::string& line, std::string& Path, std::string Type);
+		void			parsMultipart(std::stringstream& bodyData, std::string& line, std::string Path, std::string Type);
 
-		void			getRequest(int& client_socket, short& event, int MaxSize, conf* ConfBlock);
 		std::string&	getURL();
-		std::string		getHttpVersion();
 		std::string		getMethod();
-		std::string		getHeader(const std::string& Key);
-		std::string		getBody(const std::string& Key);
-		void			setPostName(std::string Path);
 		std::string		getFileName();
+		std::ofstream&	getPostFile();
 		std::string		getContentFile();
-		void			clear();
+		std::string		getHttpVersion();
+		std::string		getBody(const std::string& Key);
+		std::string		getHeader(const std::string& Key);
+
+		void			setPostName(std::string Path);
 		void			setContentType(const std::string& fullPath);
 		void			setPostContentType(const std::string& fullPath);
 
+		void			clear();
+		void			closeFile();
 		void			printRequest();
+		void			getRequest(int& client_socket, short& event, int MaxSize, conf* ConfBlock);
 
 		~Request();
 };
