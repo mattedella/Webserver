@@ -5,7 +5,6 @@
 int StatusCode = 0;
 
 int main (int argc, char **argv) {
-
 	if (argc != 2) {
 		std::cerr << "\033[31m" << "Error: Wrong number of argumets\n";
 		std::cerr << "Use: " << argv[0] << " <configuration_file>\n" << "\033[0m";

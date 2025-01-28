@@ -102,8 +102,6 @@ void ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::strin
 	ServerBlock.addLocation(path, LocationBlock);
 }
 
-
-
 conf *ParsConfFile(std::vector<std::string> config_content) {
 	int 		brk = 0, nbrServer = 0;
 	server		ServerBlock;

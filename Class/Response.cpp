@@ -8,17 +8,22 @@
 Response::Response() {}
 
 void Response::generatePostResponse(Request* req, conf* ConfBlock) {
+	// TODO: capire come e' fatta la response e generarla;
 	std::ofstream file;
 	std::ofstream& postfile = req->getPostFile();
 	std::stringstream buff;
 	std::string request;
 	switch (StatusCode) {
 		case 200:
-			buff << postfile.rdbuf();
-			_response = "HTTP/1.1 201 Create\r\nContent-Type: " + req->getBody("Content-Type")
-						+ "\r\nConnection: " + req->getHeader("Connection") + "\r\n\r\n"
-						+ "{\r\n \"status\": \"success\",\r\n \"message\": Image uploaded successfully\",\r\n \"file_url\": \"http://" + req->getHeader("Host") + req->getURL() + "/" + req->getFileName() + "\"\r\n}\r\n\r\n"
-						+ buff.str();
+			_response = "HTTP/1.1 202 Accepted\r\n"
+            "Content-Type: application/json\r\n" // Ensure JSON content type
+            "Connection: " + req->getHeader("Connection") + "\r\n"
+            "Content-Length: " + req->getHeader("Content-Length") + "\r\n" // Correct Content-Length calculation
+            "\r\n" // Blank line separating headers and body
+            "{\r\n"
+            " \"success\": true,\r\n"
+            " \"fileName\": \"" + req->getFileName() + "\"\r\n" // Include the file name dynamically
+            "}\r\n"; // Close the JSON object
 			break ;
 		case 404:
 			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(404, 1, ConfBlock->getLocation(req->getURL(), 1))).c_str());
@@ -80,9 +85,9 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 	std::string error403 = ConfBlock->getErrorPage(403, 1, ConfBlock->getLocation(req->getURL(), 1));
 	std::string error408 = ConfBlock->getErrorPage(408, 1, ConfBlock->getLocation(req->getURL(), 1));
 	std::string error5xx = ConfBlock->getErrorPage(501, 1, ConfBlock->getLocation(req->getURL(), 1));
+	req->setContentType(Path);
 	switch (StatusCode) {
 		case 200:
-			req->setContentType(Path);
 			file.open(Path.c_str());
 			if (!file.is_open())
 				throw exc("Error: file \"" + Path + "\" not opened\n");

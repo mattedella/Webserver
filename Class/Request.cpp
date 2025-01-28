@@ -17,6 +17,7 @@
 Request::Request() {}
 
 void Request::setPostContentType(const std::string& fullPath) {
+	// ? da modificare o da cancellare
 	_body.erase("Content-Type");
 	if (fullPath.find(".html") != std::string::npos)
 		_body.insert(std::make_pair("Content-Type", "text/html"));
@@ -50,12 +51,14 @@ void Request::clear() {
 }
 
 void Request::parsDelete(std::stringstream& file, std::string& line) {
+	// TODO: iniziare;
 	(void)file;
 	(void)line;
 	std::cout << "parsDelete\n";
 }
 
 void Request::parsApplication(std::stringstream& bodyData, std::string& line, std::string Path) {
+	// TODO: salvare i dati da qualche parte(non so dove e come);
 	std::string Key, Tp, value;
 	(void)Path;
 	while (std::getline(bodyData, line) && !line.substr(0, line.length() - 1).empty())
@@ -73,7 +76,7 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line, st
 			} 
 			Key = value.substr(0, value.find('='));
 			Tp = value.substr(value.find('=') + 1);
-			_body.insert(std::make_pair(Key, Tp)); 
+			_body.insert(std::make_pair(Key, Tp));
 		}
 	}
 	else {
@@ -83,8 +86,7 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line, st
 	}
 }
 
-void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std::string Path, std::string Type) {
-	(void)line; // Suppress unused parameter warning
+void Request::parsMultipart(std::stringstream& bodyData, std::string& Path, std::string Type) {
 	std::string Value, Boundary, endBoundary;
 	
 	size_t boundaryPos = Type.find("boundary=");
@@ -95,20 +97,17 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std:
 	else
 		throw exc("Boundary not found in Content-Type");
 
-	
 	std::string body = bodyData.str();
 	size_t startPos = body.find(Boundary);
 	size_t lastPos = 0;
 
 	while (startPos != std::string::npos && startPos > lastPos) {
 		lastPos = startPos;
-		
-		// Check for end boundary
+
 		if (body.substr(startPos, endBoundary.length()) == endBoundary) {
 			break;
 		}
 
-		// Find content boundaries
 		size_t headerStart = body.find("\r\n", startPos) + 2;
 		size_t headerEnd = body.find("\r\n\r\n", headerStart);
 		if (headerEnd == std::string::npos)
@@ -118,7 +117,6 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std:
 		size_t contentEnd = body.find(Boundary, contentStart) - 2;
 		if (contentEnd == std::string::npos || contentEnd <= contentStart) break;
 
-		// Parse headers
 		std::string headers = body.substr(headerStart, headerEnd - headerStart);
 		size_t filenamePos = headers.find("filename=\"");
 		size_t TypePos = headers.find("Content-Type:");
@@ -130,7 +128,6 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& line, std:
 			_nameFile = filename;
 		if (TypePos != NOT_FOUND) {
 			std::string contentType = headers.substr(TypePos + 14, headers.find("\r\n") - (TypePos + 14));
-			std::cout << "Content-Type= |" + contentType << "|\n";
 			_body.insert(std::make_pair("Content-Type", contentType));
 		}
 			// Write file content
@@ -163,10 +160,11 @@ void Request::parsPost(std::stringstream& file, std::string& line, std::string P
 	if (_headers["Content-Type"].find("application/x-www-form-urlencoded") == 0)
 		parsApplication(file, line, Path);
 	else if (_headers["Content-Type"].find("multipart/form-data") == 0)
-		parsMultipart(file, line, Path, _headers["Content-Type"]);
+		parsMultipart(file, Path, _headers["Content-Type"]);
 }
 
 void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
+	// TODO: Parsing per la CGI;
 	std::string line;
 	std::getline(to_pars, line);
 
@@ -194,30 +192,22 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 	std::string temp_buffer;
 
 	while (true) {
-		std::cout << "ms: " << MaxSize << '\n';
 		char* chunk = new char[MaxSize];
 		int bytes_received = recv(client_socket, chunk, MaxSize, 0);
-		std::cout << "br: " << bytes_received << '\n';
 		if (bytes_received <= 0 || bytes_received == MaxSize) {
 			int err = errno;
-			if (err == EAGAIN) {
+			if (err == EAGAIN)
 				std::cout << "EAGAIN No data available, try again later." << std::endl;
-			}
-			else if (err == EWOULDBLOCK) {
+			else if (err == EWOULDBLOCK)
 				std::cout << "EWOULDBLOCK No data available, try again later." << std::endl;
-			}
-			else if (err == ECONNRESET) {
+			else if (err == ECONNRESET)
 				std::cout << "Connection reset by peer." << std::endl;
-				// Close the socket or handle the error.
-			}
 			delete[] chunk;
 			break;
 		}
-
 		buffer.write(chunk, bytes_received);
 		delete[] chunk;
 		total_received += bytes_received;
-
 		if (!headers_complete) {
 			temp_buffer = buffer.str();
 			header_end = temp_buffer.find("\r\n\r\n");
@@ -232,14 +222,12 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 				}
 			}
 		}
-
 		if (headers_complete && content_length > 0) {
 			if (total_received >= content_length + header_end + 4) {
 				break;
 			}
 		}
 	}
-	std::cout << buffer.str() << '\n';
 	ParsRequest(buffer, ConfBlock);
 	event = POLLOUT;
 }

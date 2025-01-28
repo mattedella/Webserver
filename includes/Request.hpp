@@ -29,7 +29,7 @@ class Request {
 		void			parsPost(std::stringstream& file, std::string& line, std::string Path);
 		void			parsDelete(std::stringstream& file, std::string& line);
 		void			parsApplication(std::stringstream& bodyData, std::string& line, std::string Path);
-		void			parsMultipart(std::stringstream& bodyData, std::string& line, std::string Path, std::string Type);
+		void			parsMultipart(std::stringstream& bodyData, std::string& Path, std::string Type);
 
 		std::string&	getURL();
 		std::string		getMethod();
