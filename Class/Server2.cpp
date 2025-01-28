@@ -8,19 +8,23 @@
 
 void server::addNametoHost() {
 	std::ofstream		hosts;
+	std::ofstream		checkhosts;
 	std::stringstream	checker;
 	std::string			to_check;
 	hosts.open("/etc/hosts", std::ios::app);
+	checkhosts.open("/etc/hosts", std::ios::in);
 	if (!hosts.is_open()) {
 		std::cout << "ERROR: cannot open \"/etc/hosts\"\n";
 		return ;
 	}
-	checker << hosts.rdbuf();
+	checker << checkhosts.rdbuf();
 	to_check = checker.str();
+	std::cout << to_check << std::endl;
 	for (std::vector<std::string>::iterator it = _server_names.begin(); it != _server_names.end(); it++) {
-		std::string to_add = "127.0.1.1 " + *it + '\n';
+		std::string to_add = "127.0.1.1 " + *it;
 		if (to_check.find(to_add) != NOT_FOUND)
 			continue ;
+		to_add += '\n';
 		hosts.write(to_add.c_str(), to_add.size());
 	}
 	hosts.close();
