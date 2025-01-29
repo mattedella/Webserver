@@ -1,5 +1,6 @@
 
 #include "../includes/webserv.hpp"
+#include <bits/c++config.h>
 #include <cerrno>
 #include <cstdio>
 #include <fstream>
@@ -76,6 +77,13 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line, st
 		Tp = line.substr(line.find('=') + 1);
 		_body.insert(std::make_pair(Key, Tp));
 	}
+	_PostFile.open((Path + "/" + "data.txt").c_str(), std::ios::out | std::ios::app);
+	for (std::map<std::string, std::string>::iterator it = _body.begin(); it != _body.end(); it++) {
+		std::string to_write = it->first + "=" + it->second + '\n';
+		_PostFile.write(to_write.c_str(), to_write.length());
+	}
+	_PostFile.write("------------\n", 13);
+	_PostFile.close();
 }
 
 void Request::parsMultipart(std::stringstream& bodyData, std::string& Path, std::string Type) {

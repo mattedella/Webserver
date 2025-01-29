@@ -11,6 +11,7 @@
 void conf::handleSignal(int sig)
 {
 	if (sig == SIGINT) {
+			
 		// TODO: liberazione memoria con garbage collector;
 			exit(1);
 	}
