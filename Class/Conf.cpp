@@ -110,7 +110,10 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 	std::string file;
 	if (req->getURL().rfind(".") != NOT_FOUND) {
 		file = url.substr(url.rfind('/') + 1);
-		url.erase(url.rfind('/') + 1, (url.length() - url.rfind('/')));
+		if (url.rfind("/") == 0)
+			url.erase(url.rfind('/') + 1, file.length() + 1);
+		else
+		 	url.erase(url.rfind('/'), file.length() + 1);
 	}
 	if (req->getURL() != "/" && req->getURL()[req->getURL().length() - 1] == '/')
 		url = req->getURL().substr(0, req->getURL().rfind('/'));
@@ -147,7 +150,8 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 		}
 	if (req->getMethod() == "GET") {
 		if (file == "favicon.ico") {
-			_fullPath += "favicon.ico";
+			_fullPath = buff;
+			_fullPath+= _servers[1].getRoot() + "/favicon.ico";
 			return ;
 		}
 		if (url == "/" && StatusCode == 200) {
@@ -167,6 +171,8 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 				if (!loc.getListing())
 					StatusCode = 404;
 			}
+			if (file.empty() && loc.getIndex() != "")
+				_fullPath += loc.getIndex();
 			else if (!file.empty() && file == loc.getIndex())
 				_fullPath += loc.getIndex();
 			else

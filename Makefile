@@ -33,7 +33,7 @@ val: all
 	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) test.conf
 
 run: all
-	./$(NAME) test.conf
+	@./$(NAME) test.conf
 
 clean:
 	@clear

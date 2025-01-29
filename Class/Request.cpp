@@ -16,21 +16,13 @@
 
 Request::Request() {}
 
-void Request::setPostContentType(const std::string& fullPath) {
-	// ? da modificare o da cancellare
-	_body.erase("Content-Type");
-	if (fullPath.find(".html") != std::string::npos)
-		_body.insert(std::make_pair("Content-Type", "text/html"));
-	else if (fullPath.find(".css") != std::string::npos)
-		_body.insert(std::make_pair("Content-Type", "text/css"));
-	else if (fullPath.find(".js") != std::string::npos)
-		_body.insert(std::make_pair("Content-Type", "application/javascript"));
-	else if (fullPath.find(".png") != std::string::npos || fullPath.find(".ico") != std::string::npos)
-		_body.insert(std::make_pair("Content-Type", "image/png"));
-	else if (fullPath.find(".jpg") != std::string::npos || fullPath.find(".jpeg") != std::string::npos)
-		_body.insert(std::make_pair("Content-Type", "image/jpeg"));
-	else
-		_body.insert(std::make_pair("Content-Type", "text/plain"));
+std::string Request::generateBody() {
+	std::string ret;
+	ret = "{\r\n \"fileName\": \"" + getFileName() +
+			"\",\r\n \"fileType\": \""+ getBody("Content-Type") +"\",\r\n"
+			" \"operation\": \"upload\",\r\n"
+			" \"status\": \"success\"\r\n}\r\n\r\n";
+	return ret;
 }
 
 std::string Request::getFileName() {
@@ -142,6 +134,7 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& Path, std:
 		
 		startPos = body.find(Boundary, contentEnd);
 	}
+	_PostFile.close();
 }
 
 std::ofstream& Request::getPostFile() {
@@ -165,6 +158,9 @@ void Request::parsPost(std::stringstream& file, std::string& line, std::string P
 
 void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 	// TODO: Parsing per la CGI;
+	// ? afss
+	// ! ale fuori dal progetto
+	// * 
 	std::string line;
 	std::getline(to_pars, line);
 
@@ -228,20 +224,21 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 			}
 		}
 	}
+	std::cout << buffer.str() << std::endl;
 	ParsRequest(buffer, ConfBlock);
 	event = POLLOUT;
 }
 
 void Request::printRequest() {
-	// std::cout << "Method: " + _method + '\n';
-	// std::cout << "URL: " + _url + '\n';
-	// std::cout << "HTTP Version: " + _httpVersion + '\n';
-	// std::cout << "Headers: \n";
-	// for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
-	// 	std::cout << it->first + ": " + it->second + '\n';
-	// std::cout << "Body: \n";
-	// for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
-	// 	std::cout << bit->first + ": " + bit->second + '\n';
+	std::cout << "Method: " + _method + '\n';
+	std::cout << "URL: " + _url + '\n';
+	std::cout << "HTTP Version: " + _httpVersion + '\n';
+	std::cout << "Headers: \n";
+	for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+		std::cout << it->first + ": " + it->second + '\n';
+	std::cout << "Body: \n";
+	for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
+		std::cout << bit->first + ": " + bit->second + '\n';
 }
 
 void Request::setContentType(const std::string& fullPath) {

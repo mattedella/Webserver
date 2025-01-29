@@ -93,10 +93,7 @@ bool	server::init(int port)
 	return true;
 }
 
-void server::starting()
-{
-
-
+void server::starting() {
 	for (size_t i = 0; i < _server_sockets.size(); i++)
 		std::cout << "Server running on port " << GREEN <<_server_sockets[i].port << RESET <<std::endl;
 	
@@ -136,7 +133,7 @@ void server::s_run(conf* ConfBlock, Request* req)
 			else {
 				if (_poll_fds[i].revents & POLLIN) {
 					req->getRequest(_poll_fds[i].fd, _poll_fds[i].events, _bodysize * 1000000, ConfBlock);
-					req->printRequest();
+					Request();
 				}
 				if (_poll_fds[i].revents & POLLOUT) {
 					sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);

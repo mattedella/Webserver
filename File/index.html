@@ -22,13 +22,13 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
-            position: relative;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+            overflow-y: auto;   /* Enable vertical scrolling */
             flex-direction: column;
-            background-image: url('https://www.mtggoldfish.com/static/images/mtg-logo-small.png'); /* Magic logo background */
             background-position: center;
             background-repeat: no-repeat;
             background-size: 150px;
+            padding-top: 20px; /* To prevent content from being cut off by the header */
         }
 
         /* Header styling with a Magic touch */
@@ -58,6 +58,8 @@
             flex-direction: column;
             align-items: flex-start;
             position: relative;
+            max-height: 80vh; /* Limit the height of the container */
+            overflow-y: auto; /* Make the container scrollable if content overflows */
         }
 
         .form-section {
@@ -169,7 +171,6 @@
             justify-content: center;
             align-items: center;
             background-color: #f4f4f4;
-            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/MTG_Logo.svg/1200px-MTG_Logo.svg.png'); /* Magic: The Gathering Logo */
             background-position: center;
             background-repeat: no-repeat;
             background-size: 50%;
@@ -222,13 +223,72 @@
 
     <div class="form-section">
         <h2>Load a File</h2>
-        <form action="/upload" method="POST" enctype="multipart/form-data">
+        <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
             <label for="file">Upload File:</label>
             <input type="file" id="file" name="file" accept="image/*,application/pdf,application/zip" required><br>
-
+    
             <button type="submit">Upload</button>
         </form>
+    
+        <div id="response-message"></div> <!-- Area to show response -->
     </div>
+    
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('file');
+            formData.append('file', fileInput.files[0]);
+    
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.text())  // or response.json() if your backend sends JSON
+            .then(data => {
+                document.getElementById('response-message').innerHTML = 'File saved correctly'; // Show server response
+            })
+            .catch(error => {
+                document.getElementById('response-message').innerHTML = 'An error occurred during the upload.';
+            });
+        });
+    </script>
+    
+    
+    <div class="form-section">
+        <h2>Delete a File</h2>
+        <form id="delete-form" action="/upload" method="POST">
+            <label for="filename">Enter filename to delete:</label>
+            <input type="text" id="filename" name="filename" placeholder="Filename" required><br>
+        
+            <button type="submit">Delete File</button>
+        </form>
+    
+        <div id="response-message"></div> <!-- Area to show response -->
+    </div>
+    
+    <script>
+        document.getElementById('delete-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+    
+            const filename = document.getElementById('filename').value;
+            
+            fetch('/upload', {
+                method: 'POST',
+                body: new URLSearchParams({ filename: filename }),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('response-message').innerHTML = 'File erased correctly'; // Show response
+            })
+            .catch(error => {
+                document.getElementById('response-message').innerHTML = 'An error occurred';
+            });
+        });
+    </script>
+    
 </div>
 
 <!-- Magical right-side effect -->
@@ -257,10 +317,9 @@
         }
     });
 </script>
-
-<footer>
-    &copy; Mdella-r, Aconti
-</footer>
+    <footer>
+        &copy; Mdella-r & Aconti
+    </footer>
 
 </body>
 </html>

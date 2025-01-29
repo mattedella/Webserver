@@ -4,26 +4,33 @@
 #include <fstream>
 #include <ostream>
 #include <sstream>
+#include <string>
 
 Response::Response() {}
+
+std::string itos(size_t nbr) {
+	std::string ret;
+	while (nbr > 0) {
+		char num = (nbr % 10) + 48;
+		nbr /= 10;
+		ret.insert(ret.begin(), num);
+	}
+	return ret;
+}
 
 void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 	// TODO: capire come e' fatta la response e generarla;
 	std::ofstream file;
-	std::ofstream& postfile = req->getPostFile();
 	std::stringstream buff;
 	std::string request;
 	switch (StatusCode) {
 		case 200:
-			_response = "HTTP/1.1 202 Accepted\r\n"
-            "Content-Type: application/json\r\n" // Ensure JSON content type
-            "Connection: " + req->getHeader("Connection") + "\r\n"
-            "Content-Length: " + req->getHeader("Content-Length") + "\r\n" // Correct Content-Length calculation
-            "\r\n" // Blank line separating headers and body
-            "{\r\n"
-            " \"success\": true,\r\n"
-            " \"fileName\": \"" + req->getFileName() + "\"\r\n" // Include the file name dynamically
-            "}\r\n"; // Close the JSON object
+			request = req->generateBody();
+			_response = "HTTP/1.1 201 Created\r\n"
+			"Content-Type: " + req->getBody("Content-Type") + "\r\n"
+			"Connection: " + req->getHeader("Connection") + "\r\n"
+			"Content-Length: " + itos(request.length()) + "\r\n"
+			"\r\n" + request + "\r\n\r\n";
 			break ;
 		case 404:
 			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(404, 1, ConfBlock->getLocation(req->getURL(), 1))).c_str());
@@ -35,6 +42,7 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 					+ req->getHeader("Content-Type")
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
+			file.close();
 			break ;
 		case 403:
 			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(403, 1, ConfBlock->getLocation(req->getURL(),1 ))).c_str());
@@ -46,6 +54,7 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 					+ req->getHeader("Content-Type")
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
+			file.close();
 			break ;
 		case 408:
 			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(408, 1, ConfBlock->getLocation(req->getURL(), 1))).c_str());
@@ -57,6 +66,7 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 					+ req->getHeader("Content-Type")
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
+			file.close();
 			break ;
 		case 501:
 			std::string File = ConfBlock->getFullPath() + ConfBlock->getErrorPage(501, 1, ConfBlock->getLocation(req->getURL(), 1));
@@ -69,9 +79,9 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 					+ req->getHeader("Content-Type")
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
+			file.close();
 			break ;
 		}
-		postfile.close();
 		req->closeFile();
 }
 
