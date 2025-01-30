@@ -43,6 +43,7 @@ class Request {
 		void			setPostName(std::string Path);
 		void			setContentType(const std::string& fullPath);
 		void			setPostContentType(const std::string& fullPath);
+		void			setHeader(const std::string& Key, const std::string& Tp);
 		std::string		generateBody();
 
 		void			clear();

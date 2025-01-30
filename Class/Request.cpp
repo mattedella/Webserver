@@ -15,7 +15,11 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-Request::Request() {}
+Request::Request() {
+	_method = "";
+	_url = "";
+	_httpVersion = "";
+}
 
 std::string Request::generateBody() {
 	std::string ret;
@@ -166,13 +170,11 @@ void Request::parsPost(std::stringstream& file, std::string& line, std::string P
 
 void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 	// TODO: Parsing per la CGI;
-	// ? afss
-	// ! ale fuori dal progetto
-	// * 
-	std::string line;
+	std::string line = "";
 	std::getline(to_pars, line);
-
+	// std::cout << line << '\n';
 	std::stringstream req_line(line);
+	// std::cout << req_line.str() << std::endl;
 	req_line >> _method >> _url >> _httpVersion;
 	while (std::getline(to_pars, line) && !line.substr(0, line.length() - 1).empty()) {
 		size_t colon_pos = line.find(':');
@@ -247,6 +249,11 @@ void Request::printRequest() {
 	std::cout << "Body: \n";
 	for (std::map<std::string, std::string>::iterator bit = _body.begin(); bit != _body.end(); bit++)
 		std::cout << bit->first + ": " + bit->second + '\n';
+}
+
+void Request::setHeader(const std::string& Key, const std::string& Tp) {
+	_headers.erase(Key);
+	_headers.insert(std::make_pair(Key, Tp));
 }
 
 void Request::setContentType(const std::string& fullPath) {

@@ -1,6 +1,7 @@
 
 #include "../includes/webserv.hpp"
 #include <bits/posix_opt.h>
+#include <dirent.h>
 #include <fstream>
 #include <ostream>
 #include <sstream>
@@ -18,8 +19,21 @@ std::string itos(size_t nbr) {
 	return ret;
 }
 
-void Response::generatePostResponse(Request* req, conf* ConfBlock) {
+void Response::generateDeleteResponse(Request* req, conf* ConfBlock) {
 	// TODO: capire come e' fatta la response e generarla;
+	std::ofstream file;
+	std::stringstream buff;
+	std::string request;
+	(void)ConfBlock;
+	switch (StatusCode) {
+		case 200:
+		request = req->generateBody();
+		_response = "HTTP/1.1 200 OK\r\n";
+		break ;
+
+	}
+}
+void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 	std::ofstream file;
 	std::stringstream buff;
 	std::string request;
@@ -95,17 +109,39 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 	std::string error403 = ConfBlock->getErrorPage(403, 1, ConfBlock->getLocation(req->getURL(), 1));
 	std::string error408 = ConfBlock->getErrorPage(408, 1, ConfBlock->getLocation(req->getURL(), 1));
 	std::string error5xx = ConfBlock->getErrorPage(501, 1, ConfBlock->getLocation(req->getURL(), 1));
+	struct dirent* readDir;
+	DIR* dir = NULL;
 	req->setContentType(Path);
 	switch (StatusCode) {
 		case 200:
-			file.open(Path.c_str());
-			if (!file.is_open())
-				throw exc("Error: file \"" + Path + "\" not opened\n");
-			buff << file.rdbuf();
-			request = buff.str();
+			if (Path.find('.') != NOT_FOUND) {
+				file.open(Path.c_str());
+				if (!file.is_open())
+					throw exc("Error: file \"" + Path + "\" not opened\n");
+				buff << file.rdbuf();
+				request = buff.str();
+			}
+			else {
+				dir = opendir(Path.c_str());
+				if (dir == NULL) {
+					throw exc("ERROR: directory\"" + Path + "\" not opened\n");
+				}
+				req->setHeader("Content-Type", "text/html");
+				request = "<h1>OPS, the page you are loocking doesn't exist</h1>\r\n<p>try this:</p>\r\n";
+				while ((readDir = readdir(dir)) != NULL) {
+					request += "<a href=\"" + req->getHeader("Referer");
+					request += readDir->d_name;
+					request += "\">";
+					request += readDir->d_name;
+					request += "</a>\n<br>";
+				}
+				request += "\r\n\r\n";
+			}
 			_response = "HTTP/1.1 200 OK\r\nContent-Type: " + req->getHeader("Content-Type") + "\r\nConnection: "
 					+ req->getHeader("Connection") + "\r\n\r\n"
 					+ request;
+			if (dir != NULL)
+				closedir(dir);
 			break ;
 		case 404:
 			errorPath = Path.substr(0, Path.find("/File") + 5);

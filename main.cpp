@@ -1,8 +1,10 @@
 #include "includes/Server.hpp"
 #include "includes/webserv.hpp"
+#include <iostream>
 #include <map>
 
 int StatusCode = 0;
+bool Quit = false;
 
 int main (int argc, char **argv) {
 	if (argc != 2) {
@@ -17,7 +19,7 @@ int main (int argc, char **argv) {
 	}
 	std::string newline;
 	std::vector<std::string> conf_line;
-	conf *c = new conf();
+	conf *c = NULL;
 	while (std::getline(config_file, newline)) {
 		while (std::isspace(newline[0]))
 			newline.erase(0, 1);
@@ -33,7 +35,8 @@ int main (int argc, char **argv) {
 			it->second.starting();
 		}
 		c->run();
-	} catch (std::exception& e) {
+	}
+	catch (std::exception& e) {
 		std::cerr << RED << e.what() << RESET;
 	}
 	delete c;

@@ -23,3 +23,10 @@ password=rr4w4rf
 terms=on
 ------------
 
+age=123
+country=italy
+email=qieutf89weq7tf%40fosirg9er8gu9e
+gender=male
+name=erfew4fw4rf
+password=fwert4werfg
+------------

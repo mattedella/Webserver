@@ -14,30 +14,35 @@ class conf {
 		std::vector<http>		_http;
 		std::map<int,server>	_servers;
 		std::string				_fullPath;
-		bool					_running;
+		bool					_listing;
 
 	public:
-		void		addServer(int nbrServer, const server& srv);
+		conf();
+
 		void		addKey();
 		void		addHttp(const http& http);
-		void		printServer();
+		void		addServer(int nbrServer, const server& srv);
+
 		void		printHttp();
-		void		check();
-		std::string	getErrorPage(int error, int nbrServer, location location);
+		void		printServer();
+
+		bool		getListing();
 		std::string	getFullPath();
-		location	getLocation(std::string to_find, int nbrServer);
-		server		getServer(int nbrServer);
-		void		addHost();
-
-		void		checkRequest(Request* req);
-		static void	handleSignal(int sig);
-
-// int			reload(int port);
-		std::map<int, server>& getMapServer();
 		server getServer(std::string port);
+		server		getServer(int nbrServer);
+		std::map<int, server>& getMapServer();
+		location	getLocation(std::string to_find, int nbrServer);
+		std::string	getErrorPage(int error, int nbrServer, location location);
+
+		void		check();
+		void		addHost();
+		void		checkRequest(Request* req);
+
 		void	run();
-		conf();
+
 		~conf();
 };
+
+
 
 # endif

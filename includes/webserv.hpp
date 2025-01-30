@@ -13,6 +13,7 @@
 #include <string>
 
 extern int StatusCode;
+extern bool Quit;
 # define INT_MAX 2147483647
 
 # define	NOT_FOUND std::string::npos
@@ -21,24 +22,13 @@ extern int StatusCode;
 # define	RESET "\033[0m"
 # define	GREEN "\033[32m"
 # define	YELLOW "\033[33m"
-class cgi
-{
-	private:
-		std::vector<int> fd;
 
-	public:
-		cgi();
-
-		int excecute();
-		
-		~cgi();
-};
-
-conf *ParsConfFile(std::vector<std::string> config_content);
-void ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
-void ParsServer(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
-void ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
-void sendResponse(int client_socket, conf* ConfBlock, Request* req, short& event);
-Request* getRequest(int& client_socket, short& event);
+conf*		ParsConfFile(std::vector<std::string> config_content);
+void		ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
+void		ParsServer(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
+void		ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
+void		sendResponse(int client_socket, conf* ConfBlock, Request* req, short& event);
+Request*	getRequest(int& client_socket, short& event);
+void		handleSignal(int sig);
 
 #endif

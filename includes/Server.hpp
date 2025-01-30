@@ -45,6 +45,7 @@ class server : public ABlock {
 		};
 		std::map<int, std::string>		_client_buffers;
 		std::vector<ServerSocket>		_server_sockets;
+		std::vector<int>				_server_fd;
 		std::vector<struct pollfd>		_poll_fds;
 		std::map<int, std::string> 		_client_responses;
 
@@ -78,6 +79,7 @@ class server : public ABlock {
 		void	handle_client_response(int index);
 		void	handle_request(int client_fd, const std::string& request);
 		void	close_connection(int index);
+		void	closeSocket();
 		void	set_nonblocking(int fd);
 		void	addNametoHost();
 

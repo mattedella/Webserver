@@ -3,8 +3,14 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <sys/poll.h>
 #include <vector>
 #include "../includes/webserv.hpp"
+
+void server::closeSocket() {
+	for (std::vector<struct pollfd>::iterator it = _poll_fds.begin(); it != _poll_fds.end(); it++)
+		close(it->fd);
+}
 
 void server::addNametoHost() {
 	std::ofstream		hosts;
@@ -119,11 +125,23 @@ void server::printFdsVect()
 
 void server::s_run(conf* ConfBlock, Request* req)
 {
-	for (size_t i = 0; i < _poll_fds.size(); ++i)
-	{
-		poll(&_poll_fds[i], _poll_fds.size(), -1);
+	for (size_t i = 0; i < _poll_fds.size(); ++i) {
+
+		int bo = poll(&_poll_fds[i], _poll_fds.size(), -1);
+		
+		if (Quit == 1)
+			return;
+		std::cout << "bo: "<<bo <<" poll fds data: "<< _poll_fds.data() << " poll fd siz : "<< _poll_fds.size() << "\n";
+		std::cout <<"fd i "<< _poll_fds[i].fd << "i = "<< i <<"\n";
+		std::cout<< "revents " << _poll_fds[i].revents << "\n";
+		if (bo <= 0)
+			throw exc ("ci pensiamo dopo\n");
+
+		
 		if (_poll_fds[i].revents == 0)
 			continue;
+		if (_poll_fds[i].revents == 8 && _poll_fds[i].revents == 16 && _poll_fds[i].revents == 32)
+			throw exc(" 8 16 32\n");
 		try {
 			if (_poll_fds[i].fd == _server_sockets[0].fd) {
 				if (_poll_fds[i].revents & POLLIN) {
@@ -142,9 +160,9 @@ void server::s_run(conf* ConfBlock, Request* req)
 					break ;
 				}
 			}
-		} catch (const std::exception& e) {
+		}
+		catch (const std::exception& e) {
 			std::cerr << e.what() << std::endl;
-			delete req;
 			close_connection(i);
 		}
 	}

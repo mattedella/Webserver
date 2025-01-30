@@ -9,7 +9,7 @@
 #include <vector>
 
 conf::conf() {
-	_running = true;
+	_listing = false;
 }
 
 void conf::addHost() {
@@ -158,25 +158,33 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 			if (_servers[1].getIndex() == "") {
 				if (!_servers[1].getListing())
 					StatusCode = 404;
+				else
+				 	_listing = true;
 			}
 			if (file.empty() && _servers[1].getIndex() != "")
 				_fullPath += _servers[1].getIndex();
 			else if (!file.empty() && file == _servers[1].getIndex())
 				_fullPath += _servers[1].getIndex();
-			else
+			else if (_listing == false)
 				StatusCode = 404;
+			else
+			 	_fullPath += file;
 		}
 		else if (StatusCode == 200) {
 			if (loc.getIndex() == "") {
 				if (!loc.getListing())
 					StatusCode = 404;
+				else
+				 	_listing = true;
 			}
 			if (file.empty() && loc.getIndex() != "")
 				_fullPath += loc.getIndex();
 			else if (!file.empty() && file == loc.getIndex())
 				_fullPath += loc.getIndex();
-			else
+			else if (_listing == false)
 				StatusCode = 404;
+			else
+			 	_fullPath += file;
 		}
 	}
 }
@@ -187,6 +195,10 @@ location conf::getLocation(std::string to_find, int nbrServer) {
 
 std::string conf::getFullPath() {
 	return _fullPath;
+}
+
+bool conf::getListing() {
+	return _listing;
 }
 
 server conf::getServer(std::string port)

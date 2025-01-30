@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamTeam</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <style>
         /* Global reset */
         body, h2, label, input, button {
@@ -81,7 +80,7 @@
             display: block;
         }
 
-        input[type="text"], input[type="file"] {
+        input[type="text"], input[type="file"], input[type="email"], input[type="password"], input[type="number"], input[type="country"]{
             width: 100%;
             padding: 12px;
             margin-top: 8px;
@@ -93,11 +92,29 @@
             transition: all 0.3s ease;
         }
 
-        input[type="text"]:focus, input[type="file"]:focus {
+        input[type="text"]:focus, input[type="file"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="number"]:focus, input[type="country"]:focus{
             border-color: #ffcc00;
-            background-color: #1e1e1e;
+            background-color: #fff;
             box-shadow: 0 0 10px rgba(255, 204, 0, 0.6);
             outline: none;
+        }
+
+        select {
+            font-size: 16px;
+            padding: 10px;
+            border: 2px solid #444444;
+            background-color: #333333;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        select:focus {
+            border-color: #ffcc00;
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.6);
+            background-color: #ffff;
         }
 
         button {
@@ -160,12 +177,12 @@
             height: 300px;
             border-radius: 10px;
             overflow: hidden;
-            border: 5px solid #fff;
+            border: 5px solid #444444;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #f4f4f4;
+            background-color: #333333;
             background-position: center;
             background-repeat: no-repeat;
             background-size: 50%;
@@ -219,11 +236,11 @@
 
             <!-- Number input (Age) -->
             <label for="age">Age:</label>
-            <input type="number" id="age" name="age" placeholder="Enter your age" required><br>
+            <input type="number" id="age" name="age" placeholder="Enter your age"><br>
 
             <!-- Checkbox input (Agree to Terms) -->
             <label for="terms">
-                <input type="checkbox" id="terms" name="terms" required>
+                <input type="checkbox" id="terms" name="terms">
                 I'm not gay
             </label><br>
 
