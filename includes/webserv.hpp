@@ -9,6 +9,8 @@
 #include "Exc.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+#include <iostream>
+#include "Cgi.hpp"
 #include <cerrno>
 #include <string>
 
@@ -27,7 +29,7 @@ conf*		ParsConfFile(std::vector<std::string> config_content);
 void		ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
 void		ParsServer(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
 void		ParsLocation(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);
-void		sendResponse(int client_socket, conf* ConfBlock, Request* req, short& event);
+bool		sendResponse(int client_socket, conf* ConfBlock, Request* req, short& event);
 Request*	getRequest(int& client_socket, short& event);
 void		handleSignal(int sig);
 

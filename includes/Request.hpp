@@ -21,6 +21,10 @@ class Request {
 		std::map<std::string, std::string>	_body;
 		std::string							_nameFile;
 		std::ofstream						_PostFile;
+		
+        bool                                _headers_complete;  // New
+        bool                                _body_complete;     // New
+        size_t                              _content_length;    // New
 
 	public:
 		Request();
@@ -51,6 +55,9 @@ class Request {
 		void			printRequest();
 		void			getRequest(int& client_socket, short& event, int MaxSize, conf* ConfBlock);
 
+		void			setHeadersComplete(bool complete);
+		void			setBodyComplete(bool complete);
+		void			setContentLength(size_t length);
 		~Request();
 };
 

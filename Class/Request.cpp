@@ -239,6 +239,18 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 	event = POLLOUT;
 }
 
+void Request::setHeadersComplete(bool complete) {
+    _headers_complete = complete;
+}
+
+void Request::setBodyComplete(bool complete) {
+    _body_complete = complete;
+}
+
+void Request::setContentLength(size_t length) {
+    _content_length = length;
+}
+
 void Request::printRequest() {
 	std::cout << "Method: " + _method + '\n';
 	std::cout << "URL: " + _url + '\n';

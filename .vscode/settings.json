@@ -54,7 +54,8 @@
         "typeinfo": "cpp",
         "csignal": "cpp",
         "optional": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "cstring": "cpp"
     },
     "makefile.configureOnOpen": false
 }

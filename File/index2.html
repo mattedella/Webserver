@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Cool HTML Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #fff;
+        }
+        header {
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            padding: 20px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+            flex-direction: column;
+            text-align: center;
+        }
+        .button {
+            background-color: #ff7e5f;
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s ease;
+        }
+        .button:hover {
+            background-color: #feb47b;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #333;
+            text-align: center;
+            padding: 10px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        Welcome to My Cool HTML Page!
+    </header>
+    
+    <div class="container">
+        <h1>Here's a Cool Button</h1>
+        <p>Click the button below for a surprise:</p>
+        <button class="button" onclick="showMessage()">Click Me!</button>
+        <p id="message" style="margin-top: 20px; display:none; font-size: 1.5em;"></p>
+    </div>
+    
+    <footer>
+        &copy; 2025 My Cool Page
+    </footer>
+
+    <script>
+        function showMessage() {
+            const message = document.getElementById('message');
+            message.style.display = 'block';
+            message.textContent = 'Good job GAY! 🎉';
+        }
+    </script>
+</body>
+</html>

@@ -10,6 +10,8 @@ class Response {
 	private:
 		std::string	_response;
 
+		std::string sizeToString(size_t size);
+		
 	public:
 		Response();
 

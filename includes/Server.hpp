@@ -55,6 +55,7 @@ class server : public ABlock {
 		std::vector<int>				_ports;
 		std::vector<std::string>		_server_names;
 		std::map<std::string, location>	_locations;
+		
 
 	public:
 		server();
@@ -82,6 +83,8 @@ class server : public ABlock {
 		void	closeSocket();
 		void	set_nonblocking(int fd);
 		void	addNametoHost();
+
+    	int getPort() const;
 
 		bool		getListing();
 		std::string	getIndex();

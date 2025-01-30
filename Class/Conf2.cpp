@@ -20,18 +20,18 @@ void handleSignal(int sig)
 
 void conf::run()
 {
-	int i = -1;
-	
-	std::signal(SIGINT, handleSignal);
-	std::map<int, server>::iterator it = _servers.begin();
+	bool running = true;
+
 	Request *req = new Request();
-	while (i < 0) {
-		if (Quit == true)
-			break ;
-		it->second.s_run(this, req);
-    }
-	it = _servers.begin();
-	for (; it != _servers.end(); it++)
+	while(running) {
+		for (std::map<int, server>::iterator it = _servers.begin(); 
+			it != _servers.end(); ++it) 
+		{
+			// Run one iteration of server event loop
+			it->second.s_run(this, req);
+		}
+	}
+	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); it++)
 		it->second.closeSocket();
 	delete req;
 }

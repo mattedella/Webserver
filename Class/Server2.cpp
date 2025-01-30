@@ -5,6 +5,7 @@
 #include <string>
 #include <sys/poll.h>
 #include <vector>
+#include <cstring> 
 #include "../includes/webserv.hpp"
 
 void server::closeSocket() {
@@ -64,38 +65,51 @@ void server::set_nonblocking(int fd) {
 	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-bool	server::init(int port)
+bool server::init(int port)
 {
-	int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_fd < 0) return false;
-	int opt = 1;
-	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) 
-	{
-		close(server_fd);
-		return false;
-	}
-	set_nonblocking(server_fd);
-	struct sockaddr_in address;
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(port);
-	if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
-		close(server_fd);
-		return false;
-	}
-	if (listen(server_fd, 3) < 0) {
-		close(server_fd);
-		return false;
-	}
-	ServerSocket ss;
-	ss.fd = server_fd;
-	ss.port = port;
-	_server_sockets.push_back(ss);
-	struct pollfd pfd;
-	pfd.fd = server_fd;
-	pfd.events = POLLIN;
-	_poll_fds.push_back(pfd);
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd < 0) 
+        return false;
 
+    int opt = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) 
+    {
+        close(server_fd);
+        return false;
+    }
+
+    set_nonblocking(server_fd);
+    
+    struct sockaddr_in address;
+    std::memset(&address, 0, sizeof(address));
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(port);
+
+    if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+        close(server_fd);
+        return false;
+    }
+
+    if (listen(server_fd, SOMAXCONN) < 0) {  // Use SOMAXCONN instead of 3
+        close(server_fd);
+        return false;
+    }
+
+    // Add to server sockets array
+    ServerSocket ss;
+    ss.fd = server_fd;
+    ss.port = port;
+    _server_sockets.push_back(ss);
+
+    // Add to poll array
+    struct pollfd pfd;
+    pfd.fd = server_fd;
+    pfd.events = POLLIN;
+    pfd.revents = 0;
+    _poll_fds.push_back(pfd);
+
+    return true;
 	return true;
 }
 
@@ -123,47 +137,74 @@ void server::printFdsVect()
 	}
 }
 
+int server::getPort() const 
+{
+    if (!_server_sockets.empty()) {
+        return _server_sockets[0].port;
+    }
+    return -1;
+}
+
 void server::s_run(conf* ConfBlock, Request* req)
 {
-	for (size_t i = 0; i < _poll_fds.size(); ++i) {
+	// Single iteration of event handling
+	int ret = poll(&_poll_fds[0], _poll_fds.size(), 0); // Non-blocking poll
+	bool is_server_socket = false;
 
-		int bo = poll(&_poll_fds[i], _poll_fds.size(), -1);
-		
-		if (Quit == 1)
-			return;
-		std::cout << "bo: "<<bo <<" poll fds data: "<< _poll_fds.data() << " poll fd siz : "<< _poll_fds.size() << "\n";
-		std::cout <<"fd i "<< _poll_fds[i].fd << "i = "<< i <<"\n";
-		std::cout<< "revents " << _poll_fds[i].revents << "\n";
-		if (bo <= 0)
-			throw exc ("ci pensiamo dopo\n");
+	if (ret < 0) {
+		std::cerr << "Poll error: " << strerror(errno) << std::endl;
+		return;
+	}
 
-		
-		if (_poll_fds[i].revents == 0)
-			continue;
-		if (_poll_fds[i].revents == 8 && _poll_fds[i].revents == 16 && _poll_fds[i].revents == 32)
-			throw exc(" 8 16 32\n");
-		try {
-			if (_poll_fds[i].fd == _server_sockets[0].fd) {
-				if (_poll_fds[i].revents & POLLIN) {
-					handle_new_connection(_server_sockets[0].fd);
-				}
-			} 
-			else {
-				if (_poll_fds[i].revents & POLLIN) {
-					req->getRequest(_poll_fds[i].fd, _poll_fds[i].events, _bodysize * 1000000, ConfBlock);
-					Request();
-				}
-				if (_poll_fds[i].revents & POLLOUT) {
-					sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
-					req->clear();
-					close_connection(i);
-					break ;
-				}
+	if (ret > 0) {
+		for (size_t i = 0; i < _poll_fds.size(); ++i) {
+			ret = poll(&_poll_fds[0], _poll_fds.size(), 0); // Non-blocking poll
+			if (ret < 0) {
+				std::cerr << "Poll error: " << strerror(errno) << std::endl;
+				return;
 			}
-		}
-		catch (const std::exception& e) {
-			std::cerr << e.what() << std::endl;
-			close_connection(i);
+			std::cout << ret << " " << _poll_fds[i].events << " " << _poll_fds[i].revents << std::endl;
+			if (_poll_fds[i].revents == 0)
+				continue;
+
+			try {
+				for (size_t j = 0; j < _server_sockets.size(); ++j) {
+					if (_poll_fds[i].fd == _server_sockets[j].fd) {
+						is_server_socket = true;
+						if (_poll_fds[i].revents == POLLIN) {
+							handle_new_connection(_server_sockets[j].fd);
+							std::cout << "Connection created\n";
+						}
+						break;
+					}
+				}
+
+				if (!is_server_socket) {
+					if (_poll_fds[i].revents & POLLIN) {
+						std::cout << "Request on server port " << getPort() << std::endl;
+						req->getRequest(_poll_fds[i].fd, _poll_fds[i].events, _bodysize * 1000000, ConfBlock);
+						_poll_fds[i].events = POLLOUT; // Set for writing response
+					}
+
+					if (_poll_fds[i].revents & POLLOUT) {
+						std::cout << "Response from server port " << getPort() << std::endl;
+						bool finish = sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
+						req->clear();  // Clear the request after sending the response
+
+						if (finish == true) {
+							_poll_fds[i].events = 0; // Reset events after handling the request
+						} else {
+							_poll_fds[i].events = POLLIN; // Re-enable POLLIN for the next request
+						}
+					}
+				}
+			} catch (const std::exception& e) {
+				std::cerr << "Error on fd " << _poll_fds[i].fd << ": " << e.what() << std::endl;
+				req->clear();
+				close_connection(i);
+			}
+
+			_poll_fds[i].revents = 0; // Reset revents after handling
 		}
 	}
 }
