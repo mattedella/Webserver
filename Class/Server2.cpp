@@ -158,12 +158,12 @@ void server::s_run(conf* ConfBlock, Request* req)
 
 	if (ret > 0) {
 		for (size_t i = 0; i < _poll_fds.size(); ++i) {
+			// ! ci siamo quasi, la pagina viene caricata sul client ma non riceve mai la risposta dio madonna
 			ret = poll(&_poll_fds[0], _poll_fds.size(), 0); // Non-blocking poll
 			if (ret < 0) {
 				std::cerr << "Poll error: " << strerror(errno) << std::endl;
 				return;
 			}
-			std::cout << ret << " " << _poll_fds[i].events << " " << _poll_fds[i].revents << std::endl;
 			if (_poll_fds[i].revents == 0)
 				continue;
 
