@@ -59,7 +59,7 @@ void location::addVal() {
 			std::string Tp = it->second.substr(it->second.find(' ') + 1);
 			_error.insert(std::make_pair(nbrKey, Tp));
 		}
-		else if (it->first == "auotindex") {
+		else if (it->first == "autoindex") {
 			if (it->second == "on")
 				_listing = true;
 		}

@@ -25,12 +25,34 @@ void Response::generateDeleteResponse(Request* req, conf* ConfBlock) {
 	std::stringstream buff;
 	std::string request;
 	(void)ConfBlock;
+
 	switch (StatusCode) {
 		case 200:
-		request = req->generateBody();
-		_response = "HTTP/1.1 200 OK\r\n";
-		break ;
-
+			request = req->generateBody();
+			std::cout << "req: " << request << "\n";
+			_response = "HTTP/1.1 200 OK\r\n";
+			_response += "Content-Type: application/json\r\n";
+			_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
+			_response += "{ \"message\": \"Resource deleted successfully\" }\r\n";
+			break;
+		case 404:
+			_response = "HTTP/1.1 404 Not Found\r\n";
+			_response += "Content-Type: application/json\r\n";
+			_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
+			_response += "{ \"error\": \"Resource not found\" }\r\n";
+			break;
+		case 403:
+			_response = "HTTP/1.1 403 Forbidden\r\n";
+			_response += "Content-Type: application/json\r\n";
+			_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
+			_response += "{ \"error\": \"Access forbidden\" }\r\n";
+			break;
+		case 500:
+			_response = "HTTP/1.1 500 Internal Server Error\r\n";
+			_response += "Content-Type: application/json\r\n";
+			_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
+			_response += "{ \"error\": \"Internal server error\" }\r\n";
+			break;
 	}
 }
 void Response::generatePostResponse(Request* req, conf* ConfBlock) {

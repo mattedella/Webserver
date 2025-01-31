@@ -1,4 +1,5 @@
 #include "../includes/webserv.hpp"
+#include <algorithm>
 #include <cctype>
 #include <fstream>
 #include <iostream>
@@ -187,6 +188,30 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 			 	_fullPath += file;
 		}
 	}
+	if (req->getMethod() == "DELETE")
+	{
+    req->printRequest();
+    
+	std::string fullPath = req->getURL().substr(1);
+	
+	std::cout << "Controllo percorso: " << fullPath << "\n";
+    if (access(fullPath.c_str(), F_OK) != 0) {
+        StatusCode = 404;
+    }
+    else if (access(fullPath.c_str(), W_OK) != 0) {
+        StatusCode = 403;
+    } 
+    else {
+        if (remove(fullPath.c_str()) != 0) {
+            StatusCode = 500;
+        } 
+        else {
+            StatusCode = 200;
+        }
+    }
+
+    std::cout << "Status: " << StatusCode << "\n";
+}
 }
 
 location conf::getLocation(std::string to_find, int nbrServer) {
