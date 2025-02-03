@@ -159,7 +159,7 @@ void server::s_run(conf* ConfBlock, Request* req)
 	if (ret > 0) {
 		for (size_t i = 0; i < _poll_fds.size(); ++i) {
 			// ! ci siamo quasi, la pagina viene caricata sul client ma non riceve mai la risposta dio madonna
-			ret = poll(&_poll_fds[0], _poll_fds.size(), 0); // Non-blocking poll
+			ret = poll(&_poll_fds[i], _poll_fds.size(), 0); // Non-blocking poll
 			if (ret < 0) {
 				std::cerr << "Poll error: " << strerror(errno) << std::endl;
 				return;
@@ -178,7 +178,6 @@ void server::s_run(conf* ConfBlock, Request* req)
 						break;
 					}
 				}
-
 				if (!is_server_socket) {
 					if (_poll_fds[i].revents & POLLIN) {
 						std::cout << "Request on server port " << getPort() << std::endl;
@@ -190,9 +189,8 @@ void server::s_run(conf* ConfBlock, Request* req)
 						std::cout << "Response from server port " << getPort() << std::endl;
 						bool finish = sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
 						req->clear();  // Clear the request after sending the response
-
 						if (finish == true) {
-							_poll_fds[i].events = 0; // Reset events after handling the request
+							_poll_fds[i].events = 0;
 						} else {
 							_poll_fds[i].events = POLLIN; // Re-enable POLLIN for the next request
 						}
@@ -203,8 +201,7 @@ void server::s_run(conf* ConfBlock, Request* req)
 				req->clear();
 				close_connection(i);
 			}
-
-			_poll_fds[i].revents = 0; // Reset revents after handling
+			_poll_fds[i].revents = 0;
 		}
 	}
 }

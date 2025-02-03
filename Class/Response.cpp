@@ -1,11 +1,13 @@
 
 #include "../includes/webserv.hpp"
 #include <bits/posix_opt.h>
+#include <cstddef>
 #include <dirent.h>
 #include <fstream>
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <variant>
 
 Response::Response() {}
 
@@ -61,10 +63,12 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 	std::string request;
 	switch (StatusCode) {
 		case 200:
+			if (req->getHeader("Connection").empty())
+				req->setHeader("Connection", "close"); 
 			request = req->generateBody();
 			_response = "HTTP/1.1 201 Created\r\n"
-			"Content-Type: " + req->getBody("Content-Type") + "\r\n"
-			"Connection: " + req->getHeader("Connection") + "\r\n"
+			"Content-Type: " + req->getBody("Content-Type") + "; charset=utf-8\r\n"
+			"Connection: close" + req->getHeader("Connection") + "\r\n"
 			"Content-Length: " + itos(request.length()) + "\r\n"
 			"\r\n" + request + "\r\n\r\n";
 			break ;
@@ -119,6 +123,7 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 			break ;
 		}
 		req->closeFile();
+		
 }
 
 void Response::generateGetResponse(Request* req, conf* ConfBlock) {
@@ -136,19 +141,23 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 	req->setContentType(Path);
 	switch (StatusCode) {
 		case 200:
+			if (req->getHeader("Connection").empty())
+				req->setHeader("Connection", "close");
 			if (Path.find('.') != NOT_FOUND) {
 				file.open(Path.c_str());
 				if (!file.is_open())
 					throw exc("Error: file \"" + Path + "\" not opened\n");
 				buff << file.rdbuf();
 				request = buff.str();
+				req->setContentType(Path);
 			}
 			else {
 				dir = opendir(Path.c_str());
 				if (dir == NULL) {
 					throw exc("ERROR: directory\"" + Path + "\" not opened\n");
 				}
-				req->setHeader("Content-Type", "text/html");
+				req->setHeader("Content-type", "text/html");
+				req->setHeader("Connection", "close");
 				request = "<h1>OPS, the page you are loocking doesn't exist</h1>\r\n<p>try this:</p>\r\n";
 				while ((readDir = readdir(dir)) != NULL) {
 					request += "<a href=\"" + req->getHeader("Referer");
@@ -160,8 +169,9 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 				request += "\r\n\r\n";
 			}
 			_response = "HTTP/1.1 200 OK\r\nContent-Type: " + req->getHeader("Content-Type") + "\r\nConnection: "
-					+ req->getHeader("Connection") + "\r\n\r\n"
+					+ req->getHeader("Connection") + "\r\nContent-Length: " + itos(request.length()) +  "\r\n\r\n" 
 					+ request;
+			
 			if (dir != NULL)
 				closedir(dir);
 			break ;

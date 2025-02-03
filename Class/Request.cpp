@@ -277,7 +277,9 @@ void Request::setContentType(const std::string& fullPath) {
 		_headers.insert(std::make_pair("Content-Type", "text/css"));
 	else if (fullPath.find(".js") != std::string::npos)
 		_headers.insert(std::make_pair("Content-Type", "application/javascript"));
-	else if (fullPath.find(".png") != std::string::npos || fullPath.find(".ico") != std::string::npos)
+	else if (fullPath.find(".ico") != std::string::npos)
+		_headers.insert(std::make_pair("Content-Type", "image/x-ico"));
+	else if (fullPath.find(".png") != std::string::npos)
 		_headers.insert(std::make_pair("Content-Type", "image/png"));
 	else if (fullPath.find(".jpg") != std::string::npos || fullPath.find(".jpeg") != std::string::npos)
 		_headers.insert(std::make_pair("Content-Type", "image/jpeg"));

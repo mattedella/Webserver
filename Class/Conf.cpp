@@ -149,6 +149,7 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 		if (!loc.getMethods(req->getMethod())) {
 			StatusCode = 501;
 		}
+	std::cout << "File |" << file << "|\n";
 	if (req->getMethod() == "GET") {
 		if (file == "favicon.ico") {
 			_fullPath = buff;
@@ -164,12 +165,10 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 			}
 			if (file.empty() && _servers[1].getIndex() != "")
 				_fullPath += _servers[1].getIndex();
-			else if (!file.empty() && file == _servers[1].getIndex())
-				_fullPath += _servers[1].getIndex();
+			else if (!file.empty())
+				_fullPath += file;
 			else if (_listing == false)
 				StatusCode = 404;
-			else
-			 	_fullPath += file;
 		}
 		else if (StatusCode == 200) {
 			if (loc.getIndex() == "") {
@@ -180,12 +179,10 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 			}
 			if (file.empty() && loc.getIndex() != "")
 				_fullPath += loc.getIndex();
-			else if (!file.empty() && file == loc.getIndex())
-				_fullPath += loc.getIndex();
+			else if (!file.empty())
+				_fullPath += file;
 			else if (_listing == false)
 				StatusCode = 404;
-			else
-			 	_fullPath += file;
 		}
 	}
 	if (req->getMethod() == "DELETE")

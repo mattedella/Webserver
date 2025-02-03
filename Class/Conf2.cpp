@@ -27,7 +27,8 @@ void conf::run()
 		for (std::map<int, server>::iterator it = _servers.begin(); 
 			it != _servers.end(); ++it) 
 		{
-			// Run one iteration of server event loop
+			if (Quit == true)
+				break ;
 			it->second.s_run(this, req);
 		}
 	}
