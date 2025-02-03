@@ -12,18 +12,18 @@ void handleSignal(int sig)
 {
 	if (sig == SIGINT)
 	{
-
 		Quit = true;
+		std::cout<<"\nCTRL+C pressed, closing connection!\n";
 	}
 
 }
 
 void conf::run()
 {
-	bool running = true;
-
+	
+	signal(SIGINT, handleSignal);
 	Request *req = new Request();
-	while(running) {
+	while(Quit == false) {
 		for (std::map<int, server>::iterator it = _servers.begin(); 
 			it != _servers.end(); ++it) 
 		{

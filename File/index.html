@@ -299,46 +299,42 @@
 
     <div class="form-section">
         <h2>Delete a File</h2>
-        <!-- A simple button to trigger delete -->
+        <label for="file-name-input">Enter the name of the file to delete:</label>
+        <input type="text" id="file-name-input" placeholder="e.g., reduce.png">
         <button type="button" id="delete-button">Delete File</button>
         <div id="delete-response-message"></div>
     </div>
 
     <script>
-            document.getElementById('delete-button').addEventListener('click', function(event) {
-        // Prevent page reload (default behavior for form submission)
-        event.preventDefault();
-        
-        // Ottieni il nome del file dalla casella di testo
-        const fileName = document.getElementById('file-name-input').value;
+        document.getElementById('delete-button').addEventListener('click', function(event) {
+            event.preventDefault();
+            
+            const fileName = document.getElementById('file-name-input').value;
 
-        if (!fileName) {
-            document.getElementById('delete-response-message').innerHTML = 'Please enter a file name.';
-            return;
-        }
-
-        // Costruisci il percorso completo usando il nome del file
-        const filePath = `File/upload/${fileName}`;
-
-        // Invia la richiesta DELETE con il nome del file
-        fetch(filePath, {
-            method: 'DELETE',
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.text();  // Se la risposta è ok, processa il testo
-            } else {
-                throw new Error('File not found or could not be deleted');
+            if (!fileName) {
+                document.getElementById('delete-response-message').innerHTML = 'Please enter a file name.';
+                return;
             }
-        })
-        .then(data => {
-            document.getElementById('delete-response-message').innerHTML = 'File deleted successfully';
-        })
-        .catch(error => {
-            document.getElementById('delete-response-message').innerHTML = 'An error occurred during the deletion.';
-        });
-    });
 
+            const filePath = `${fileName}`;
+
+            fetch(filePath, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('File not found or could not be deleted');
+                }
+            })
+            .then(data => {
+                document.getElementById('delete-response-message').innerHTML = 'File deleted successfully';
+            })
+            .catch(error => {
+                document.getElementById('delete-response-message').innerHTML = 'An error occurred during the deletion.';
+            });
+        });
     </script>
    
 </div>
