@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <sys/poll.h>
+#include <sys/types.h>
 #include <vector>
 #include <cstring> 
 #include "../includes/webserv.hpp"
@@ -151,6 +152,8 @@ void server::s_run(conf* ConfBlock, Request* req)
 	int ret = poll(&_poll_fds[0], _poll_fds.size(), 0); // Non-blocking poll
 	bool is_server_socket = false;
 
+	if (Quit == true)
+		return;
 	if (ret < 0) {
 		std::cerr << "Poll error: " << strerror(errno) << std::endl;
 		return;

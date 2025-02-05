@@ -28,9 +28,9 @@ void Response::generateDeleteResponse(Request* req, conf* ConfBlock) {
 	std::string request;
 	(void)ConfBlock;
 
+	request = req->generateBody();
 	switch (StatusCode) {
 		case 200:
-			request = req->generateBody();
 			std::cout << "req: " << request << "\n";
 			_response = "HTTP/1.1 200 OK\r\n";
 			_response += "Content-Type: application/json\r\n";

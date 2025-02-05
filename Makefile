@@ -30,7 +30,7 @@ $(NAME): $(SRC)
 	@echo $(CYAN)		"                                                  /_/ "$(NONE)
 
 val: all
-	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) test.conf
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) test.conf
 
 run: all
 	@./$(NAME) test.conf

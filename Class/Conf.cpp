@@ -102,11 +102,12 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 	return errorPage;
 }
 
-void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per sapere in che server siamo
-	// cosi controlliamo solo i valori di quel determinato server invece che in tutti
-	// per semplicita' prendo solo il primo server
+void conf::checkRequest(Request* req) { // ! magari aggiungere "int nbrServer" per sapere in che server siamo
+	// ! cosi controlliamo solo i valori di quel determinato server invece che in tutti
+	// ! per semplicita' prendo solo il primo server
 	StatusCode = 200;
 	char buff[4062];
+
 	std::string url = req->getURL();
 	std::string file;
 	if (req->getURL().rfind(".") != NOT_FOUND) {
@@ -149,11 +150,11 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 		if (!loc.getMethods(req->getMethod())) {
 			StatusCode = 501;
 		}
-	std::cout << "File |" << file << "|\n";
 	if (req->getMethod() == "GET") {
 		if (file == "favicon.ico") {
 			_fullPath = buff;
 			_fullPath+= _servers[1].getRoot() + "/favicon.ico";
+			std::cout << _fullPath << '\n';
 			return ;
 		}
 		if (url == "/" && StatusCode == 200) {
@@ -187,24 +188,25 @@ void conf::checkRequest(Request* req) { // magari aggiungere "int nbrServer" per
 	}
 	if (req->getMethod() == "DELETE")
 	{
-    req->printRequest();
-    
-	std::string fullPath = req->getURL().substr(1);
-	
-	std::cout << "Controllo percorso: " << fullPath << "\n";
-    if (access(fullPath.c_str(), F_OK) != 0) {
-        StatusCode = 404;
-    }
-    else if (access(fullPath.c_str(), W_OK) != 0) {
-        StatusCode = 403;
-    } 
-    else {
-        if (remove(fullPath.c_str()) != 0) {
-            StatusCode = 500;
-        } 
-        else {
-            StatusCode = 200;
-        }
+		req->printRequest();
+		
+		std::cout<< "PORCODIO" + _fullPath <<"\n";
+		std::string fullPath = _fullPath+ req->getURL().substr(req->getURL().rfind('/') + 1, req->getURL().length() - req->getURL().rfind('/'));
+		
+		std::cout << "Controllo percorso: " << fullPath << "\n";
+		if (access(fullPath.c_str(), F_OK) != 0) {
+			StatusCode = 404;
+		}
+		else if (access(fullPath.c_str(), W_OK) != 0) {
+			StatusCode = 403;
+		} 
+		else {
+			if (remove(fullPath.c_str()) != 0) {
+				StatusCode = 500;
+			} 
+			else {
+				StatusCode = 200;
+			}
     }
 
     std::cout << "Status: " << StatusCode << "\n";
