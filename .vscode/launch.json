@@ -1,5 +1,6 @@
 {
 	"configurations": [
+
 		{
 			"name": "(gdb) Launch",
 			"type": "cppdbg",
@@ -11,6 +12,9 @@
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
+			"logging": {
+				"exceptions": true
+			}
 		}
 
 	]

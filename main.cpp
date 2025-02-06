@@ -39,5 +39,6 @@ int main (int argc, char **argv) {
 	catch (std::exception& e) {
 		std::cerr << RED << e.what() << RESET;
 	}
-	delete c;
+	if (c != NULL)
+		delete c;
 }

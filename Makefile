@@ -29,8 +29,9 @@ $(NAME): $(SRC)
 	@echo $(GREEN)		"     \/  \/ \___|_.__/_____/ \___|_|    \_/   (_)  | |"$(NONE)
 	@echo $(CYAN)		"                                                  /_/ "$(NONE)
 
+#--vgdb=yes --vgdb-error=0
 val: all
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) test.conf
+	valgrind  --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) test.conf
 
 run: all
 	@./$(NAME) test.conf

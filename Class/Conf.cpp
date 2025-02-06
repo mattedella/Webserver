@@ -187,13 +187,8 @@ void conf::checkRequest(Request* req) { // ! magari aggiungere "int nbrServer" p
 		}
 	}
 	if (req->getMethod() == "DELETE")
-	{
-		req->printRequest();
-		
-		std::cout<< "PORCODIO" + _fullPath <<"\n";
+	{		
 		std::string fullPath = _fullPath+ req->getURL().substr(req->getURL().rfind('/') + 1, req->getURL().length() - req->getURL().rfind('/'));
-		
-		std::cout << "Controllo percorso: " << fullPath << "\n";
 		if (access(fullPath.c_str(), F_OK) != 0) {
 			StatusCode = 404;
 		}
@@ -210,7 +205,7 @@ void conf::checkRequest(Request* req) { // ! magari aggiungere "int nbrServer" p
     }
 
     std::cout << "Status: " << StatusCode << "\n";
-}
+	}
 }
 
 location conf::getLocation(std::string to_find, int nbrServer) {

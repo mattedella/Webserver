@@ -86,6 +86,7 @@ location::~location() {}
 
 server::server() : ABlock(), _listing(false) {
 	_index = "";
+	_poll_fds = NULL;
 }
 
 size_t server::getLocationSize() const {
@@ -355,11 +356,18 @@ bool server::checkLocation(std::string to_find) {
 
 void server::startListens()
 {
+	int i = 0;
+	_pollfd_size = _ports.size();
+	_poll_fds = new struct pollfd[_pollfd_size];
 	for (std::vector<int>::iterator it = _ports.begin(); it != _ports.end(); it++)
 	{
-		init(*it);
+		init(*it, i);
+		i++;
 	}
 }
 
-server::~server() {}
+server::~server() {
+	if (_poll_fds)
+		delete[] _poll_fds;
+}
 
