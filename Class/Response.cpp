@@ -61,6 +61,7 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 	std::stringstream buff;
 	std::string request;
 	int nbrServer = ConfBlock->findServerByHostHeader(req);
+	std::cout << "ciao post response\n";
 	switch (StatusCode) {
 		case 200:
 			if (req->getHeader("Connection").empty())
@@ -140,6 +141,7 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 	struct dirent* readDir;
 	DIR* dir = NULL;
 	req->setContentType(Path);
+	std::cout << "ciao generate get response\n";
 	switch (StatusCode) {
 		case 200:
 			if (req->getHeader("Connection").empty())

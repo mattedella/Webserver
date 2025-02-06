@@ -200,6 +200,7 @@ void server::s_run(conf* ConfBlock, Request* req)
 				std::cerr << "Error on fd " << _poll_fds[i].fd << ": " << e.what() << std::endl;
 				req->clear();
 				close_connection(i);
+				i--;
 			}
 			_poll_fds[i].revents = 0;
 		}

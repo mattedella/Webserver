@@ -53,7 +53,7 @@ class Request {
 		void			clear();
 		void			closeFile();
 		void			printRequest();
-		void			getRequest(int& client_socket, short& event, int MaxSize, conf* ConfBlock);
+		void			getRequest(int client_socket, short& event, int MaxSize, conf* ConfBlock);
 
 		void			setHeadersComplete(bool complete);
 		void			setBodyComplete(bool complete);

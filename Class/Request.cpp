@@ -177,6 +177,7 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 	std::stringstream req_line(line);
 	// std::cout << req_line.str() << std::endl;
 	req_line >> _method >> _url >> _httpVersion;
+	std::cout << "ciao pars request\n";
 	while (std::getline(to_pars, line) && !line.substr(0, line.length() - 1).empty()) {
 		size_t colon_pos = line.find(':');
 		if (colon_pos != NOT_FOUND) {
@@ -185,14 +186,15 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 			_headers.insert(std::make_pair(Key, Tp));
 		}
 	}
-	ConfBlock->checkRequest(this);
+	if (!_headers.empty())
+		ConfBlock->checkRequest(this);
 	if (_method == "POST")
 		parsPost(to_pars, line, ConfBlock->getFullPath());
 	else if (_method == "DELETE")
 		parsDelete(to_pars, line);
 }
 
-void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* ConfBlock) {
+void Request::getRequest(int client_socket, short& event, int MaxSize, conf* ConfBlock) {
 	std::stringstream buffer;
 	size_t total_received = 0, content_length = 0, header_end = std::string::npos;
 	bool headers_complete = false;
@@ -201,14 +203,8 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 	while (true) {
 		char* chunk = new char[MaxSize];
 		int bytes_received = recv(client_socket, chunk, MaxSize, 0);
-		if (bytes_received <= 0 || bytes_received == MaxSize) {
-			int err = errno;
-			if (err == EAGAIN)
-				std::cout << "EAGAIN No data available, try again later." << std::endl;
-			else if (err == EWOULDBLOCK)
-				std::cout << "EWOULDBLOCK No data available, try again later." << std::endl;
-			else if (err == ECONNRESET)
-				std::cout << "Connection reset by peer." << std::endl;
+		total_received += bytes_received;
+		if (bytes_received <= 0 || bytes_received > MaxSize) {
 			delete[] chunk;
 			break;
 		}
@@ -220,10 +216,12 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 			header_end = temp_buffer.find("\r\n\r\n");
 			if (header_end != std::string::npos) {
 				headers_complete = true;
+				std::cout << "ciao header\n";
 				std::string headers = temp_buffer.substr(0, header_end);
 				size_t cl_pos = headers.find("Content-Length: ");
 				if (cl_pos != std::string::npos) {
 					size_t cl_end = headers.find("\r\n", cl_pos);
+					std::cout << "ciao content length\n";
 					std::stringstream ss(headers.substr(cl_pos + 16, cl_end - (cl_pos + 16)));
 					ss >> content_length;
 				}
@@ -235,8 +233,8 @@ void Request::getRequest(int &client_socket, short& event, int MaxSize, conf* Co
 			}
 		}
 	}
-	std::cout << buffer.str() << std::endl;
-	ParsRequest(buffer, ConfBlock);
+	if (total_received > 0)
+		ParsRequest(buffer, ConfBlock);
 	event = POLLOUT;
 }
 

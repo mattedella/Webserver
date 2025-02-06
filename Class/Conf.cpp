@@ -108,6 +108,7 @@ void conf::checkRequest(Request* req) {
 	char buff[4062];
 	std::string url = req->getURL();
 	std::string file;
+	std::cout << "ciao checkRequest\n";
 	if (req->getURL().rfind(".") != NOT_FOUND) {
 		file = url.substr(url.rfind('/') + 1);
 		if (url.rfind("/") == 0)
