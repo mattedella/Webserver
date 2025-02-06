@@ -16,7 +16,7 @@
 
 extern int StatusCode;
 extern bool Quit;
-# define INT_MAX 2147483647
+//# define INT_MAX 2147483647
 
 # define	NOT_FOUND std::string::npos
 # define	BLUE "\033[34m"
