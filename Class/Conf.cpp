@@ -1,5 +1,4 @@
 #include "../includes/webserv.hpp"
-#include <algorithm>
 #include <cctype>
 #include <fstream>
 #include <iostream>
@@ -8,6 +7,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 conf::conf() {
 	_listing = false;
@@ -86,13 +86,13 @@ server conf::getServer(int nbrServer) {
 	return vd;
 }
 
-std::string conf::getErrorPage(int error, int nbrServer, location location) { // fatto un po' a cazzo
+std::string conf::getErrorPage(int error, int nbrServer, location location) {
+	server& currentServer = _servers[nbrServer];
 	std::string errorPage = "";
-	(void)nbrServer;
 	if (_http[0].ErrorPageSize() > 0)
 		errorPage = _http[0].getErrorPage(error);
-	if (_servers[1].ErrorPageSize() > 0)
-		errorPage = _servers[1].getErrorPage(error);
+	if (currentServer.ErrorPageSize() > 0)
+		errorPage = currentServer.getErrorPage(error);
 	if (location.ErrorPageSize() > 0)
 		errorPage = location.getErrorPage(error);
 	if (errorPage == "" && (error == 404 || error == 403 || error == 408))
@@ -102,109 +102,89 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) { //
 	return errorPage;
 }
 
-void conf::checkRequest(Request* req) { // ! magari aggiungere "int nbrServer" per sapere in che server siamo
-	// ! cosi controlliamo solo i valori di quel determinato server invece che in tutti
-	// ! per semplicita' prendo solo il primo server
+void conf::checkRequest(Request* req) {
+	int nbrServer = findServerByHostHeader(req);
 	StatusCode = 200;
 	char buff[4062];
-
 	std::string url = req->getURL();
 	std::string file;
 	if (req->getURL().rfind(".") != NOT_FOUND) {
 		file = url.substr(url.rfind('/') + 1);
 		if (url.rfind("/") == 0)
 			url.erase(url.rfind('/') + 1, file.length() + 1);
-		else
-		 	url.erase(url.rfind('/'), file.length() + 1);
+		else 
+			url.erase(url.rfind('/'), file.length() + 1);
 	}
 	if (req->getURL() != "/" && req->getURL()[req->getURL().length() - 1] == '/')
 		url = req->getURL().substr(0, req->getURL().rfind('/'));
+
 	std::string subUrl = url;
+	server& currentServer = _servers[nbrServer];
 	getcwd(buff, sizeof(buff) - 1);
 	_fullPath = buff;
-	_fullPath += _servers[1].getRoot();
+	_fullPath += currentServer.getRoot();
+
 	if (url != "/")
 		subUrl = url.substr(url.rfind("/"));
+
 	location loc;
-	if (_servers[1].checkLocation(subUrl)) {
-		loc = _servers[1].getLocation(subUrl);
-	}
-	else {
-	 	StatusCode = 404;
-	}
+	if (currentServer.checkLocation(subUrl))
+		loc = currentServer.getLocation(subUrl);
+	else
+		StatusCode = 404; 
 	if (StatusCode == 200 && req->getURL().rfind('.') == NOT_FOUND)
 		_fullPath += req->getURL();
 	else
-	 	_fullPath += req->getURL().substr(0, req->getURL().rfind("/") + 1);
+		_fullPath += req->getURL().substr(0, req->getURL().rfind("/") + 1);
 	if (access(_fullPath.c_str(), R_OK | W_OK | X_OK) < 0)
 		StatusCode = 403;
 	if (_http[0].getMethodsSize() > 0)
-		if (!_http[0].getMethods(req->getMethod())) {
+		if (!_http[0].getMethods(req->getMethod()))
 			StatusCode = 501;
-		}
-	if (_servers[1].getMethodsSize() > 0)
-		if (!_servers[1].getMethods(req->getMethod())) {
+	if (currentServer.getMethodsSize() > 0)
+		if (!currentServer.getMethods(req->getMethod()))
 			StatusCode = 501;
-		}
 	if (loc.getMethodsSize() > 0)
-		if (!loc.getMethods(req->getMethod())) {
+		if (!loc.getMethods(req->getMethod()))
 			StatusCode = 501;
-		}
 	if (req->getMethod() == "GET") {
 		if (file == "favicon.ico") {
 			_fullPath = buff;
-			_fullPath+= _servers[1].getRoot() + "/favicon.ico";
-			std::cout << _fullPath << '\n';
+			_fullPath+= currentServer.getRoot() + "/favicon.ico";
 			return ;
 		}
 		if (url == "/" && StatusCode == 200) {
-			if (_servers[1].getIndex() == "") {
-				if (!_servers[1].getListing())
+			if (currentServer.getIndex() == "") {
+				if (!currentServer.getListing())
 					StatusCode = 404;
 				else
-				 	_listing = true;
+					_listing = true;
 			}
-			if (file.empty() && _servers[1].getIndex() != "")
-				_fullPath += _servers[1].getIndex();
-			else if (!file.empty())
-				_fullPath += file;
+			if (file.empty() && currentServer.getIndex() != "")
+				_fullPath += currentServer.getIndex();
+			else if (!file.empty() && file == currentServer.getIndex())
+				_fullPath += currentServer.getIndex();
 			else if (_listing == false)
 				StatusCode = 404;
+			else
+				_fullPath += file;
 		}
 		else if (StatusCode == 200) {
 			if (loc.getIndex() == "") {
 				if (!loc.getListing())
 					StatusCode = 404;
 				else
-				 	_listing = true;
+					_listing = true;
 			}
 			if (file.empty() && loc.getIndex() != "")
 				_fullPath += loc.getIndex();
-			else if (!file.empty())
-				_fullPath += file;
+			else if (!file.empty() && file == loc.getIndex())
+				_fullPath += loc.getIndex();
 			else if (_listing == false)
 				StatusCode = 404;
+			else
+				_fullPath += file;
 		}
-	}
-	if (req->getMethod() == "DELETE")
-	{		
-		std::string fullPath = _fullPath+ req->getURL().substr(req->getURL().rfind('/') + 1, req->getURL().length() - req->getURL().rfind('/'));
-		if (access(fullPath.c_str(), F_OK) != 0) {
-			StatusCode = 404;
-		}
-		else if (access(fullPath.c_str(), W_OK) != 0) {
-			StatusCode = 403;
-		} 
-		else {
-			if (remove(fullPath.c_str()) != 0) {
-				StatusCode = 500;
-			} 
-			else {
-				StatusCode = 200;
-			}
-    }
-
-    std::cout << "Status: " << StatusCode << "\n";
 	}
 }
 
@@ -224,7 +204,7 @@ server conf::getServer(std::string port)
 {
 	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); it++)
 	{
-		if (it->second.getListen(port) == port)
+		if (it->second.getListen(port) == true)
 			return it->second;
 	}
 	throw exc("ci pensiamo dopo\n");
@@ -233,6 +213,23 @@ server conf::getServer(std::string port)
 std::map<int, server>& conf::getMapServer()
 {
 	return _servers;
+}
+
+int conf::findServerByHostHeader(Request* req) {
+	std::string hostHeader = req->getHeader("Host");
+	if (hostHeader.empty())
+		return _servers.begin()->first;
+	size_t colonPos = hostHeader.find(':');
+	if (colonPos != std::string::npos)
+		hostHeader = hostHeader.substr(colonPos + 1,hostHeader.length() - colonPos);
+	for (std::map<int, server>::iterator it = _servers.begin(); 
+		it != _servers.end(); ++it) {
+		server& srv = it->second;
+		bool serverNames = srv.getListen(hostHeader);
+		if (serverNames == true)
+			return it->first;
+	}
+	return _servers.begin()->first;
 }
 
 conf::~conf() {}

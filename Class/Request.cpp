@@ -1,6 +1,6 @@
 
 #include "../includes/webserv.hpp"
-#include <bits/c++config.h>
+//#include <bits/c++config.h>
 #include <cerrno>
 #include <cstdio>
 #include <fstream>
@@ -22,12 +22,13 @@ Request::Request() {
 }
 
 std::string Request::generateBody() {
-	std::string ret;
-	ret = "{\r\n \"fileName\": \"" + getFileName() +
-			"\",\r\n \"fileType\": \""+ getBody("Content-Type") +"\",\r\n"
-			" \"operation\": \"upload\",\r\n"
-			" \"status\": \"success\"\r\n}\r\n\r\n";
-	return ret;
+    std::string ret;
+    ret = "{\r\n \"fileName\": \"" + 
+        (_nameFile.empty() ? "unknown" : _nameFile) + "\",\r\n \"fileType\": \"" + 
+        (getBody("Content-Type").empty() ? "application/octet-stream" : getBody("Content-Type")) + "\",\r\n" 
+        " \"operation\": \"upload\",\r\n" 
+        " \"status\": \"success\"\r\n}\r\n\r\n";
+    return ret;
 }
 
 std::string Request::getFileName() {

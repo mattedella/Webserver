@@ -9,7 +9,6 @@ ABlock::ABlock() {
 	if (_special.empty()) {
 		_special.push_back("http");
 		_special.push_back("client_max_body_size");
-		_special.push_back("client_body_timeout");
 		_special.push_back("error_page");
 		_special.push_back("include");
 		_special.push_back("server");

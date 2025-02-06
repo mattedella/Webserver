@@ -22,7 +22,6 @@ std::string itos(size_t nbr) {
 }
 
 void Response::generateDeleteResponse(Request* req, conf* ConfBlock) {
-	// TODO: capire come e' fatta la response e generarla;
 	std::ofstream file;
 	std::stringstream buff;
 	std::string request;
@@ -61,6 +60,7 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 	std::ofstream file;
 	std::stringstream buff;
 	std::string request;
+	int nbrServer = ConfBlock->findServerByHostHeader(req);
 	switch (StatusCode) {
 		case 200:
 			if (req->getHeader("Connection").empty())
@@ -73,9 +73,9 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 			"\r\n" + request + "\r\n\r\n";
 			break ;
 		case 404:
-			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(404, 1, ConfBlock->getLocation(req->getURL(), 1))).c_str());
+			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(404, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer))).c_str());
 			if (!file.is_open())
-				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(404, 1, ConfBlock->getLocation(req->getURL(), 1)) + "\" not opened\n");
+				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(404, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer)) + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
 			_response = "HTTP/1.1 404 Not Found\r\nContent-Type: "
@@ -85,9 +85,9 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 			file.close();
 			break ;
 		case 403:
-			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(403, 1, ConfBlock->getLocation(req->getURL(),1 ))).c_str());
+			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(403, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer))).c_str());
 			if (!file.is_open())
-				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(403, 1, ConfBlock->getLocation(req->getURL(), 1)) + "\" not opened\n");
+				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(403, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer)) + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
 			_response = "HTTP/1.1 403 Forbidden\r\nContent-Type: "
@@ -97,9 +97,9 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 			file.close();
 			break ;
 		case 408:
-			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(408, 1, ConfBlock->getLocation(req->getURL(), 1))).c_str());
+			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(408, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer))).c_str());
 			if (!file.is_open())
-				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(408, 1, ConfBlock->getLocation(req->getURL(), 1)) + "\" not opened\n");
+				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(408, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer)) + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
 			_response = "HTTP/1.1 408 Request Timeout\r\nContent-Type: "
@@ -109,10 +109,10 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 			file.close();
 			break ;
 		case 501:
-			std::string File = ConfBlock->getFullPath() + ConfBlock->getErrorPage(501, 1, ConfBlock->getLocation(req->getURL(), 1));
+			std::string File = ConfBlock->getFullPath() + ConfBlock->getErrorPage(501, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer));
 			file.open(File.c_str());
 			if (!file.is_open())
-				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(501, 1, ConfBlock->getLocation(req->getURL(), 1)) + "\" not opened\n");
+				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(501, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer)) + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
 			_response = "HTTP/1.1 501 Method not Allowed\r\nContent-Type: "
@@ -132,10 +132,11 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 	std::string Path = ConfBlock->getFullPath();
 	std::string request;
 	std::string errorPath;
-	std::string error404 = ConfBlock->getErrorPage(404, 1, ConfBlock->getLocation(req->getURL(), 1));
-	std::string error403 = ConfBlock->getErrorPage(403, 1, ConfBlock->getLocation(req->getURL(), 1));
-	std::string error408 = ConfBlock->getErrorPage(408, 1, ConfBlock->getLocation(req->getURL(), 1));
-	std::string error5xx = ConfBlock->getErrorPage(501, 1, ConfBlock->getLocation(req->getURL(), 1));
+	int nbrServer = ConfBlock->findServerByHostHeader(req);
+	std::string error404 = ConfBlock->getErrorPage(404, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
+	std::string error403 = ConfBlock->getErrorPage(403, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
+	std::string error408 = ConfBlock->getErrorPage(408, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
+	std::string error5xx = ConfBlock->getErrorPage(501, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	struct dirent* readDir;
 	DIR* dir = NULL;
 	req->setContentType(Path);
@@ -235,5 +236,9 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 std::string Response::getResponse() {
 	return _response;
 }
-
+std::string Response::sizeToString(size_t size) {
+    std::stringstream ss;
+    ss << size;
+    return ss.str();
+}
 Response::~Response() {}

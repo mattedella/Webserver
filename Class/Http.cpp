@@ -63,12 +63,6 @@ void http::addVal() {
 			_bodysize = bodySize;
 
 		}
-		if (it->first.find("client_body_timeout") != NOT_FOUND) {
-			int timeout = std::atoi(it->second.c_str());
-			if (it->second[it->second.length() - 1] != 's' || timeout <= 0)
-				throw exc("Error: body timeout value not valid\n");
-			_timeout = timeout;
-		}
 		if (it->first.find("include") != NOT_FOUND)
 			_include.push_back(it->second);
 		if (it->first.find("dav_methods") != NOT_FOUND) {
@@ -84,7 +78,6 @@ void http::addVal() {
 		}
 	}
 	_data.erase("client_max_body_size");
-	_data.erase("client_body_timeout");
 	_data.erase("include");
 	if (_bodysize <= 0)
 		throw exc("Error: body size not found\n");
