@@ -108,7 +108,6 @@ void conf::checkRequest(Request* req) {
 	char buff[4062];
 	std::string url = req->getURL();
 	std::string file;
-	std::cout << "ciao checkRequest\n";
 	if (req->getURL().rfind(".") != NOT_FOUND) {
 		file = url.substr(url.rfind('/') + 1);
 		if (url.rfind("/") == 0)
@@ -165,10 +164,10 @@ void conf::checkRequest(Request* req) {
 				_fullPath += currentServer.getIndex();
 			else if (!file.empty() && file == currentServer.getIndex())
 				_fullPath += currentServer.getIndex();
+			else if (!file.empty())
+				_fullPath += file;
 			else if (_listing == false)
 				StatusCode = 404;
-			else
-				_fullPath += file;
 		}
 		else if (StatusCode == 200) {
 			if (loc.getIndex() == "") {

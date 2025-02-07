@@ -59,10 +59,12 @@ void server::close_connection(size_t index) {
 
 void server::handle_new_connection(int server_fd)
 {
+	std::cout<< "nuova connessione in "<< server_fd << "\n";
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
 	int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
-	if (client_fd < 0) return;
+	if (client_fd < 0) 
+		return;
 	set_nonblocking(client_fd);
     struct pollfd* new_poll_fds = new struct pollfd[_pollfd_size + 1];
     std::memcpy(new_poll_fds, _poll_fds, sizeof(struct pollfd) * _pollfd_size);
@@ -158,6 +160,12 @@ void server::s_run(conf* ConfBlock, Request* req)
 	bool is_server_socket = false;
 	int ret = 0;
 	ret = poll(_poll_fds, _pollfd_size, 0);
+	static int tuma = 0;
+	if (tuma == 0)
+	{
+		std::cout<<"ret prima volta = "<< ret << "\n";
+		tuma++;
+	}
 	if (Quit == true)
 		return ;
 	if (ret < 0) {
@@ -167,7 +175,7 @@ void server::s_run(conf* ConfBlock, Request* req)
 	else if (ret > 0) {
 		for (size_t i = 0; i < _pollfd_size; ++i) {
 			is_server_socket = false;
-			if (_poll_fds[i].revents == 0)
+			if (_poll_fds[i].revents == 0) //cosa e revents di poll fd
 				continue;
 
 			try {
@@ -177,16 +185,16 @@ void server::s_run(conf* ConfBlock, Request* req)
 						if (_poll_fds[i].revents == POLLIN) {
 							handle_new_connection(_server_sockets[j].fd);
 						}
-						break;
 					}
 				}
-				if (!is_server_socket) {
-					if (_poll_fds[i].revents & POLLIN) {
+				if (is_server_socket == false) {
+					if (_poll_fds[i].revents & POLLIN) { // cosa fa questo if?
 						req->getRequest(_poll_fds[i].fd, _poll_fds[i].events, _bodysize * 1000000, ConfBlock);
+						std::cout<< "sono entrato qua\n";
 						_poll_fds[i].events = POLLOUT;
 					}
 
-					if (_poll_fds[i].revents & POLLOUT) {
+					if (_poll_fds[i].revents & POLLOUT) { // cosa fa questo if?
 						bool finish = sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
 						req->clear();
 						if (finish == true) {

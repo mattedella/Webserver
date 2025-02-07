@@ -19,6 +19,11 @@ Request::Request() {
 	_method = "";
 	_url = "";
 	_httpVersion = "";
+	_file = "";
+	_nameFile = "";
+	_headers_complete = false;
+	_body_complete = false;
+	_content_length = 0;
 }
 
 std::string Request::generateBody() {
@@ -40,23 +45,19 @@ std::string Request::getBody(const std::string& Key) {
 }
 
 void Request::clear() {
-	_method.clear();
-	_headers.clear();
+	_url.clear();
 	_file.clear();
 	_httpVersion.clear();
-	_url.clear();
+	_method.clear();
+	_headers.clear();
 	_body.clear();
-}
-
-void Request::parsDelete(std::stringstream& file, std::string& line) {
-	// TODO: iniziare;
-	(void)file;
-	(void)line;
-	std::cout << "parsDelete\n";
+	_nameFile.clear();
+	_headers_complete = false;
+	_body_complete = false;
+	_content_length = 0;
 }
 
 void Request::parsApplication(std::stringstream& bodyData, std::string& line, std::string Path) {
-	// TODO: salvare i dati da qualche parte(non so dove e come);
 	std::string Key, Tp, value;
 	(void)Path;
 	while (std::getline(bodyData, line) && !line.substr(0, line.length() - 1).empty())
@@ -177,7 +178,6 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 	std::stringstream req_line(line);
 	// std::cout << req_line.str() << std::endl;
 	req_line >> _method >> _url >> _httpVersion;
-	std::cout << "ciao pars request\n";
 	while (std::getline(to_pars, line) && !line.substr(0, line.length() - 1).empty()) {
 		size_t colon_pos = line.find(':');
 		if (colon_pos != NOT_FOUND) {
@@ -190,8 +190,6 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 		ConfBlock->checkRequest(this);
 	if (_method == "POST")
 		parsPost(to_pars, line, ConfBlock->getFullPath());
-	else if (_method == "DELETE")
-		parsDelete(to_pars, line);
 }
 
 void Request::getRequest(int client_socket, short& event, int MaxSize, conf* ConfBlock) {
@@ -204,7 +202,12 @@ void Request::getRequest(int client_socket, short& event, int MaxSize, conf* Con
 		char* chunk = new char[MaxSize];
 		int bytes_received = recv(client_socket, chunk, MaxSize, 0);
 		total_received += bytes_received;
-		if (bytes_received <= 0 || bytes_received > MaxSize) {
+		std::cout<< "luppolo\n";
+		if (bytes_received == 0) {
+			delete [] chunk;
+			continue ;
+		}
+		else if (bytes_received < 0 || bytes_received > MaxSize) {
 			delete[] chunk;
 			break;
 		}
@@ -216,12 +219,10 @@ void Request::getRequest(int client_socket, short& event, int MaxSize, conf* Con
 			header_end = temp_buffer.find("\r\n\r\n");
 			if (header_end != std::string::npos) {
 				headers_complete = true;
-				std::cout << "ciao header\n";
 				std::string headers = temp_buffer.substr(0, header_end);
 				size_t cl_pos = headers.find("Content-Length: ");
 				if (cl_pos != std::string::npos) {
 					size_t cl_end = headers.find("\r\n", cl_pos);
-					std::cout << "ciao content length\n";
 					std::stringstream ss(headers.substr(cl_pos + 16, cl_end - (cl_pos + 16)));
 					ss >> content_length;
 				}
@@ -233,9 +234,10 @@ void Request::getRequest(int client_socket, short& event, int MaxSize, conf* Con
 			}
 		}
 	}
-	if (total_received > 0)
+	if (total_received > 0) {
 		ParsRequest(buffer, ConfBlock);
-	event = POLLOUT;
+		event = POLLOUT;
+	}
 }
 
 void Request::setHeadersComplete(bool complete) {
