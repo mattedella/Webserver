@@ -1,7 +1,10 @@
 #include "../includes/webserv.hpp"
 #include <cctype>
+#include <dirent.h>
 #include <fstream>
 #include <iostream>
+#include <ostream>
+#include <sstream>
 #include <unistd.h>
 #include <map>
 #include <string>
@@ -107,11 +110,14 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) {
 }
 
 void conf::checkRequest(Request* req) {
-	findServerByHostHeader(req);
+	_nbrServer = findServerByHostHeader(req);
 	StatusCode = 200;
 	char buff[4062];
+	struct dirent* readDir;
 	std::string url = req->getURL();
 	std::string file;
+	std::stringstream responsebBuff;
+	std::ifstream fileResponse;
 	if (req->getURL().rfind(".") != NOT_FOUND) {
 		file = url.substr(url.rfind('/') + 1);
 		if (url.rfind("/") == 0)
@@ -155,41 +161,101 @@ void conf::checkRequest(Request* req) {
 		if (file == "favicon.ico") {
 			_fullPath = buff;
 			_fullPath+= currentServer.getRoot() + "/favicon.ico";
+			fileResponse.open(_fullPath.c_str());
+			if (!fileResponse.is_open())
+				StatusCode = 404;
+			responsebBuff << fileResponse.rdbuf();
+			_responseContent = responsebBuff.str();
 			return ;
 		}
 		if (url == "/" && StatusCode == 200) {
-			if (currentServer.getIndex() == "") {
-				if (!currentServer.getListing())
-					StatusCode = 404;
-				else
-					_listing = true;
-			}
 			if (file.empty() && currentServer.getIndex() != "")
-				_fullPath += currentServer.getIndex();
-			else if (!file.empty() && file == currentServer.getIndex())
 				_fullPath += currentServer.getIndex();
 			else if (!file.empty())
 				_fullPath += file;
-			else if (_listing == false)
+			else if (currentServer.getListing() == true)
+				_listing = true;
+			fileResponse.open(_fullPath.c_str());
+			if (!fileResponse.is_open() && _listing == false)
 				StatusCode = 404;
+			else if (_listing == true) {
+				if (_fullPath.find('.') != NOT_FOUND)
+					_fullPath = _fullPath.substr(0 ,_fullPath.rfind('/'));
+				DIR* dir = opendir(_fullPath.c_str());
+				if (dir == NULL) {
+					throw exc("ERROR: directory\"" + _fullPath + "\" not opened\n");
+				}
+				req->setHeader("Content-type", "text/html");
+				req->setHeader("Connection", "close");
+				_responseContent = "<h1>OPS, the page you are loocking doesn't exist</h1>\r\n<p>try this:</p>\r\n";
+				while ((readDir = readdir(dir)) != NULL) {
+					_responseContent += "<a href=\"" + req->getHeader("Referer");
+					_responseContent += readDir->d_name;
+					_responseContent += "\">";
+					_responseContent += readDir->d_name;
+					_responseContent += "</a>\n<br>";
+				}
+				_responseContent += "\r\n\r\n";
+				if (dir != NULL)
+					closedir(dir);
+				return ;
+			}
+			responsebBuff << fileResponse.rdbuf();
+			_responseContent = responsebBuff.str();
 		}
 		else if (StatusCode == 200) {
-			if (loc.getIndex() == "") {
-				if (!loc.getListing())
-					StatusCode = 404;
-				else
-					_listing = true;
-			}
 			if (file.empty() && loc.getIndex() != "")
 				_fullPath += loc.getIndex();
-			else if (!file.empty() && file == loc.getIndex())
-				_fullPath += loc.getIndex();
-			else if (_listing == false)
-				StatusCode = 404;
-			else
+			else if (!file.empty())
 				_fullPath += file;
+			else if (loc.getListing() == true)
+				_listing = true;
+			fileResponse.open(_fullPath.c_str());
+			if (!fileResponse.is_open() && _listing == false)
+				StatusCode = 404;
+			else if (_listing == true) {
+				if (_fullPath.find('.') != NOT_FOUND)
+					_fullPath = _fullPath.substr(0 ,_fullPath.rfind('/') - 1);
+				DIR* dir = opendir(_fullPath.c_str());
+				if (dir == NULL) {
+					throw exc("ERROR: directory\"" + _fullPath + "\" not opened\n");
+				}
+				req->setHeader("Content-type", "text/html");
+				req->setHeader("Connection", "close");
+				_responseContent = "<h1>OPS, the page you are loocking doesn't exist</h1>\r\n<p>try this:</p>\r\n";
+				while ((readDir = readdir(dir)) != NULL) {
+					_responseContent += "<a href=\"" + req->getHeader("Referer");
+					_responseContent += readDir->d_name;
+					_responseContent += "\">";
+					_responseContent += readDir->d_name;
+					_responseContent += "</a>\n<br>";
+				}
+				_responseContent += "\r\n\r\n";
+				if (dir != NULL)
+					closedir(dir);
+				return ;
+			}
+			responsebBuff << fileResponse.rdbuf();
+			_responseContent = responsebBuff.str();
 		}
 	}
+	if (req->getMethod() == "DELETE") {
+		std::string fullPath = _fullPath+ req->getURL().substr(req->getURL().rfind('/') + 1, req->getURL().length() - req->getURL().rfind('/'));
+		if (access(fullPath.c_str(), F_OK) != 0)
+			StatusCode = 404;
+		else if (access(fullPath.c_str(), W_OK) != 0)
+			StatusCode = 403;
+		else {
+			if (remove(fullPath.c_str()) != 0)
+				StatusCode = 500;
+			else
+				StatusCode = 200;
+    	}
+	}
+}
+
+std::string conf::getResponseContent() {
+	return _responseContent;
 }
 
 location conf::getLocation(std::string to_find, int nbrServer) {
@@ -219,10 +285,10 @@ std::map<int, server>& conf::getMapServer()
 	return _servers;
 }
 
-void conf::findServerByHostHeader(Request* req) {
+int conf::findServerByHostHeader(Request* req) {
 	std::string hostHeader = req->getHeader("Host");
 	if (hostHeader.empty())
-		_nbrServer =  _servers.begin()->first;
+		return _servers.begin()->first;
 	size_t colonPos = hostHeader.find(':');
 	if (colonPos != std::string::npos)
 		hostHeader = hostHeader.substr(colonPos + 1,hostHeader.length() - colonPos);
@@ -231,9 +297,9 @@ void conf::findServerByHostHeader(Request* req) {
 		server& srv = it->second;
 		bool serverNames = srv.getListen(hostHeader);
 		if (serverNames == true)
-			_nbrServer = it->first;
+			return it->first;
 	}
-	_nbrServer = _servers.begin()->first;
+	return _servers.begin()->first;
 }
 
 conf::~conf() {}

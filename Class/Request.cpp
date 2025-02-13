@@ -199,7 +199,6 @@ void Request::getRequest(int client_socket, short& event, int MaxSize, conf* Con
 	while (total_received < content_length + header_end + 4) {
 		char* chunk = new char[chunkSize];
 		int bytes_received = recv(client_socket, chunk, chunkSize, 0);
-		std::cout << bytes_received << std::endl;
 		if (bytes_received == 0) {
 			event = 0;
 			delete [] chunk;
@@ -207,7 +206,6 @@ void Request::getRequest(int client_socket, short& event, int MaxSize, conf* Con
 		}
 		else if (bytes_received < 0) {
 			delete[] chunk;
-			std::cout << bytes_received << std::endl;
 			continue;
 		}
 		buffer.write(chunk, bytes_received);

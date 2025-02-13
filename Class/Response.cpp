@@ -137,44 +137,15 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 	std::string error403 = ConfBlock->getErrorPage(403, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error408 = ConfBlock->getErrorPage(408, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error5xx = ConfBlock->getErrorPage(501, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
-	struct dirent* readDir;
-	DIR* dir = NULL;
 	req->setContentType(Path);
 	switch (StatusCode) {
 		case 200:
+			request = ConfBlock->getResponseContent();
 			if (req->getHeader("Connection").empty())
 				req->setHeader("Connection", "close");
-			if (Path.find('.') != NOT_FOUND) {
-				file.open(Path.c_str());
-				if (!file.is_open())
-					throw exc("Error: file \"" + Path + "\" not opened\n");
-				buff << file.rdbuf();
-				request = buff.str();
-				req->setContentType(Path);
-			}
-			else {
-				dir = opendir(Path.c_str());
-				if (dir == NULL) {
-					throw exc("ERROR: directory\"" + Path + "\" not opened\n");
-				}
-				req->setHeader("Content-type", "text/html");
-				req->setHeader("Connection", "close");
-				request = "<h1>OPS, the page you are loocking doesn't exist</h1>\r\n<p>try this:</p>\r\n";
-				while ((readDir = readdir(dir)) != NULL) {
-					request += "<a href=\"" + req->getHeader("Referer");
-					request += readDir->d_name;
-					request += "\">";
-					request += readDir->d_name;
-					request += "</a>\n<br>";
-				}
-				request += "\r\n\r\n";
-			}
 			_response = "HTTP/1.1 200 OK\r\nContent-Type: " + req->getHeader("Content-Type") + "\r\nConnection: "
 						+ req->getHeader("Connection") + "\r\nContent-Length: " + itos(request.length()) +  "\r\n\r\n";
-			std::cout << _response << '\n';
 			_response += request;
-			if (dir != NULL)
-				closedir(dir);
 			break ;
 		case 404:
 			errorPath = Path.substr(0, Path.find("/File") + 5);
