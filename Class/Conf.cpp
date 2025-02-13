@@ -86,6 +86,10 @@ server conf::getServer(int nbrServer) {
 	return vd;
 }
 
+int conf::getNbrServer() {
+	return _nbrServer;
+}
+
 std::string conf::getErrorPage(int error, int nbrServer, location location) {
 	server& currentServer = _servers[nbrServer];
 	std::string errorPage = "";
@@ -103,7 +107,7 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) {
 }
 
 void conf::checkRequest(Request* req) {
-	int nbrServer = findServerByHostHeader(req);
+	findServerByHostHeader(req);
 	StatusCode = 200;
 	char buff[4062];
 	std::string url = req->getURL();
@@ -119,7 +123,7 @@ void conf::checkRequest(Request* req) {
 		url = req->getURL().substr(0, req->getURL().rfind('/'));
 
 	std::string subUrl = url;
-	server& currentServer = _servers[nbrServer];
+	server& currentServer = _servers[_nbrServer];
 	getcwd(buff, sizeof(buff) - 1);
 	_fullPath = buff;
 	_fullPath += currentServer.getRoot();
@@ -215,10 +219,10 @@ std::map<int, server>& conf::getMapServer()
 	return _servers;
 }
 
-int conf::findServerByHostHeader(Request* req) {
+void conf::findServerByHostHeader(Request* req) {
 	std::string hostHeader = req->getHeader("Host");
 	if (hostHeader.empty())
-		return _servers.begin()->first;
+		_nbrServer =  _servers.begin()->first;
 	size_t colonPos = hostHeader.find(':');
 	if (colonPos != std::string::npos)
 		hostHeader = hostHeader.substr(colonPos + 1,hostHeader.length() - colonPos);
@@ -227,9 +231,9 @@ int conf::findServerByHostHeader(Request* req) {
 		server& srv = it->second;
 		bool serverNames = srv.getListen(hostHeader);
 		if (serverNames == true)
-			return it->first;
+			_nbrServer = it->first;
 	}
-	return _servers.begin()->first;
+	_nbrServer = _servers.begin()->first;
 }
 
 conf::~conf() {}

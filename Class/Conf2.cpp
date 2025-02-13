@@ -23,13 +23,14 @@ void conf::run()
 	
 	signal(SIGINT, handleSignal);
 	Request *req = new Request();
+	int ret = 0;
 	while(Quit == false) {
 		for (std::map<int, server>::iterator it = _servers.begin(); 
 			it != _servers.end(); ++it) 
 		{
 			if (Quit == true)
 				break ;
-			it->second.s_run(this, req);
+			it->second.s_run(this, req, ret);
 		}
 	}
 	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); it++)

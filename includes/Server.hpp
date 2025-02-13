@@ -48,7 +48,6 @@ class server : public ABlock {
 		std::map<int, std::string>		_client_buffers;
 		std::vector<ServerSocket>		_server_sockets;
 		std::vector<int>				_server_fd;
-		//TODO secondo ric invece di essere un vettore deve essere un puntatore ad un arrray di fdspoll
 		struct pollfd*					_poll_fds;
 		size_t							_pollfd_size;
 		std::map<int, std::string> 		_client_responses;
@@ -78,7 +77,7 @@ class server : public ABlock {
 		
 		
 		bool	init(int port, int i);
-		void	s_run(conf* ConfBlock, Request* req);
+		void	s_run(conf* ConfBlock, Request* req, int ret);
 		void	handle_new_connection(int server_fd);
 		void	handle_client_data(int index);
 		void	handle_client_response(int index);

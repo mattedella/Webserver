@@ -60,7 +60,7 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 	std::ofstream file;
 	std::stringstream buff;
 	std::string request;
-	int nbrServer = ConfBlock->findServerByHostHeader(req);
+	int nbrServer = ConfBlock->getNbrServer();
 	switch (StatusCode) {
 		case 200:
 			if (req->getHeader("Connection").empty())
@@ -132,7 +132,7 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 	std::string Path = ConfBlock->getFullPath();
 	std::string request;
 	std::string errorPath;
-	int nbrServer = ConfBlock->findServerByHostHeader(req);
+	int nbrServer = ConfBlock->getNbrServer();
 	std::string error404 = ConfBlock->getErrorPage(404, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error403 = ConfBlock->getErrorPage(403, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error408 = ConfBlock->getErrorPage(408, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
@@ -170,9 +170,9 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 				request += "\r\n\r\n";
 			}
 			_response = "HTTP/1.1 200 OK\r\nContent-Type: " + req->getHeader("Content-Type") + "\r\nConnection: "
-					+ req->getHeader("Connection") + "\r\nContent-Length: " + itos(request.length()) +  "\r\n\r\n" 
-					+ request;
-			
+						+ req->getHeader("Connection") + "\r\nContent-Length: " + itos(request.length()) +  "\r\n\r\n";
+			std::cout << _response << '\n';
+			_response += request;
 			if (dir != NULL)
 				closedir(dir);
 			break ;

@@ -171,12 +171,9 @@ void Request::parsPost(std::stringstream& file, std::string& line, std::string P
 }
 
 void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
-	// TODO: Parsing per la CGI;
 	std::string line = "";
 	std::getline(to_pars, line);
-	// std::cout << line << '\n';
 	std::stringstream req_line(line);
-	// std::cout << req_line.str() << std::endl;
 	req_line >> _method >> _url >> _httpVersion;
 	while (std::getline(to_pars, line) && !line.substr(0, line.length() - 1).empty()) {
 		size_t colon_pos = line.find(':');
@@ -194,22 +191,24 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 
 void Request::getRequest(int client_socket, short& event, int MaxSize, conf* ConfBlock) {
 	std::stringstream buffer;
-	size_t total_received = 0, content_length = 0, header_end = std::string::npos;
+	(void)MaxSize;
+	size_t total_received = 0, content_length = 0, header_end = std::string::npos, chunkSize = 1024;
 	bool headers_complete = false;
 	std::string temp_buffer;
 
-	while (true) {
-		char* chunk = new char[MaxSize];
-		int bytes_received = recv(client_socket, chunk, MaxSize, 0);
-		total_received += bytes_received;
-		std::cout<< "luppolo\n";
+	while (total_received < content_length + header_end + 4) {
+		char* chunk = new char[chunkSize];
+		int bytes_received = recv(client_socket, chunk, chunkSize, 0);
+		std::cout << bytes_received << std::endl;
 		if (bytes_received == 0) {
+			event = 0;
 			delete [] chunk;
-			continue ;
+			return ;
 		}
-		else if (bytes_received < 0 || bytes_received > MaxSize) {
+		else if (bytes_received < 0) {
 			delete[] chunk;
-			break;
+			std::cout << bytes_received << std::endl;
+			continue;
 		}
 		buffer.write(chunk, bytes_received);
 		delete[] chunk;
@@ -228,15 +227,9 @@ void Request::getRequest(int client_socket, short& event, int MaxSize, conf* Con
 				}
 			}
 		}
-		if (headers_complete && content_length > 0) {
-			if (total_received >= content_length + header_end + 4) {
-				break;
-			}
-		}
 	}
 	if (total_received > 0) {
 		ParsRequest(buffer, ConfBlock);
-		event = POLLOUT;
 	}
 }
 

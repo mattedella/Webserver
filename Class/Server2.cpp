@@ -59,22 +59,21 @@ void server::close_connection(size_t index) {
 
 void server::handle_new_connection(int server_fd)
 {
-	std::cout<< "nuova connessione in "<< server_fd << "\n";
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
 	int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
 	if (client_fd < 0) 
 		return;
 	set_nonblocking(client_fd);
-    struct pollfd* new_poll_fds = new struct pollfd[_pollfd_size + 1];
-    std::memcpy(new_poll_fds, _poll_fds, sizeof(struct pollfd) * _pollfd_size);
-    new_poll_fds[_pollfd_size].fd = client_fd;
-    new_poll_fds[_pollfd_size].events = POLLIN;
-    new_poll_fds[_pollfd_size].revents = 0;
-    delete[] _poll_fds;
-    _poll_fds = new_poll_fds;
-    _pollfd_size++;
-    _client_buffers[client_fd] = "";
+	struct pollfd* new_poll_fds = new struct pollfd[_pollfd_size + 1];
+	std::memcpy(new_poll_fds, _poll_fds, sizeof(struct pollfd) * _pollfd_size);
+	new_poll_fds[_pollfd_size].fd = client_fd;
+	new_poll_fds[_pollfd_size].events = POLLIN | POLLOUT;
+	new_poll_fds[_pollfd_size].revents = 0;
+	delete[] _poll_fds;
+	_poll_fds = new_poll_fds;
+	_pollfd_size++;
+	_client_buffers[client_fd] = "";
 }
 
 void server::set_nonblocking(int fd) {
@@ -118,7 +117,7 @@ bool server::init(int port, int i)
     ss.port = port;
 	_server_sockets.push_back(ss);
 	_poll_fds[i].fd = server_fd;
-	_poll_fds[i].events = POLLIN;
+	_poll_fds[i].events = POLLIN | POLLOUT;
 	_poll_fds[i].revents = 0;
 
 	return true;
@@ -155,62 +154,49 @@ int server::getPort() const
     return -1;
 }
 
-void server::s_run(conf* ConfBlock, Request* req)
+void server::s_run(conf* ConfBlock, Request* req, int ret)
 {
 	bool is_server_socket = false;
-	int ret = 0;
 	ret = poll(_poll_fds, _pollfd_size, 0);
-	static int tuma = 0;
-	if (tuma == 0)
-	{
-		std::cout<<"ret prima volta = "<< ret << "\n";
-		tuma++;
-	}
+	if (ret == 0)
+		return ;
 	if (Quit == true)
 		return ;
 	if (ret < 0) {
 		std::cerr << "Poll error: " << strerror(errno) << std::endl;
 		return;
 	}
-	else if (ret > 0) {
-		for (size_t i = 0; i < _pollfd_size; ++i) {
-			is_server_socket = false;
-			if (_poll_fds[i].revents == 0) //cosa e revents di poll fd
-				continue;
-
-			try {
-				for (size_t j = 0; j < _server_sockets.size(); ++j) {
-					if (_poll_fds[i].fd == _server_sockets[j].fd) {
-						is_server_socket = true;
-						if (_poll_fds[i].revents == POLLIN) {
-							handle_new_connection(_server_sockets[j].fd);
-						}
-					}
+	for (size_t i = 0; i < _pollfd_size; ++i) {
+		is_server_socket = false;
+		if (Quit == true)
+			return ;
+		if (_poll_fds[i].revents == 0)
+			continue;
+		for (size_t j = 0; j < _server_sockets.size(); ++j) {
+			if (_poll_fds[i].fd == _server_sockets[j].fd) {
+				if (_poll_fds[i].revents == POLLIN) {
+					is_server_socket = true;
+					handle_new_connection(_server_sockets[j].fd);
+					break;
 				}
-				if (is_server_socket == false) {
-					if (_poll_fds[i].revents & POLLIN) { // cosa fa questo if?
-						req->getRequest(_poll_fds[i].fd, _poll_fds[i].events, _bodysize * 1000000, ConfBlock);
-						std::cout<< "sono entrato qua\n";
-						_poll_fds[i].events = POLLOUT;
-					}
-
-					if (_poll_fds[i].revents & POLLOUT) { // cosa fa questo if?
-						bool finish = sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
-						req->clear();
-						if (finish == true) {
-							_poll_fds[i].events = 0;
-						} else {
-							_poll_fds[i].events = POLLIN;
-						}
-					}
-				}
-			} catch (const std::exception& e) {
-				std::cerr << "Error on fd " << _poll_fds[i].fd << ": " << e.what() << std::endl;
-				req->clear();
-				close_connection(i);
-				i--;
 			}
-			_poll_fds[i].revents = 0;
+		}
+		if (is_server_socket)
+			break ;
+		try {
+			if (_poll_fds[i].revents & POLLIN) {
+				req->getRequest(_poll_fds[i].fd, _poll_fds[i].events, _bodysize * 1000000, ConfBlock);
+			}
+			if (_poll_fds[i].revents & POLLOUT) {
+				bool finish = sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
+				req->clear();
+				(void)finish;
+			}
+		} catch (const std::exception& e) {
+			std::cerr << "Error on fd " << _poll_fds[i].fd << ": " << e.what() << std::endl;
+			close_connection(i);
+			req->clear();
+			i--;
 		}
 	}
 }

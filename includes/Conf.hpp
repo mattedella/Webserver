@@ -15,6 +15,7 @@ class conf {
 		std::map<int,server>	_servers;
 		std::string				_fullPath;
 		bool					_listing;
+		int						_nbrServer;
 
 	public:
 		conf();
@@ -28,6 +29,7 @@ class conf {
 
 		bool		getListing();
 		std::string	getFullPath();
+		int			getNbrServer();
 		server getServer(std::string port);
 		server		getServer(int nbrServer);
 		std::map<int, server>& getMapServer();
@@ -37,7 +39,7 @@ class conf {
 		void		check();
 		void		addHost();
 		void		checkRequest(Request* req);
-		int         findServerByHostHeader(Request* req);
+		void        findServerByHostHeader(Request* req);
 
 		void	run();
 
