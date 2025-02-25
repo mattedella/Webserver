@@ -26,6 +26,25 @@ Request::Request() {
 	_content_length = 0;
 }
 
+ std::string Request::generateDeleteBody() {
+	std::string ret;
+	switch (StatusCode) {
+		case 200:
+			ret = "{ \"message\": \"Resource deleted successfully\" }\r\n";
+			break;
+		case 404:
+			ret = "{ \"error\": \"Resource not found\" }\r\n";
+			break;
+		case 403:
+			ret = "{ \"error\": \"Access forbidden\" }\r\n";
+			break;
+		case 500:
+			ret = "{ \"error\": \"Internal server error\" }\r\n";
+			break;
+	}
+	return ret;
+}
+
 std::string Request::generateBody() {
     std::string ret;
     ret = "{\r\n \"fileName\": \"" + 
@@ -226,9 +245,10 @@ void Request::getRequest(int client_socket, short& event, int MaxSize, conf* Con
 			}
 		}
 	}
-	if (total_received > 0) {
+	if (content_length + header_end + 4 >= MaxSize)
+		throw exc("File to big\n");
+	if (total_received > 0)
 		ParsRequest(buffer, ConfBlock);
-	}
 }
 
 void Request::setHeadersComplete(bool complete) {

@@ -109,6 +109,20 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) {
 	return errorPage;
 }
 
+
+void conf::permittedMethods(Request* req, server currentServer, location loc)
+{
+	if (_http[0].getMethodsSize() > 0)
+		if (!_http[0].getMethods(req->getMethod()))
+			StatusCode = 501;
+	if (currentServer.getMethodsSize() > 0)
+		if (!currentServer.getMethods(req->getMethod()))
+			StatusCode = 501;
+	if (loc.getMethodsSize() > 0)
+		if (!loc.getMethods(req->getMethod()))
+			StatusCode = 501;
+}
+
 void conf::checkRequest(Request* req) {
 	_nbrServer = findServerByHostHeader(req);
 	StatusCode = 200;
@@ -240,6 +254,24 @@ void conf::checkRequest(Request* req) {
 		}
 	}
 	if (req->getMethod() == "DELETE") {
+		if (_http[0].getMethodsSize() > 0) {
+			if (!_http[0].getMethods(req->getMethod()))
+				StatusCode = 500;
+			else
+				StatusCode = 200;
+		}
+		if (currentServer.getMethodsSize() > 0) {
+			if (!currentServer.getMethods(req->getMethod()))
+				StatusCode = 500;
+			else
+				StatusCode = 200;
+		}
+		if (loc.getMethodsSize() > 0) {
+			if (!loc.getMethods(req->getMethod()))
+				StatusCode = 500;
+			else
+				StatusCode = 200;
+		}
 		std::string fullPath = _fullPath+ req->getURL().substr(req->getURL().rfind('/') + 1, req->getURL().length() - req->getURL().rfind('/'));
 		if (access(fullPath.c_str(), F_OK) != 0)
 			StatusCode = 404;
@@ -248,9 +280,7 @@ void conf::checkRequest(Request* req) {
 		else {
 			if (remove(fullPath.c_str()) != 0)
 				StatusCode = 500;
-			else
-				StatusCode = 200;
-    	}
+		}
 	}
 }
 

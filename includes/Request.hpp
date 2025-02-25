@@ -48,6 +48,7 @@ class Request {
 		void			setPostContentType(const std::string& fullPath);
 		void			setHeader(const std::string& Key, const std::string& Tp);
 		std::string		generateBody();
+		std::string 	generateDeleteBody();
 
 		void			clear();
 		void			closeFile();
