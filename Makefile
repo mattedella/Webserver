@@ -1,7 +1,8 @@
 SRC = main.cpp \
       Class/ABlock.cpp Class/Conf.cpp Class/Conf2.cpp Class/Http.cpp Class/Server.cpp Class/Server2.cpp Class/Request.cpp Class/Response.cpp \
 	  Response/GenerateResp.cpp \
-      Parsing/Parsing.cpp
+      Parsing/Parsing.cpp \
+      CGI/Cgi.cpp
 CC = c++
 CFLAGS = -Wall -Wextra -Werror -g -std=c++98
 RM = rm -f

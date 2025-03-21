@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGI Methods</title>
+    <link rel="stylesheet" href="styles/cgi.css">
+</head>
+<body>
+    <nav class="navbar">
+        <button class="nav-button" onclick="window.location.href='index.html'">Home</button>
+        <button class="nav-button" onclick="window.location.href='cgi.html'">CGI</button>
+    </nav>
+    
+    <div class="container">
+        <div class="column">
+            <h2>Python CGI Methods</h2>
+            <br/>
+            <h3>GET Method</h3>
+            <form action="/cgi-bin/test.py" method="get">
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name">
+                </div>
+                <button type="submit">Submit GET</button>
+            </form>
+            
+            <h3>POST Method</h3>
+            <form action="/cgi-bin/test.py" method="post">
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password">
+                </div>
+                <button type="submit">Submit POST</button>
+            </form>
+            <form action="/cgi-bin/test.py" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="pyfile">Upload File:</label>
+                    <input type="file" id="pyfile" name="pyfile">
+                </div>
+                <button type="submit">Upload File (Python)</button>
+            </form>
+        </div>
+        
+        <div class="column">
+            <h2>PHP CGI Methods</h2>
+            <br/>
+            <h3>GET Method</h3>
+            <form action="/cgi-bin/test.php" method="get">
+                <div class="form-group">
+                    <label for="user">Username:</label>
+                    <input type="text" id="user" name="user">
+                </div>
+                <button type="submit">Submit GET</button>
+            </form>
+            
+            <h3>POST Method</h3>
+            <form action="/cgi-bin/test.php" method="post">
+                <div class="form-group">
+                    <label for="php-password">Password:</label>
+                    <input type="password" id="php-password" name="password">
+                </div>
+                <button type="submit">Submit POST</button>
+            </form>
+            <form action="/cgi-bin/test.php" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="file">file:</label>
+                    <input type="file" id="file" name="file">
+                </div>
+                <button type="submit">Submit POST</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal-container" id="response-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal">&times;</span>
+            <div class="modal-header">
+                <h3 id="modal-title">Response</h3>
+            </div>
+                <div class="modal-body" id="modal-body">
+            </div>
+        </div>
+    </div>
+    
+    <script src="scripts/cgi"></script>
+</body>
+</html>

@@ -25,6 +25,7 @@ class Request {
         bool                                _headers_complete;  // New
         bool                                _body_complete;     // New
         size_t                              _content_length;    // New
+        std::string                         _body_content;  // Added for CGI
 
 	public:
 		Request();
@@ -58,6 +59,11 @@ class Request {
 		void			setHeadersComplete(bool complete);
 		void			setBodyComplete(bool complete);
 		void			setContentLength(size_t length);
+		const std::map<std::string, std::string>& getHeaders() const;
+		const std::map<std::string, std::string>& getBodyMap() const;
+		std::string     getBodyContent() const;
+		void            setBodyContent(const std::string& content);
+		bool            isCGIRequest(const std::string& extension) const;
 		~Request();
 };
 

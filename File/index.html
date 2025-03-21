@@ -26,7 +26,7 @@
             background-position: center;
             background-repeat: no-repeat;
             background-size: 150px;
-            padding-top: 20px;
+            padding-top: 80px; /* Adjusted padding to accommodate navbar */
         }
 
         header {
@@ -212,158 +212,186 @@
                 font-size: 1.6em;
             }
         }
+
+        .navbar {
+            background-color: #000000a1;
+            padding: 15px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+        .nav-button {
+            background: none;
+            border: 1px solid #ffcc00;
+            padding: 8px 16px;
+            margin: 0 10px;
+            cursor: pointer;
+            color: #ffcc00;
+            width: 5%;
+        }
+        .nav-button:hover {
+            background-color: rgba(255, 204, 0, 0.1);
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <button class="nav-button" onclick="window.location.href='index.html'">Home</button>
+        <button class="nav-button" onclick="window.location.href='cgi.html'">CGI</button>
+    </nav>
 
-<header>DreamTeam's Webserver</header>
+    <header>DreamTeam's Webserver</header>
 
-<div class="container">
-    <div class="form-section">
-        <h2>Sign Up</h2>
-        <form id="signup-form" action="/upload" method="POST">
-            <!-- Text input (Name) -->
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" placeholder="Enter your name" required><br>
+    <div class="container">
+        <div class="form-section">
+            <h2>Sign Up</h2>
+            <form id="signup-form" action="/upload" method="POST">
+                <!-- Text input (Name) -->
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required><br>
 
-            <!-- Email input -->
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" placeholder="Enter your email" required><br>
+                <!-- Email input -->
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required><br>
 
-            <!-- Password input -->
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" placeholder="Enter your password" required><br>
+                <!-- Password input -->
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required><br>
 
-            <!-- Number input (Age) -->
-            <label for="age">Age:</label>
-            <input type="number" id="age" name="age" placeholder="Enter your age"><br>
+                <!-- Number input (Age) -->
+                <label for="age">Age:</label>
+                <input type="number" id="age" name="age" placeholder="Enter your age"><br>
 
-            <!-- Checkbox input (Agree to Terms) -->
-            <label for="terms">
-                <input type="checkbox" id="terms" name="terms">
-                I'm not gay
-            </label><br>
+                <!-- Checkbox input (Agree to Terms) -->
+                <label for="terms">
+                    <input type="checkbox" id="terms" name="terms">
+                    I'm not gay
+                </label><br>
 
-            <!-- Radio buttons (Gender) -->
-            <label for="gender">Gender:</label>
-            <label><input type="radio" name="gender" value="male" required> Male</label>
-            <label><input type="radio" name="gender" value="female"> Female</label><br>
+                <!-- Radio buttons (Gender) -->
+                <label for="gender">Gender:</label>
+                <label><input type="radio" name="gender" value="male" required> Male</label>
+                <label><input type="radio" name="gender" value="female"> Female</label><br>
 
-            <!-- Select dropdown (Country) -->
-            <label for="country">Country:</label>
-            <select id="country" name="country" required>
-                <option value="italy">Italy</option>
-                <option value="canada">Canada</option>
-                <option value="uk">United Kingdom</option>
-                <option value="australia">Australia</option>
-            </select><br>
+                <!-- Select dropdown (Country) -->
+                <label for="country">Country:</label>
+                <select id="country" name="country" required>
+                    <option value="italy">Italy</option>
+                    <option value="canada">Canada</option>
+                    <option value="uk">United Kingdom</option>
+                    <option value="australia">Australia</option>
+                </select><br>
 
-            <button type="submit">Submit</button>
-        </form>
-        <div id="response-message"></div>
-    </div>
+                <button type="submit">Submit</button>
+            </form>
+            <div id="response-message"></div>
+        </div>
 
-    <div class="form-section">
-        <h2>Load a File</h2>
-        <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
-            <label for="file">Upload File:</label>
-            <input type="file" id="file" name="file" accept="image/*,application/pdf,application/zip" required><br>
-    
-            <button type="submit">Upload</button>
-        </form>
-    
-        <div id="response-message"></div>
-    </div>
-    
-    <script>
-        document.getElementById('upload-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const formData = new FormData();
-            const fileInput = document.getElementById('file');
-            formData.append('file', fileInput.files[0]);
-    
-            fetch('/upload', {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('response-message').innerHTML = 'File saved correctly';
-            })
-            .catch(error => {
-                document.getElementById('response-message').innerHTML = 'An error occurred during the upload.';
+        <div class="form-section">
+            <h2>Load a File</h2>
+            <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+                <label for="file">Upload File:</label>
+                <input type="file" id="file" name="file" accept="image/*,application/pdf,application/zip" required><br>
+        
+                <button type="submit">Upload</button>
+            </form>
+        
+            <div id="response-message"></div>
+        </div>
+        
+        <script>
+            document.getElementById('upload-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const formData = new FormData();
+                const fileInput = document.getElementById('file');
+                formData.append('file', fileInput.files[0]);
+        
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('response-message').innerHTML = 'File saved correctly';
+                })
+                .catch(error => {
+                    document.getElementById('response-message').innerHTML = 'An error occurred during the upload.';
+                });
             });
-        });
-    </script>
+        </script>
 
-    <div class="form-section">
-        <h2>Delete a File</h2>
-        <label for="file-name-input">Enter the name of the file to delete:</label>
-        <input type="text" id="file-name-input" placeholder="e.g., upload/example.*">
-        <button type="button" id="delete-button">Delete File</button>
-        <div id="delete-response-message"></div>
-    </div>
+        <div class="form-section">
+            <h2>Delete a File</h2>
+            <label for="file-name-input">Enter the name of the file to delete:</label>
+            <input type="text" id="file-name-input" placeholder="e.g., upload/example.*">
+            <button type="button" id="delete-button">Delete File</button>
+            <div id="delete-response-message"></div>
+        </div>
 
-    <script>
-        document.getElementById('delete-button').addEventListener('click', function(event) {
-            event.preventDefault();
-            
-            const fileName = document.getElementById('file-name-input').value;
+        <script>
+            document.getElementById('delete-button').addEventListener('click', function(event) {
+                event.preventDefault();
+                
+                const fileName = document.getElementById('file-name-input').value;
 
-            if (!fileName) {
-                document.getElementById('delete-response-message').innerHTML = 'Please enter a file name.';
-                return;
-            }
-
-            const filePath = `${fileName}`;
-
-            fetch(filePath, {
-                method: 'DELETE',
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.text();
-                } else {
-                    throw new Error('File not found or could not be deleted');
+                if (!fileName) {
+                    document.getElementById('delete-response-message').innerHTML = 'Please enter a file name.';
+                    return;
                 }
-            })
-            .then(data => {
-                document.getElementById('delete-response-message').innerHTML = 'File deleted successfully';
-            })
-            .catch(error => {
-                document.getElementById('delete-response-message').innerHTML = 'An error occurred during the deletion.';
+
+                const filePath = `${fileName}`;
+
+                fetch(filePath, {
+                    method: 'DELETE',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        throw new Error('File not found or could not be deleted');
+                    }
+                })
+                .then(data => {
+                    document.getElementById('delete-response-message').innerHTML = 'File deleted successfully';
+                })
+                .catch(error => {
+                    document.getElementById('delete-response-message').innerHTML = 'An error occurred during the deletion.';
+                });
             });
+        </script>
+    
+    </div>
+
+    <div class="right-effect"></div>
+
+
+    <div class="preview-container" id="preview-container">
+
+    </div>
+
+    <script>
+
+        document.getElementById("file").addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            const previewContainer = document.getElementById("preview-container");
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgElement = new Image();
+                    imgElement.src = e.target.result;
+                    previewContainer.innerHTML = '';
+                    previewContainer.appendChild(imgElement);
+                };
+                reader.readAsDataURL(file);
+            }
         });
     </script>
-   
-</div>
-
-<div class="right-effect"></div>
-
-
-<div class="preview-container" id="preview-container">
-
-</div>
-
-<script>
-
-    document.getElementById("file").addEventListener("change", function(event) {
-        const file = event.target.files[0];
-        const previewContainer = document.getElementById("preview-container");
-
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imgElement = new Image();
-                imgElement.src = e.target.result;
-                previewContainer.innerHTML = '';
-                previewContainer.appendChild(imgElement);
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-</script>
     <footer>
         &copy; Mdella-r & Aconti
     </footer>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamTeam</title>
+    <link rel="stylesheet" href="styles/index.css">
+</head>
+<body>
+    <nav class="navbar">
+        <button class="nav-button" onclick="window.location.href='index.html'">Home</button>
+        <button class="nav-button" onclick="window.location.href='cgi.html'">CGI</button>
+    </nav>
+
+    <header>DreamTeam's Webserver</header>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>Sign Up</h2>
+            <form id="signup-form" action="/upload" method="POST">
+                <!-- Text input (Name) -->
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required><br>
+
+                <!-- Email input -->
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required><br>
+
+                <!-- Password input -->
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required><br>
+
+                <!-- Number input (Age) -->
+                <label for="age">Age:</label>
+                <input type="number" id="age" name="age" placeholder="Enter your age"><br>
+
+                <!-- Checkbox input (Agree to Terms) -->
+                <label for="terms">
+                    <input type="checkbox" id="terms" name="terms">
+                    I'm not gay
+                </label><br>
+
+                <!-- Radio buttons (Gender) -->
+                <label for="gender">Gender:</label>
+                <label><input type="radio" name="gender" value="male" required> Male</label>
+                <label><input type="radio" name="gender" value="female"> Female</label><br>
+
+                <!-- Select dropdown (Country) -->
+                <label for="country">Country:</label>
+                <select id="country" name="country" required>
+                    <option value="italy">Italy</option>
+                    <option value="canada">Canada</option>
+                    <option value="uk">United Kingdom</option>
+                    <option value="australia">Australia</option>
+                </select><br>
+
+                <button type="submit">Submit</button>
+            </form>
+            <div id="response-message"></div>
+        </div>
+
+        <div class="form-section">
+            <h2>Load a File</h2>
+            <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+                <label for="file">Upload File:</label>
+                <input type="file" id="file" name="file" accept="image/*,application/pdf,application/zip" required><br>
+        
+                <button type="submit">Upload</button>
+            </form>
+        
+            <div id="response-message"></div>
+        </div>
+
+        <div class="form-section">
+            <h2>Delete a File</h2>
+            <label for="file-name-input">Enter the name of the file to delete:</label>
+            <input type="text" id="file-name-input" placeholder="e.g., upload/example.*">
+            <button type="button" id="delete-button">Delete File</button>
+            <div id="delete-response-message"></div>
+        </div>
+    
+    </div>
+
+    <div class="right-effect"></div>
+
+    <div class="preview-container" id="preview-container"></div>
+
+    <footer>
+        &copy; Mdella-r & Aconti
+    </footer>
+
+    <script src="scripts/index.js"></script>
+</body>
+</html>

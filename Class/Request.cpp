@@ -1,4 +1,3 @@
-
 #include "../includes/webserv.hpp"
 //#include <bits/c++config.h>
 #include <cerrno>
@@ -245,7 +244,7 @@ void Request::getRequest(int client_socket, short& event, int MaxSize, conf* Con
 			}
 		}
 	}
-	if (content_length + header_end + 4 >= MaxSize)
+	if (content_length + header_end + 4 >= (size_t)MaxSize)
 		throw exc("File to big\n");
 	if (total_received > 0)
 		ParsRequest(buffer, ConfBlock);
@@ -313,6 +312,34 @@ std::string Request::getMethod() {
 
 std::string& Request::getURL() {
 	return _url;
+}
+
+const std::map<std::string, std::string>& Request::getHeaders() const {
+    return _headers;
+}
+
+const std::map<std::string, std::string>& Request::getBodyMap() const {
+    return _body;
+}
+
+std::string Request::getBodyContent() const {
+    return _body_content;
+}
+
+void Request::setBodyContent(const std::string& content) {
+    _body_content = content;
+}
+
+bool Request::isCGIRequest(const std::string& extension) const {
+    if (_url.empty())
+        return false;
+        
+    size_t dot_pos = _url.find_last_of('.');
+    if (dot_pos != std::string::npos) {
+        std::string file_ext = _url.substr(dot_pos);
+        return (file_ext == extension);
+    }
+    return false;
 }
 
 Request::~Request() {}
