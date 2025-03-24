@@ -14,6 +14,33 @@ void server::closeSocket() {
 		close(_poll_fds[i].fd);
 }
 
+void server::removeNameToHost() {
+    // Open the file for reading
+    std::ifstream infile("/etc/hosts");
+
+    // Check if the file is open
+    if (!infile.is_open()) {
+        std::cerr << "Could not open the file for reading!" << std::endl;
+        return ;
+    }
+    std::vector<std::string> lines;
+    std::string line;
+    while (getline(infile, line)) {
+        lines.push_back(line);
+    }
+    infile.close();
+    std::ofstream outfile("/etc/hosts", std::ofstream::trunc);
+    if (!outfile.is_open()) {
+        std::cerr << "Could not open the file for writing!" << std::endl;
+        return ;
+    }
+    for (size_t i = 0; i < lines.size() - 1; ++i) {
+        outfile << lines[i] << std::endl;
+    }
+    outfile.close();
+    std::cout << "Last line removed successfully!" << std::endl;
+}
+
 void server::addNametoHost() {
 	std::ofstream		hosts;
 	std::ofstream		checkhosts;
@@ -21,6 +48,7 @@ void server::addNametoHost() {
 	std::string			to_check;
 	hosts.open("/etc/hosts", std::ios::app);
 	checkhosts.open("/etc/hosts", std::ios::in);
+	
 	if (!hosts.is_open()) {
 		std::cout << "ERROR: cannot open \"/etc/hosts\"\n";
 		return ;
@@ -36,6 +64,7 @@ void server::addNametoHost() {
 		hosts.write(to_add.c_str(), to_add.size());
 	}
 	hosts.close();
+	checkhosts.close();
 }
 
 void server::close_connection(size_t index) {
@@ -176,6 +205,7 @@ void server::s_run(conf* ConfBlock, Request* req, int ret)
 			if (_poll_fds[i].fd == _server_sockets[j].fd) {
 				if (_poll_fds[i].revents == POLLIN) {
 					is_server_socket = true;
+					ConfBlock->addHost(this);
 					handle_new_connection(_server_sockets[j].fd);
 					break;
 				}
@@ -190,6 +220,7 @@ void server::s_run(conf* ConfBlock, Request* req, int ret)
 			if (_poll_fds[i].revents & POLLOUT) {
 				bool finish = sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
 				req->clear();
+				ConfBlock->removeHosts(this);
 				(void)finish;
 			}
 		} catch (const std::exception& e) {

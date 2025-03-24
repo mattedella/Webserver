@@ -16,9 +16,12 @@ conf::conf() {
 	_listing = false;
 }
 
-void conf::addHost() {
-	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); it++)
-		it->second.addNametoHost();
+void conf::addHost(server* server) {
+		server->addNametoHost();
+}
+
+void conf::removeHosts(server* server) {
+	server->removeNameToHost();
 }
 
 void conf::check()

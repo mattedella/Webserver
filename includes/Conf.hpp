@@ -40,7 +40,8 @@ class conf {
 		std::string	getErrorPage(int error, int nbrServer, location location);
 
 		void		check();
-		void		addHost();
+		void		addHost(server* server);
+		void		removeHosts(server* server);
 		void		checkRequest(Request* req, size_t contentLength);
 		int	        findServerByHostHeader(Request* req);
 
