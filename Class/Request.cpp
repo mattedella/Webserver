@@ -2,6 +2,7 @@
 #include "../includes/webserv.hpp"
 //#include <bits/c++config.h>
 #include <cerrno>
+#include <cstddef>
 #include <cstdio>
 #include <fstream>
 #include <ios>
@@ -28,11 +29,20 @@ Request::Request() {
 
 std::string Request::generateBody() {
     std::string ret;
-    ret = "{\r\n \"fileName\": \"" + 
-        (_nameFile.empty() ? "unknown" : _nameFile) + "\",\r\n \"fileType\": \"" + 
-        (getBody("Content-Type").empty() ? "application/octet-stream" : getBody("Content-Type")) + "\",\r\n" 
-        " \"operation\": \"upload\",\r\n" 
-        " \"status\": \"success\"\r\n}\r\n\r\n";
+	switch (StatusCode) {
+		case 200:
+			ret = "{ \"message\": \"Resource deleted successfully\" }\r\n\r\n";
+			break;
+		case 404:
+			ret = "{ \"error\": \"Resource not found\" }\r\n\r\n";
+			break;
+		case 403:
+			ret = "{ \"error\": \"Access forbidden\" }\r\n\r\n";
+			break;
+		case 500:
+			ret = "{ \"error\": \"Internal server error\" }\r\n\r\n";
+			break;
+	}
     return ret;
 }
 
@@ -170,7 +180,7 @@ void Request::parsPost(std::stringstream& file, std::string& line, std::string P
 		parsMultipart(file, Path, _headers["Content-Type"]);
 }
 
-void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
+void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock, size_t contentLength) {
 	std::string line = "";
 	std::getline(to_pars, line);
 	std::stringstream req_line(line);
@@ -184,8 +194,9 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock) {
 		}
 	}
 	if (!_headers.empty())
-		ConfBlock->checkRequest(this);
-	if (_method == "POST")
+		ConfBlock->checkRequest(this, contentLength);
+	std::cout << StatusCode << '\n';
+	if (_method == "POST" && StatusCode == 200)
 		parsPost(to_pars, line, ConfBlock->getFullPath());
 }
 
@@ -227,7 +238,7 @@ void Request::getRequest(int client_socket, short& event, int MaxSize, conf* Con
 		}
 	}
 	if (total_received > 0) {
-		ParsRequest(buffer, ConfBlock);
+		ParsRequest(buffer, ConfBlock, content_length);
 	}
 }
 

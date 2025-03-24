@@ -21,8 +21,27 @@ std::string itos(size_t nbr) {
 	return ret;
 }
 
+std::string Response::generatePostBody() {
+	std::string ret;
+	switch (StatusCode) {
+		case 404:
+			ret = "{ \"error\": \"Resource not found\" }\r\n\r\n";
+			break;
+		case 403:
+			ret = "{ \"error\": \"Access forbidden\" }\r\n\r\n";
+			break;
+		case 413:
+			ret = "{\r\n \"error\": \"Upload failed\",\r\n"
+			" \"message\": \"Size to big\",\r\n}\r\n\r\n";
+			break;
+		case 500:
+			ret = "{ \"error\": \"Internal server error\" }\r\n\r\n";
+			break;
+	}
+	return ret;
+}
+
 void Response::generateDeleteResponse(Request* req, conf* ConfBlock) {
-	std::ofstream file;
 	std::stringstream buff;
 	std::string request;
 	(void)ConfBlock;
@@ -30,37 +49,36 @@ void Response::generateDeleteResponse(Request* req, conf* ConfBlock) {
 	request = req->generateBody();
 	switch (StatusCode) {
 		case 200:
-			std::cout << "req: " << request << "\n";
 			_response = "HTTP/1.1 200 OK\r\n";
 			_response += "Content-Type: application/json\r\n";
 			_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
-			_response += "{ \"message\": \"Resource deleted successfully\" }\r\n";
+			_response += request;
 			break;
 		case 404:
 			_response = "HTTP/1.1 404 Not Found\r\n";
 			_response += "Content-Type: application/json\r\n";
 			_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
-			_response += "{ \"error\": \"Resource not found\" }\r\n";
+			_response += request;
 			break;
 		case 403:
 			_response = "HTTP/1.1 403 Forbidden\r\n";
 			_response += "Content-Type: application/json\r\n";
 			_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
-			_response += "{ \"error\": \"Access forbidden\" }\r\n";
+			_response += request;
 			break;
 		case 500:
 			_response = "HTTP/1.1 500 Internal Server Error\r\n";
 			_response += "Content-Type: application/json\r\n";
 			_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
-			_response += "{ \"error\": \"Internal server error\" }\r\n";
+			_response += request;
 			break;
 	}
 }
 void Response::generatePostResponse(Request* req, conf* ConfBlock) {
-	std::ofstream file;
+	std::ifstream file;
 	std::stringstream buff;
 	std::string request;
-	int nbrServer = ConfBlock->getNbrServer();
+	(void)ConfBlock;
 	switch (StatusCode) {
 		case 200:
 			if (req->getHeader("Connection").empty())
@@ -73,53 +91,32 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 			"\r\n" + request + "\r\n\r\n";
 			break ;
 		case 404:
-			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(404, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer))).c_str());
-			if (!file.is_open())
-				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(404, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer)) + "\" not opened\n");
-			buff << file.rdbuf();
-			request = buff.str();
+			request = generatePostBody();
 			_response = "HTTP/1.1 404 Not Found\r\nContent-Type: "
 					+ req->getHeader("Content-Type")
-					+ "\r\nConnection: close\r\n\r\n"
+					+ "Content-Length: " + itos(request.length()) + "\r\n\r\n"
 					+ request;
-			file.close();
 			break ;
 		case 403:
-			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(403, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer))).c_str());
-			if (!file.is_open())
-				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(403, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer)) + "\" not opened\n");
-			buff << file.rdbuf();
-			request = buff.str();
+			request = generatePostBody();
 			_response = "HTTP/1.1 403 Forbidden\r\nContent-Type: "
 					+ req->getHeader("Content-Type")
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
-			file.close();
 			break ;
-		case 408:
-			file.open((ConfBlock->getFullPath() + ConfBlock->getErrorPage(408, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer))).c_str());
-			if (!file.is_open())
-				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(408, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer)) + "\" not opened\n");
-			buff << file.rdbuf();
-			request = buff.str();
-			_response = "HTTP/1.1 408 Request Timeout\r\nContent-Type: "
-					+ req->getHeader("Content-Type")
-					+ "\r\nConnection: close\r\n\r\n"
-					+ request;
-			file.close();
-			break ;
+		case 413:
+			request = generatePostBody();
+			_response = "HTTP/1.1 413 Request Entity Too Large\r\n";
+			_response += "Content-Type: application/json\r\n";
+			_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
+			_response += request;
+			break;
 		case 501:
-			std::string File = ConfBlock->getFullPath() + ConfBlock->getErrorPage(501, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer));
-			file.open(File.c_str());
-			if (!file.is_open())
-				throw exc("Error: file \"" + ConfBlock->getFullPath() + ConfBlock->getErrorPage(501, nbrServer, ConfBlock->getLocation(req->getURL(), nbrServer)) + "\" not opened\n");
-			buff << file.rdbuf();
-			request = buff.str();
-			_response = "HTTP/1.1 501 Method not Allowed\r\nContent-Type: "
-					+ req->getHeader("Content-Type")
-					+ "\r\nConnection: close\r\n\r\n"
-					+ request;
-			file.close();
+			request = generatePostBody();
+			_response = "HTTP/1.1 501 Method not Allowed\r\nContent-Type: ";
+			_response += "Content-Type: application/json\r\n";
+			_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
+			_response += request;
 			break ;
 		}
 		req->closeFile();
@@ -149,55 +146,45 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 			break ;
 		case 404:
 			errorPath = Path.substr(0, Path.find("/File") + 5);
-			req->setContentType(errorPath + error404);
-			file.open((errorPath + error404).c_str());
+			req->setContentType(error404);
+			file.open((error404).c_str());
 			if (!file.is_open())
-				throw exc("Error: file \"" + errorPath + error404 + "\" not opened\n");
+				throw exc("Error: file \"" + error404 + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
 			_response = "HTTP/1.1 404 Not Found\r\nContent-Type: "
 					+ req->getHeader("Content-Type")
-					+ "\r\nConnection: close\r\n\r\n"
-					+ request;
+					+ "\r\nContent-Length: " + itos(request.length())
+					+ "\r\nConnection: close\r\n\r\n";
+			_response += request;
 			break ;
 		case 403:
 			errorPath = Path.substr(0, Path.find("/File") + 5);
-			req->setContentType(errorPath + error403);
-			file.open((errorPath + error403).c_str());
+			req->setContentType(error403);
+			file.open((error403).c_str());
 			if (!file.is_open())
-				throw exc("Error: file \"" + errorPath + error403 + "\" not opened\n");
+				throw exc("Error: file \"" + error403 + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
 			_response = "HTTP/1.1 403 Forbidden\r\nContent-Type: "
 					+ req->getHeader("Content-Type")
-					+ "\r\nConnection: close\r\n\r\n"
-					+ request;
-			break ;
-		case 408:
-			errorPath = Path.substr(0, Path.find("/File") + 5);
-			req->setContentType(errorPath + error408);
-			file.open((errorPath + error408).c_str());
-			if (!file.is_open())
-				throw exc("Error: file \"" + errorPath + error408 + "\" not opened\n");
-			buff << file.rdbuf();
-			request = buff.str();
-			_response = "HTTP/1.1 408 Request Timeout\r\nContent-Type: "
-					+ req->getHeader("Content-Type")
-					+ "\r\nConnection: close\r\n\r\n"
-					+ request;
+					+ "\r\nContent-Length: " + itos(request.length())
+					+ "\r\nConnection: close\r\n\r\n";
+			_response += request;
 			break ;
 		case 501:
 			errorPath = Path.substr(0, Path.find("/File") + 5);
 			std::cout << errorPath << std::endl;
-			req->setContentType(errorPath + error5xx);
-			std::string File = errorPath + error5xx;
+			req->setContentType(error5xx);
+			std::string File = error5xx;
 			file.open(File.c_str());
 			if (!file.is_open())
-				throw exc("Error: file \"" + errorPath + error5xx + "\" not opened\n");
+				throw exc("Error: file \"" + error5xx + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
 			_response = "HTTP/1.1 501 Method not Allowed\r\nContent-Type: "
 					+ req->getHeader("Content-Type")
+					+ "\r\nContent-Length: " + itos(request.length())
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
 			break ;

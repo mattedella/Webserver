@@ -41,7 +41,7 @@ class conf {
 
 		void		check();
 		void		addHost();
-		void		checkRequest(Request* req);
+		void		checkRequest(Request* req, size_t contentLength);
 		int	        findServerByHostHeader(Request* req);
 
 		void	run();

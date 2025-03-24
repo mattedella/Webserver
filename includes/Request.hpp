@@ -29,7 +29,7 @@ class Request {
 	public:
 		Request();
 
-		void			ParsRequest(std::stringstream& to_pars, conf* ConfBlock);
+		void			ParsRequest(std::stringstream& to_pars, conf* ConfBlock, size_t contentLength);
 		void			parsPost(std::stringstream& file, std::string& line, std::string Path);
 		void			parsApplication(std::stringstream& bodyData, std::string& line, std::string Path);
 		void			parsMultipart(std::stringstream& bodyData, std::string& Path, std::string Type);

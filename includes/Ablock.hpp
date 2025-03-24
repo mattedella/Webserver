@@ -30,7 +30,7 @@ class ABlock {
 		std::map<int,std::string>				_error;
 		std::string								_root;
 		int 									_timeout;
-		int 									_bodysize;
+		size_t									_bodysize;
 		std::vector<std::string>				_methods;
 	
 	public:
@@ -43,7 +43,7 @@ class ABlock {
 		std::string	getErrorPage(int error);
 		std::string	getRoot();
 		int			getTimeout();
-		int			getBodysize();
+		size_t		getBodysize();
 		bool		getMethods(std::string to_find);
 		int			getMethodsSize();
 

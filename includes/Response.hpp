@@ -19,6 +19,7 @@ class Response {
 		void generatePostResponse(Request* req, conf* ConfBlock);
 		void generateDeleteResponse(Request* req, conf* ConfBlock);
 
+		std::string generatePostBody();
 		std::string getResponse();
 
 		~Response();

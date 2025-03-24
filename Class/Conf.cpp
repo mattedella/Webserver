@@ -94,22 +94,24 @@ int conf::getNbrServer() {
 }
 
 std::string conf::getErrorPage(int error, int nbrServer, location location) {
+	char buff[4062];
 	server& currentServer = _servers[nbrServer];
-	std::string errorPage = "";
+	getcwd(buff, sizeof(buff) - 1);
+	std::string errorPage = buff;
 	if (_http[0].ErrorPageSize() > 0)
-		errorPage = _http[0].getErrorPage(error);
-	if (currentServer.ErrorPageSize() > 0)
-		errorPage = currentServer.getErrorPage(error);
-	if (location.ErrorPageSize() > 0)
-		errorPage = location.getErrorPage(error);
-	if (errorPage == "" && (error == 404 || error == 403 || error == 408))
-		errorPage = "/40x.html";
-	if (errorPage == "" && error == 501)
-		errorPage = "/50x.html";
+		errorPage += _http[0].getErrorPage(error);
+	if (currentServer.ErrorPageSize() > 0) {
+		errorPage = buff;
+		errorPage += currentServer.getRoot() + currentServer.getErrorPage(error);
+	}
+	if (location.ErrorPageSize() > 0) {
+		errorPage = buff;
+		errorPage += currentServer.getRoot() + location.getRoot() + location.getErrorPage(error);
+	}
 	return errorPage;
 }
 
-void conf::checkRequest(Request* req) {
+void conf::checkRequest(Request* req, size_t contentLength) {
 	_nbrServer = findServerByHostHeader(req);
 	StatusCode = 200;
 	char buff[4062];
@@ -157,6 +159,7 @@ void conf::checkRequest(Request* req) {
 	if (loc.getMethodsSize() > 0)
 		if (!loc.getMethods(req->getMethod()))
 			StatusCode = 501;
+
 	if (req->getMethod() == "GET") {
 		if (file == "favicon.ico") {
 			_fullPath = buff;
@@ -239,6 +242,29 @@ void conf::checkRequest(Request* req) {
 			_responseContent = responsebBuff.str();
 		}
 	}
+
+	if (req->getMethod() == "POST") {
+		if (_http[0].getBodysize() != 0) {
+			if (_http[0].getBodysize() > contentLength)
+				StatusCode = 200;
+			else
+				StatusCode = 413;
+		}
+		if (currentServer.getBodysize() != 0) {
+			if (currentServer.getBodysize() > contentLength)
+			StatusCode = 200;
+			else
+			StatusCode = 413;
+		}
+		if (loc.getBodysize() != 0) {
+			std::cout << contentLength << " " << loc.getBodysize() << '\n';
+			if (loc.getBodysize() > contentLength)
+				StatusCode = 200;
+			else
+				StatusCode = 413;
+		}
+	}
+
 	if (req->getMethod() == "DELETE") {
 		std::string fullPath = _fullPath+ req->getURL().substr(req->getURL().rfind('/') + 1, req->getURL().length() - req->getURL().rfind('/'));
 		if (access(fullPath.c_str(), F_OK) != 0)
