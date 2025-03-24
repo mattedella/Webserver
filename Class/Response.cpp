@@ -24,18 +24,21 @@ std::string itos(size_t nbr) {
 std::string Response::generatePostBody() {
 	std::string ret;
 	switch (StatusCode) {
+		case 200:
+			ret = "{\r\n \"message\": \"Resource saved successfully\",\r\n}\r\n\r\n";
+			break;
 		case 404:
-			ret = "{ \"error\": \"Resource not found\" }\r\n\r\n";
+			ret = "{\r\n \"error\": \"Resource not found\"\r\n}\r\n\r\n";
 			break;
 		case 403:
-			ret = "{ \"error\": \"Access forbidden\" }\r\n\r\n";
+			ret = "{\r\n \"error\": \"Access forbidden\"\r\n}\r\n\r\n";
 			break;
 		case 413:
 			ret = "{\r\n \"error\": \"Upload failed\",\r\n"
 			" \"message\": \"Size to big\",\r\n}\r\n\r\n";
 			break;
 		case 500:
-			ret = "{ \"error\": \"Internal server error\" }\r\n\r\n";
+			ret = "{\r\n \"error\": \"Internal server error\"\r\n}\r\n\r\n";
 			break;
 	}
 	return ret;
@@ -83,7 +86,7 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 		case 200:
 			if (req->getHeader("Connection").empty())
 				req->setHeader("Connection", "close"); 
-			request = req->generateBody();
+			request = generatePostBody();
 			_response = "HTTP/1.1 201 Created\r\n"
 			"Content-Type: " + req->getBody("Content-Type") + "; charset=utf-8\r\n"
 			"Connection: close" + req->getHeader("Connection") + "\r\n"
