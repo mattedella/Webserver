@@ -86,6 +86,7 @@ class server : public ABlock {
 		void	closeSocket();
 		void	set_nonblocking(int fd);
 		void	addNametoHost();
+		void	removeNameToHost();
 
     	int getPort() const;
 

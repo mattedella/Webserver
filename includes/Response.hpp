@@ -21,6 +21,7 @@ class Response {
 		void generateDeleteResponse(Request* req, conf* ConfBlock);
 		void generateCGIResponse(Request* req, conf* ConfBlock);
 
+		std::string generatePostBody();
 		std::string getResponse();
 
 		~Response();

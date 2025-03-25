@@ -41,8 +41,9 @@ class conf {
 		void 		permittedMethods(Request* req, server currentServer, location loc);
 
 		void		check();
-		void		addHost();
-		void		checkRequest(Request* req);
+		void		addHost(server* server);
+		void		removeHosts(server* server);
+		void		checkRequest(Request* req, size_t contentLength);
 		int	        findServerByHostHeader(Request* req);
 
 		void	run();
