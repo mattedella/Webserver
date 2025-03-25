@@ -84,6 +84,7 @@ void Request::clear() {
 	_headers_complete = false;
 	_body_complete = false;
 	_content_length = 0;
+	StatusCode = 0;
 }
 
 void Request::parsApplication(std::stringstream& bodyData, std::string& line, std::string Path, size_t contentLength) {

@@ -114,20 +114,6 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) {
 	return errorPage;
 }
 
-
-void conf::permittedMethods(Request* req, server currentServer, location loc)
-{
-	if (_http[0].getMethodsSize() > 0)
-		if (!_http[0].getMethods(req->getMethod()))
-			StatusCode = 501;
-	if (currentServer.getMethodsSize() > 0)
-		if (!currentServer.getMethods(req->getMethod()))
-			StatusCode = 501;
-	if (loc.getMethodsSize() > 0)
-		if (!loc.getMethods(req->getMethod()))
-			StatusCode = 501;
-}
-
 void conf::checkRequest(Request* req, size_t contentLength) {
 	_nbrServer = findServerByHostHeader(req);
 	StatusCode = 200;

@@ -195,17 +195,18 @@ void server::s_run(conf* ConfBlock, Request* req, int ret)
 		std::cerr << "Poll error: " << strerror(errno) << std::endl;
 		return;
 	}
+			
 	for (size_t i = 0; i < _pollfd_size; ++i) {
 		is_server_socket = false;
 		if (Quit == true)
 			return ;
 		if (_poll_fds[i].revents == 0)
-			continue;
+			continue;			
 		for (size_t j = 0; j < _server_sockets.size(); ++j) {
 			if (_poll_fds[i].fd == _server_sockets[j].fd) {
 				if (_poll_fds[i].revents == POLLIN) {
-					is_server_socket = true;
 					ConfBlock->addHost(this);
+					is_server_socket = true;
 					handle_new_connection(_server_sockets[j].fd);
 					break;
 				}
@@ -219,8 +220,9 @@ void server::s_run(conf* ConfBlock, Request* req, int ret)
 			}
 			if (_poll_fds[i].revents & POLLOUT) {
 				bool finish = sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
+				if (StatusCode != 0)
+					ConfBlock->removeHosts(this);
 				req->clear();
-				ConfBlock->removeHosts(this);
 				(void)finish;
 			}
 		} catch (const std::exception& e) {
