@@ -224,7 +224,6 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock, size_t co
 	}
 	if (!_headers.empty())
 		ConfBlock->checkRequest(this, contentLength);
-	std::cout << StatusCode << '\n';
 	if (_method == "POST" && StatusCode == 200)
 		parsPost(to_pars, line, ConfBlock->getFullPath(), contentLength);
 }

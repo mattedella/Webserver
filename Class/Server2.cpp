@@ -205,7 +205,7 @@ void server::s_run(conf* ConfBlock, Request* req, int ret)
 		for (size_t j = 0; j < _server_sockets.size(); ++j) {
 			if (_poll_fds[i].fd == _server_sockets[j].fd) {
 				if (_poll_fds[i].revents == POLLIN) {
-					ConfBlock->addHost(this);
+					// ConfBlock->addHost(this);
 					is_server_socket = true;
 					handle_new_connection(_server_sockets[j].fd);
 					break;
@@ -221,7 +221,7 @@ void server::s_run(conf* ConfBlock, Request* req, int ret)
 			if (_poll_fds[i].revents & POLLOUT) {
 				bool finish = sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
 				if (StatusCode != 0)
-					ConfBlock->removeHosts(this);
+					// ConfBlock->removeHosts(this);
 				req->clear();
 				(void)finish;
 			}

@@ -22,6 +22,7 @@ void conf::run()
 {
 	
 	signal(SIGINT, handleSignal);
+	signal(SIGPIPE, SIG_IGN);
 	Request *req = new Request();
 	int ret = 0;
 	while(Quit == false) {
