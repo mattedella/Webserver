@@ -180,7 +180,6 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 			break ;
 		case 501:
 			errorPath = Path.substr(0, Path.find("/File") + 5);
-			std::cout << errorPath << std::endl;
 			req->setContentType(error5xx);
 			std::string File = error5xx;
 			file.open(File.c_str());

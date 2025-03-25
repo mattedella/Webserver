@@ -50,6 +50,7 @@ class Request {
 		void			setHeader(const std::string& Key, const std::string& Tp);
 		std::string		generateBody();
 		std::string 	generateDeleteBody();
+		void			setMethod(std::string to_set);
 
 		void			clear();
 		void			closeFile();

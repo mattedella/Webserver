@@ -228,6 +228,10 @@ void Request::ParsRequest(std::stringstream& to_pars, conf* ConfBlock, size_t co
 		parsPost(to_pars, line, ConfBlock->getFullPath(), contentLength);
 }
 
+void Request::setMethod(std::string to_set) {
+	_method = to_set;
+}
+
 void Request::getRequest(int client_socket, short& event, int MaxSize, conf* ConfBlock) {
 	std::stringstream buffer;
 	(void)MaxSize;

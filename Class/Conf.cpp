@@ -246,7 +246,7 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 		}
 	}
 
-	if (req->getMethod() == "POST") {
+	else if (req->getMethod() == "POST") {
 		if (_http[0].getBodysize() != 0) {
 			if (_http[0].getBodysize() > contentLength)
 				StatusCode = 200;
@@ -268,7 +268,7 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 		}
 	}
 
-	if (req->getMethod() == "DELETE") {
+	else if (req->getMethod() == "DELETE") {
 		if (_http[0].getMethodsSize() > 0) {
 			if (!_http[0].getMethods(req->getMethod()))
 				StatusCode = 500;
@@ -296,6 +296,10 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 			if (remove(fullPath.c_str()) != 0)
 				StatusCode = 500;
 		}
+	}
+	else {
+		req->setMethod("GET");
+		StatusCode = 501;
 	}
 }
 
