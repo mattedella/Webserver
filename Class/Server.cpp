@@ -102,8 +102,7 @@ void server::addLocation(const std::string& Key, location loc) {
 void server::initVector() {
 	if (_data.find("listen") == _data.end())
 		_data.insert(std::make_pair("listen", "8080"));
-	if (_data.find("server_name") == _data.end())
-		_data.insert(std::make_pair("server_name", "localhost"));
+	_data.insert(std::make_pair("server_name", "localhost"));
 
 	for (std::multimap<std::string, std::string>::iterator it = _data.begin(); it != _data.end(); ++it) {
 		if (it->first == "listen") {
@@ -214,11 +213,14 @@ void server::addVal()
 	std::multimap<std::string, std::string>::iterator it;
 
 	while ((it = _data.find("listen")) != _data.end()) {
-        _listens.push_back(it->second);       
+		if (it->second.find(":") != NOT_FOUND)
+			it->second = it->second.substr(it->second.find(":") + 1);
+		std::cout << it->second << '\n';
+        _listens.push_back(it->second);
         _data.erase(it);
     }
 	while ((it = _data.find("server_name")) != _data.end()) {
-		_server_names.push_back(it->second);       
+		_server_names.push_back(it->second);
 		_data.erase(it);
 	}
 	it = _data.find("client_max_body_size");
@@ -322,18 +324,18 @@ location server::getLocation(std::string to_find) {
 }
 
 bool server::getListen(std::string& to_find) {
-	bool ret = false;
-	for (std::vector<std::string>::iterator it = _listens.begin(); it != _listens.end(); it++)
-		if (*it == to_find)
-			ret = true;
-	return ret;
+	for (std::vector<std::string>::iterator it = _listens.begin(); it != _listens.end(); it++) {
+		if (it->find(to_find) != NOT_FOUND)
+			return true;
+	}
+	return false;
 }
 
-std::string server::getServerName(std::string& to_find) {
+bool server::getServerName(std::string& to_find) {
 	for (std::vector<std::string>::iterator it = _server_names.begin(); it != _server_names.end(); it++)
 		if (*it == to_find)
-			return *it;
-	return NULL;
+			return true;
+	return false;
 }
 
 bool server::checkLocation(std::string to_find) {

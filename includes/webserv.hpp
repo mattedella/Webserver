@@ -24,6 +24,7 @@ extern bool Quit;
 # define	RESET "\033[0m"
 # define	GREEN "\033[32m"
 # define	YELLOW "\033[33m"
+# define	CONTENT 10
 
 conf*		ParsConfFile(std::vector<std::string> config_content);
 void		ParsHttp(std::vector<std::string>::iterator& it, std::vector<std::string>::iterator& end);

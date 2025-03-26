@@ -95,7 +95,7 @@ class server : public ABlock {
 		void 		startListens();
 		location	getLocation(std::string to_find);
 		bool getListen(std::string& to_find);
-		std::string getServerName(std::string& to_find);
+		bool getServerName(std::string& to_find);
 		std::vector<std::string>& getServerNames() {
         	return _server_names;
 		}

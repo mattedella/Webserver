@@ -117,7 +117,7 @@ bool ABlock::getMethods(std::string to_find) {
 }
 
 size_t ABlock::getBodysize() {
-	return _bodysize;
+	return _bodysize * 1000000;
 }
 
 int ABlock::getTimeout() {

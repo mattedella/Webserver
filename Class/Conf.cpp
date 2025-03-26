@@ -116,6 +116,8 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) {
 
 void conf::checkRequest(Request* req, size_t contentLength) {
 	_nbrServer = findServerByHostHeader(req);
+	if (_nbrServer == -1)
+		throw exc("No server found\n");
 	StatusCode = 200;
 	char buff[4062];
 	struct dirent* readDir;
@@ -260,7 +262,6 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 			StatusCode = 413;
 		}
 		if (loc.getBodysize() != 0) {
-			std::cout << contentLength << " " << loc.getBodysize() << '\n';
 			if (loc.getBodysize() > contentLength)
 				StatusCode = 200;
 			else
@@ -336,19 +337,23 @@ std::map<int, server>& conf::getMapServer()
 
 int conf::findServerByHostHeader(Request* req) {
 	std::string hostHeader = req->getHeader("Host");
+	std::string portHeader, nameHeader;
 	if (hostHeader.empty())
-		return _servers.begin()->first;
+		return -1;
 	size_t colonPos = hostHeader.find(':');
-	if (colonPos != std::string::npos)
-		hostHeader = hostHeader.substr(colonPos + 1,hostHeader.length() - colonPos);
+	if (colonPos != std::string::npos) {
+		nameHeader = hostHeader.substr(0, colonPos);
+		portHeader = hostHeader.substr(colonPos + 1,hostHeader.length() - colonPos);
+	}
 	for (std::map<int, server>::iterator it = _servers.begin(); 
 		it != _servers.end(); ++it) {
 		server& srv = it->second;
-		bool serverNames = srv.getListen(hostHeader);
-		if (serverNames == true)
+		bool serverPort = srv.getListen(portHeader);
+		bool serverName = srv.getServerName(nameHeader);
+		if (serverPort == true && serverName == true)
 			return it->first;
 	}
-	return _servers.begin()->first;
+	return -1;
 }
 
 conf::~conf() {}

@@ -128,11 +128,11 @@ void Request::parsApplication(std::stringstream& bodyData, std::string& line, st
 
 void Request::parsMultipart(std::stringstream& bodyData, std::string& Path, std::string Type, size_t contentLength) {
 	std::string Value, Boundary, endBoundary;
-	
+	// (void)contentLength;
 	size_t boundaryPos = Type.find("boundary=");
 	if (boundaryPos != NOT_FOUND) {
 		Boundary = "--" + Type.substr(boundaryPos + 9);
-		endBoundary = Boundary + "--";
+		endBoundary = Boundary + "--\r\n";
 	}
 	else
 		throw exc("Boundary not found in Content-Type");
@@ -157,7 +157,7 @@ void Request::parsMultipart(std::stringstream& bodyData, std::string& Path, std:
 		size_t contentEnd = body.find(Boundary, contentStart) - 2;
 		if (contentEnd == std::string::npos || contentEnd <= contentStart)
 			break;
-		if (contentEnd - contentStart < contentLength) {
+		if ((body.find(endBoundary) + endBoundary.length()) - body.find(Boundary) < contentLength) {
 			StatusCode = 400;
 			return ;
 		}
