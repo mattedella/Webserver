@@ -220,8 +220,6 @@ void server::s_run(conf* ConfBlock, Request* req, int ret)
 			}
 			if (_poll_fds[i].revents & POLLOUT) {
 				bool finish = sendResponse(_poll_fds[i].fd, ConfBlock, req, _poll_fds[i].events);
-				if (StatusCode != 0)
-					// ConfBlock->removeHosts(this);
 				req->clear();
 				(void)finish;
 			}

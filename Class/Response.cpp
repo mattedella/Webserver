@@ -31,17 +31,20 @@ std::string Response::generatePostBody() {
 			" \"message\": \"Missing parameter\",\r\n}\r\n\r\n";
 			break;
 		case 404:
-			ret = "{\r\n \"error\": \"Resource not found\"\r\n}\r\n\r\n";
+			ret = "{\r\n \"error\": \"Resource not found\",\r\n}\r\n\r\n";
 			break;
 		case 403:
-			ret = "{\r\n \"error\": \"Access forbidden\"\r\n}\r\n\r\n";
+			ret = "{\r\n \"error\": \"Access forbidden\",\r\n}\r\n\r\n";
+			break;
+		case 411:
+			ret = "{\r\n \"error\": \"Content-Length header is missing\",\r\n}\r\n\r\n";
 			break;
 		case 413:
 			ret = "{\r\n \"error\": \"Upload failed\",\r\n"
 			" \"message\": \"Size to big\",\r\n}\r\n\r\n";
 			break;
 		case 500:
-			ret = "{\r\n \"error\": \"Internal server error\"\r\n}\r\n\r\n";
+			ret = "{\r\n \"error\": \"Internal server error\",\r\n}\r\n\r\n";
 			break;
 	}
 	return ret;
@@ -112,6 +115,11 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 					+ "\r\nConnection: close\r\n\r\n"
 					+ request;
 			break ;
+		case 411:
+		_response = "HTTP/1.1 411 Length Required\r\n";
+		_response += "Content-Type: application/json\r\n";
+		_response += "Content-Length: " + itos(request.length()) + "\r\n\r\n";
+		_response += request;
 		case 413:
 			_response = "HTTP/1.1 413 Request Entity Too Large\r\n";
 			_response += "Content-Type: application/json\r\n";
@@ -132,18 +140,18 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 	std::ifstream file;
 	std::stringstream buff;
-	std::string Path = ConfBlock->getFullPath();
 	std::string request;
 	std::string errorPath;
 	int nbrServer = ConfBlock->getNbrServer();
+	std::string Path = ConfBlock->getFullPath();
 	std::string error404 = ConfBlock->getErrorPage(404, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error403 = ConfBlock->getErrorPage(403, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error405 = ConfBlock->getErrorPage(405, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error408 = ConfBlock->getErrorPage(408, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
-	std::string error5xx = ConfBlock->getErrorPage(501, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
-	req->setContentType(Path);
+	std::string error501 = ConfBlock->getErrorPage(501, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	switch (StatusCode) {
 		case 200:
+			req->setContentType(Path);
 			request = ConfBlock->getResponseContent();
 			if (req->getHeader("Connection").empty())
 				req->setHeader("Connection", "close");
@@ -152,7 +160,6 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 			_response += request;
 			break ;
 		case 404:
-			errorPath = Path.substr(0, Path.find("/File") + 5);
 			req->setContentType(error404);
 			file.open((error404).c_str());
 			if (!file.is_open())
@@ -166,7 +173,6 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 			_response += request;
 			break ;
 		case 405:
-			errorPath = Path.substr(0, Path.find("/File") + 5);
 			req->setContentType(error405);
 			file.open((error405).c_str());
 			if (!file.is_open())
@@ -180,7 +186,6 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 			_response += request;
 			break ;
 		case 403:
-			errorPath = Path.substr(0, Path.find("/File") + 5);
 			req->setContentType(error403);
 			file.open((error403).c_str());
 			if (!file.is_open())
@@ -194,12 +199,10 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 			_response += request;
 			break ;
 		case 501:
-			errorPath = Path.substr(0, Path.find("/File") + 5);
-			req->setContentType(error5xx);
-			std::string File = error5xx;
-			file.open(File.c_str());
+			req->setContentType(error501);
+			file.open(error501.c_str());
 			if (!file.is_open())
-				throw exc("Error: file \"" + error5xx + "\" not opened\n");
+				throw exc("Error: file \"" + error501 + "\" not opened\n");
 			buff << file.rdbuf();
 			request = buff.str();
 			_response = "HTTP/1.1 501 Method not Allowed\r\nContent-Type: "

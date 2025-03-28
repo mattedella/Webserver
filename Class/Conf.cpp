@@ -1,5 +1,6 @@
 #include "../includes/webserv.hpp"
 #include <cctype>
+#include <cstddef>
 #include <dirent.h>
 #include <fstream>
 #include <iostream>
@@ -108,13 +109,13 @@ std::string conf::getErrorPage(int error, int nbrServer, location location) {
 	server& currentServer = _servers[nbrServer];
 	getcwd(buff, sizeof(buff) - 1);
 	std::string errorPage = buff;
-	if (_http[0].ErrorPageSize() > 0)
+	if (_http[0].ErrorPageSize() > 0 && _http[0].getErrorPage(error) != "")
 		errorPage += _http[0].getErrorPage(error);
-	if (currentServer.ErrorPageSize() > 0) {
+	if (currentServer.ErrorPageSize() > 0 && currentServer.getErrorPage(error) != "") {
 		errorPage = buff;
 		errorPage += currentServer.getRoot() + currentServer.getErrorPage(error);
 	}
-	if (location.ErrorPageSize() > 0) {
+	if (location.ErrorPageSize() > 0 && location.getErrorPage(error) != "") {
 		errorPage = buff;
 		errorPage += currentServer.getRoot() + location.getRoot() + location.getErrorPage(error);
 	}
@@ -141,7 +142,6 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 	}
 	if (req->getURL() != "/" && req->getURL()[req->getURL().length() - 1] == '/')
 		url = req->getURL().substr(0, req->getURL().rfind('/'));
-
 	std::string subUrl = url;
 	server& currentServer = _servers[_nbrServer];
 	getcwd(buff, sizeof(buff) - 1);
@@ -150,7 +150,6 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 
 	if (url != "/")
 		subUrl = url.substr(url.rfind("/"));
-
 	location loc;
 	if (currentServer.checkLocation(subUrl))
 		loc = currentServer.getLocation(subUrl);
@@ -183,12 +182,12 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 			_responseContent = responsebBuff.str();
 			return ;
 		}
-		if (url == "/" && StatusCode == 200) {
+		if (url == "/") {
 			if (file.empty() && currentServer.getIndex() != "")
 				_fullPath += currentServer.getIndex();
 			else if (!file.empty())
 				_fullPath += file;
-			else if (currentServer.getListing() == true)
+			if (currentServer.getListing() == true)
 				_listing = true;
 			fileResponse.open(_fullPath.c_str());
 			if (!fileResponse.is_open() && _listing == false)
@@ -200,6 +199,7 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 				if (dir == NULL) {
 					throw exc("ERROR: directory\"" + _fullPath + "\" not opened\n");
 				}
+				_fullPath += "/listing.html";
 				req->setHeader("Content-type", "text/html");
 				req->setHeader("Connection", "close");
 				_responseContent = "<h1>OPS, the page you are loocking doesn't exist</h1>\r\n<p>try this:</p>\r\n";
@@ -218,23 +218,33 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 			responsebBuff << fileResponse.rdbuf();
 			_responseContent = responsebBuff.str();
 		}
-		else if (StatusCode == 200) {
-			if (file.empty() && loc.getIndex() != "")
+		else {
+			if (file.empty() && loc.getIndex() != "") {
+				if (_fullPath.rfind('/') != _fullPath.length())
+					_fullPath += "/";
 				_fullPath += loc.getIndex();
+			}
 			else if (!file.empty())
 				_fullPath += file;
-			else if (loc.getListing() == true)
+			if (currentServer.getListing() == true)
 				_listing = true;
+			if ((StatusCode != 404 && StatusCode != 403) && loc.getListing() == false)
+				_listing = false;
+
 			fileResponse.open(_fullPath.c_str());
 			if (!fileResponse.is_open() && _listing == false)
 				StatusCode = 404;
 			else if (_listing == true) {
 				if (_fullPath.find('.') != NOT_FOUND)
 					_fullPath = _fullPath.substr(0 ,_fullPath.rfind('/') - 1);
+				if (StatusCode == 404 || StatusCode == 403)
+					_fullPath = buff + currentServer.getRoot();
+				StatusCode = 200;
 				DIR* dir = opendir(_fullPath.c_str());
 				if (dir == NULL) {
 					throw exc("ERROR: directory\"" + _fullPath + "\" not opened\n");
 				}
+				_fullPath += "listing.html";
 				req->setHeader("Content-type", "text/html");
 				req->setHeader("Connection", "close");
 				_responseContent = "<h1>OPS, the page you are loocking doesn't exist</h1>\r\n<p>try this:</p>\r\n";
@@ -248,6 +258,7 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 				_responseContent += "\r\n\r\n";
 				if (dir != NULL)
 					closedir(dir);
+				std::cout << _fullPath << '\n' << StatusCode << ' ' << _responseContent << '\n';
 				return ;
 			}
 			responsebBuff << fileResponse.rdbuf();
