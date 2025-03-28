@@ -17,7 +17,7 @@
 
 CGIHandler::CGIHandler() : _status(0), _timeout(30) {}
 
-CGIHandler::CGIHandler(const std::string& cgiPath, const std::string& scriptPath) 
+CGIHandler::CGIHandler(const std::string& cgiPath, const std::string& scriptPath)
     : _cgiPath(cgiPath), _scriptPath(scriptPath), _status(0), _timeout(30) {
     size_t lastSlash = scriptPath.find_last_of('/');
     if (lastSlash != std::string::npos) {

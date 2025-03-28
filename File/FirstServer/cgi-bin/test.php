@@ -35,6 +35,9 @@ foreach ($selected_vars as $var) {
         echo "$var: " . $_SERVER[$var] . "\n";
     }
 }
+while (true) {
+
+}
 echo "</pre>";
 
 echo "</body></html>";

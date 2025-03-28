@@ -65,10 +65,10 @@ void conf::printServer()
 {
 	for (std::map<int,server>::iterator it = _servers.begin(); it != _servers.end(); it++) {
 		std::cout << "Key == " << it->first << '\n';
-		it->second.printMap();
 		std::cout << "---LOCATIONS---\n";
 		it->second.printLocation();
 		std::cout<<"\n";
+		it->second.printMap();
 	}
 	for (std::vector<http>::iterator it = _http.begin(); it != _http.end(); it++) {
 		it->printMap();
@@ -130,35 +130,33 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 	char buff[4062];
 	struct dirent* readDir;
 	std::string url = req->getURL();
+	std::string subUrl;
 	std::string file;
 	std::stringstream responsebBuff;
 	std::ifstream fileResponse;
-	if (req->getURL().rfind(".") != NOT_FOUND) {
+	if (req->getURL().rfind(".") != NOT_FOUND || url.rfind('/') != url.length() - 1) {
 		file = url.substr(url.rfind('/') + 1);
-		if (url.rfind("/") == 0)
-			url.erase(url.rfind('/') + 1, file.length() + 1);
-		else 
-			url.erase(url.rfind('/'), file.length() + 1);
+		url.erase(url.rfind('/') + 1, file.length() + 1);
 	}
 	if (req->getURL() != "/" && req->getURL()[req->getURL().length() - 1] == '/')
-		url = req->getURL().substr(0, req->getURL().rfind('/'));
-	std::string subUrl = url;
+		subUrl = url.substr(0, url.rfind('/'));
+	else
+	 	subUrl = url.substr(0, url.find('/') + 1);
 	server& currentServer = _servers[_nbrServer];
 	getcwd(buff, sizeof(buff) - 1);
 	_fullPath = buff;
 	_fullPath += currentServer.getRoot();
 
 	if (url != "/")
-		subUrl = url.substr(url.rfind("/"));
+		subUrl = url.substr(0, url.rfind("/"));
 	location loc;
 	if (currentServer.checkLocation(subUrl))
 		loc = currentServer.getLocation(subUrl);
-	else
-		StatusCode = 404; 
-	if (StatusCode == 200 && req->getURL().rfind('.') == NOT_FOUND)
-		_fullPath += req->getURL();
-	else
-		_fullPath += req->getURL().substr(0, req->getURL().rfind("/") + 1);
+	_fullPath += url;
+	DIR* checkdir = opendir(_fullPath.c_str());
+	if (checkdir == NULL)
+		StatusCode = 404;
+	closedir(checkdir);
 	if (access(_fullPath.c_str(), R_OK | W_OK | X_OK) < 0)
 		StatusCode = 403;
 	if (_http[0].getMethodsSize() > 0)
@@ -220,21 +218,20 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 		}
 		else {
 			if (file.empty() && loc.getIndex() != "") {
-				if (_fullPath.rfind('/') != _fullPath.length())
-					_fullPath += "/";
 				_fullPath += loc.getIndex();
 			}
 			else if (!file.empty())
 				_fullPath += file;
+			else
+			 	StatusCode = 404;
 			if (currentServer.getListing() == true)
 				_listing = true;
 			if ((StatusCode != 404 && StatusCode != 403) && loc.getListing() == false)
 				_listing = false;
-
 			fileResponse.open(_fullPath.c_str());
 			if (!fileResponse.is_open() && _listing == false)
 				StatusCode = 404;
-			else if (_listing == true) {
+			else if (!fileResponse.is_open() && _listing == true) {
 				if (_fullPath.find('.') != NOT_FOUND)
 					_fullPath = _fullPath.substr(0 ,_fullPath.rfind('/') - 1);
 				if (StatusCode == 404 || StatusCode == 403)
@@ -258,7 +255,6 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 				_responseContent += "\r\n\r\n";
 				if (dir != NULL)
 					closedir(dir);
-				std::cout << _fullPath << '\n' << StatusCode << ' ' << _responseContent << '\n';
 				return ;
 			}
 			responsebBuff << fileResponse.rdbuf();
@@ -285,6 +281,8 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 			else
 				StatusCode = 413;
 		}
+		if (!file.empty() && StatusCode == 200)
+			_fullPath += file;
 	}
 
 	else if (req->getMethod() == "DELETE") {

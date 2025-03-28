@@ -216,7 +216,7 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 
 void Response::generateCGIResponse(Request* req, conf* ConfBlock) {
     std::string url = req->getURL();
-    std::string fullPath = ConfBlock->getFullPath();
+    std::string scriptPath = ConfBlock->getFullPath();
     std::string queryString = "";
     size_t queryPos = url.find('?');
     if (queryPos != std::string::npos) {
@@ -224,20 +224,6 @@ void Response::generateCGIResponse(Request* req, conf* ConfBlock) {
         url = url.substr(0, queryPos);
     }
     std::string scriptName = url.substr(url.find_last_of('/') + 1);
-    std::string rootDir = fullPath;
-    size_t filePos = fullPath.find("/File");
-    if (filePos != std::string::npos) {
-        rootDir = fullPath.substr(0, filePos + 5);
-    }
-    std::string scriptPath;
-    if (url.find("/cgi-bin") != std::string::npos) {
-        scriptPath = rootDir + "/cgi-bin/" + scriptName;
-    } else if (url.find("/php") != std::string::npos) {
-        scriptPath = rootDir + "/php/" + scriptName;
-    } else {
-        scriptPath = fullPath + url;
-    }
-    // scelta interprete
     std::string extension;
     size_t dot_pos = scriptName.find_last_of('.');
     if (dot_pos != std::string::npos)

@@ -155,5 +155,6 @@ conf *ParsConfFile(std::vector<std::string> config_content) {
 	}
 	ConfigurationBlock->addKey();
 	ConfigurationBlock->check();
+	ConfigurationBlock->printServer();
 	return ConfigurationBlock;
 }

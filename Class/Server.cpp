@@ -317,9 +317,16 @@ std::string server::getIndex() {
 
 location server::getLocation(std::string to_find) {
 	location null;
-	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++)
-		if (it->first == to_find)
+	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++) {
+		std::string locationName;
+		if (it->second.getRoot() != "")
+			locationName = it->second.getRoot() + it->first;
+		else
+		 	locationName = it->first;
+		if (locationName == to_find)
 			return it->second;
+
+	}
 	return null;
 }
 
@@ -347,7 +354,12 @@ bool server::getServerName(std::string& to_find) {
 
 bool server::checkLocation(std::string to_find) {
 	for (std::map<std::string, location>::iterator it = _locations.begin(); it != _locations.end(); it++) {
-		if (it->first == to_find) {
+		std::string locationName;
+		if (it->second.getRoot() != "")
+			locationName = it->second.getRoot() + it->first;
+		else
+		 	locationName = it->first;
+		if (locationName == to_find) {
 			return true;
 		}
 	}
