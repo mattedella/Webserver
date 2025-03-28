@@ -72,6 +72,7 @@ class server : public ABlock {
 		void	addLocation(const std::string& Key, location loc);
 		void	addVal();
 		void	checkValue();
+		void	checkPort(server to_check);
 		bool	checkLocation(std::string to_find);
 				void	starting();
 		

@@ -138,6 +138,7 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 	int nbrServer = ConfBlock->getNbrServer();
 	std::string error404 = ConfBlock->getErrorPage(404, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error403 = ConfBlock->getErrorPage(403, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
+	std::string error405 = ConfBlock->getErrorPage(405, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error408 = ConfBlock->getErrorPage(408, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error5xx = ConfBlock->getErrorPage(501, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	req->setContentType(Path);
@@ -159,6 +160,20 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 			buff << file.rdbuf();
 			request = buff.str();
 			_response = "HTTP/1.1 404 Not Found\r\nContent-Type: "
+					+ req->getHeader("Content-Type")
+					+ "\r\nContent-Length: " + itos(request.length())
+					+ "\r\nConnection: close\r\n\r\n";
+			_response += request;
+			break ;
+		case 405:
+			errorPath = Path.substr(0, Path.find("/File") + 5);
+			req->setContentType(error405);
+			file.open((error405).c_str());
+			if (!file.is_open())
+				throw exc("Error: file \"" + error405 + "\" not opened\n");
+			buff << file.rdbuf();
+			request = buff.str();
+			_response = "HTTP/1.1 405 Method not Allowed\r\nContent-Type: "
 					+ req->getHeader("Content-Type")
 					+ "\r\nContent-Length: " + itos(request.length())
 					+ "\r\nConnection: close\r\n\r\n";

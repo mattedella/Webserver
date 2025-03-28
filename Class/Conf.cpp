@@ -36,6 +36,13 @@ void conf::check()
 	{
 		it->second.checkValue();
 	}
+	for (std::map<int, server>::iterator it = _servers.begin(); it != _servers.end(); ++it)
+	{
+		std::map<int, server>::iterator sec = it++;
+		if (sec == _servers.end())
+			break;
+		it->second.checkPort(sec->second);
+	}
 }
 
 void conf::addServer(int nbrServer, const server &srv)
@@ -300,7 +307,7 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 	}
 	else {
 		req->setMethod("GET");
-		StatusCode = 501;
+		StatusCode = 405;
 	}
 }
 

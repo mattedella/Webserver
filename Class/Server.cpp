@@ -331,6 +331,13 @@ bool server::getListen(std::string& to_find) {
 	return false;
 }
 
+void server::checkPort(server to_check) {
+	for (std::vector<std::string>::iterator it = _listens.begin(); it != _listens.end(); it++) {
+		if (to_check.getListen(*it) == true)
+			throw exc ("Error: port \""+ *it +"\" already used in another server\n");
+	}
+}
+
 bool server::getServerName(std::string& to_find) {
 	for (std::vector<std::string>::iterator it = _server_names.begin(); it != _server_names.end(); it++)
 		if (*it == to_find)

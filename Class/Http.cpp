@@ -26,7 +26,7 @@ void http::initVector() {
 void http::checkVal()
 {
 	for (std::map<int, std::string>::iterator it = _error.begin(); it != _error.end(); it++) {
-		if (it->first != 404 && it->first != 403 && it->first != 500 && it->first != 408)
+		if (it->first != 404 && it->first != 403 && it->first != 405 && it->first != 413 && it->first != 500 && it->first != 501 && it->first != 408)
 		 	throw exc("invalid error: " + it->second + "\n");
 		if (it->second.find('.') == NOT_FOUND)
 			throw exc("Error: invalid error page: " + it->second + "\n");
