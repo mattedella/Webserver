@@ -29,7 +29,7 @@ document.getElementById('delete-button').addEventListener('click', function(even
         return;
     }
 
-    const filePath = `${fileName}`;
+    const filePath = `/upload/${fileName}`;
 
     fetch(filePath, {
         method: 'DELETE',
