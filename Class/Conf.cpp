@@ -190,8 +190,9 @@ void conf::checkRequest(Request* req, size_t contentLength) {
 			fileResponse.open(_fullPath.c_str());
 			if (!fileResponse.is_open() && _listing == false)
 				StatusCode = 404;
-			else if (_listing == true) {
-				if (_fullPath.find('.') != NOT_FOUND)
+			else if (!fileResponse.is_open() && _listing == true) {
+				std::cout << _fullPath << '\n';
+				if (_fullPath.find('.') != NOT_FOUND || _fullPath.rfind('/') != _fullPath.length() -1)
 					_fullPath = _fullPath.substr(0 ,_fullPath.rfind('/'));
 				DIR* dir = opendir(_fullPath.c_str());
 				if (dir == NULL) {

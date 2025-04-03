@@ -235,17 +235,19 @@ void Request::setMethod(std::string to_set) {
 void Request::getRequest(int client_socket, short& event, int MaxSize, conf* ConfBlock) {
 	std::stringstream buffer;
 	(void)MaxSize;
+	int i = -1;
 	size_t total_received = 0, content_length = 0, header_end = std::string::npos, chunkSize = 1024;
 	bool headers_complete = false;
 	std::string temp_buffer;
 
 	while (total_received < content_length + header_end + 4) {
+		i++;
 		char* chunk = new char[chunkSize];
 		int bytes_received = recv(client_socket, chunk, chunkSize, 0);
-		if (bytes_received == 0) {
+		if (bytes_received == 0 || i > 100) {
 			event = 0;
 			delete [] chunk;
-			return ;
+			break ;
 		}
 		else if (bytes_received < 0) {
 			delete[] chunk;

@@ -56,6 +56,7 @@ void Response::generateDeleteResponse(Request* req, conf* ConfBlock) {
 	(void)ConfBlock;
 
 	request = req->generateDeleteBody();
+	std::cout << "DELETE Status Code: " << StatusCode << '\n';
 	switch (StatusCode) {
 		case 200:
 			_response = "HTTP/1.1 200 OK\r\n";
@@ -89,6 +90,7 @@ void Response::generatePostResponse(Request* req, conf* ConfBlock) {
 	std::string request;
 	request = generatePostBody();
 	(void)ConfBlock;
+	std::cout << "POST Status Code: " << StatusCode << '\n';
 	switch (StatusCode) {
 		case 200:
 			if (req->getHeader("Connection").empty())
@@ -149,6 +151,7 @@ void Response::generateGetResponse(Request* req, conf* ConfBlock) {
 	std::string error405 = ConfBlock->getErrorPage(405, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error408 = ConfBlock->getErrorPage(408, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
 	std::string error501 = ConfBlock->getErrorPage(501, nbrServer, ConfBlock->getLocation(req->getURL(),nbrServer));
+	std::cout << "GET Status Code: " << StatusCode << '\n';
 	switch (StatusCode) {
 		case 200:
 			req->setContentType(Path);
